@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- saved path -->
+	<bean id="picturePath" 
+		  class="java.lang.String"
+		  c:value="${savedPath.member.picture}" 		
+	/>	
+	
+	<!-- summernote.image -->
+	<bean id="summernotePath"
+	      class="java.lang.String"
+	      c:value="${savedPath.summernote.image}"
+	/>
+	
+	<!-- Repository -->
+	<!-- <bean id="memberDAO" class="com.spring.dao.MemberDAOImpl"
+		c:sqlSession-ref="sqlSession" />
+	<bean id="menuDAO" class="com.spring.dao.MenuDAOImpl"
+	    c:sqlSession-ref="sqlSession" />
+	<bean id="noticeDAO" class="com.spring.dao.NoticeDAOImpl"
+	    c:sqlSession-ref="sqlSession" />
+	<bean id="boardDAO" class="com.spring.dao.BoardDAOImpl"
+	    c:sqlSession-ref="sqlSession" /> -->
+	    
+	<!-- Service -->
+	<!-- <bean id="boardService" class="com.spring.service.BoardServiceImpl"
+	    c:boardDAO-ref="boardDAO" />
+	<bean id="noticeService" class="com.spring.service.NoticeServiceImpl"
+	    c:noticeDAO-ref="noticeDAO" />
+	<bean id="menuService" class="com.spring.service.MenuServiceImpl"
+		c:menuDAO-ref="menuDAO" />
+	<bean id="memberService" class="com.spring.service.MemberServiceImpl"
+		c:memberDAO-ref="memberDAO" /> -->
+</beans>
