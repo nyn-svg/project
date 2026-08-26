@@ -1,19 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<!-- 상단 헤더 + 우측 사이드바 포함 조각 -->
-<jsp:include page="/WEB-INF/views/common/header.jsp" />
+<!-- 1. 실제 본문이 들어있는 'mainContent.jsp' 경로를 변수로 전달 -->
+<c:set var="contentPage" value="/WEB-INF/views/mainContent.jsp" scope="request" />
 
-<!-- 메인 컨텐츠 영역 (오로라 글래스모피즘 카드 적용) -->
-<div class="aurora-card" style="flex: 1; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
-    <div style="text-align: center;">
-        <h2 style="color: #38bdf8; font-size: 24px; font-weight: 700; margin-bottom: 8px;">
-            🗺️ GIS 관제 지도 영토
-        </h2>
-        <p style="color: #94a3b8; font-size: 14px;">
-            오로라 배경 빛이 투명하게 비치는 관제 시스템 메인 화면입니다.
-        </p>
-    </div>
-</div>
-
-<!-- 푸터 조각 -->
-<jsp:include page="/WEB-INF/views/common/footer.jsp" />
+<!-- 2. 레이아웃 템플릿 실행 -->
+<jsp:include page="/WEB-INF/views/layout/mainLayout.jsp" />
