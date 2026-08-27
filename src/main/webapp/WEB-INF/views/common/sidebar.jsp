@@ -10,7 +10,7 @@
 
     <nav class="quick-nav">
         <button class="quick-nav-item active" data-target="panel-festival">
-            <span class="nav-icon">📊</span>
+            <span class="nav-icon">🛸</span>
             <span class="nav-label">드론 관제</span>
         </button>
         <button class="quick-nav-item" data-target="panel-map">
@@ -30,13 +30,42 @@
 
 <!-- 2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
 <div id="sub-drawer" class="sub-drawer collapsed">
-    <!-- 축제 현황 패널 -->
-    <div id="panel-festival" class="drawer-content active">
-        <div class="drawer-header">드론 관제</div>
-        <div class="drawer-body">
-            <p>실시간 드론 데이터 및 요약 정보가 표시됩니다. ( 임시 )</p>
+    <!-- 드론 관제 패널 -->
+<div id="panel-festival" class="drawer-content active">
+    <div class="drawer-header">🛸 드론 관제 목록</div>
+    <div class="drawer-body">
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
+            관제할 드론을 선택하면 실시간 스트리밍 화면으로 이동합니다.
+        </p>
+
+        <!-- 드론 이동 버튼 리스트 -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="${pageContext.request.contextPath}/drone/stream?id=A" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 A 관제</span>
+                <span class="drone-status">LIVE</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/drone/stream?id=B" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 B 관제</span>
+                <span class="drone-status">LIVE</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/drone/stream?id=C" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 C 관제</span>
+                <span class="drone-status">LIVE</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/drone/stream?id=D" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 D 관제</span>
+                <span class="drone-status">OFFLINE</span>
+            </a>
         </div>
     </div>
+</div>
 
     <!-- 통합 관제 지도 패널 -->
     <div id="panel-map" class="drawer-content">
