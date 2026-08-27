@@ -31,39 +31,41 @@
 <!-- 2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
 <div id="sub-drawer" class="sub-drawer collapsed">
     <!-- 드론 관제 패널 -->
-<!-- 드론 관제 패널 -->
 <div id="panel-festival" class="drawer-content active">
-<!-- 헤더 전체 높이를 40px로 고정하고 flex 수직 중앙 정렬 -->
-<div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">🛸 드론 관제 목록</span>
-    
-    <!-- 버튼 우측 컨테이너 (높이 및 flex 유지) -->
-    <div class="header-btn-group" style="display: flex; align-items: center; height: 100%;">
-        <!-- 일반 모드 시 노출 -->
-        <div id="mode-default-btns" style="display: flex; align-items: center;">
-            <button id="btn-edit-mode" class="mini-btn">⚙️ 편집</button>
-        </div>
-        
-        <!-- 편집 모드 전환 시 노출 -->
-        <div id="mode-edit-btns" style="display: none; gap: 4px; align-items: center;">
-            <button id="btn-open-add-modal" class="mini-btn primary">+ 신규</button>
-            <button id="btn-cancel-edit" class="mini-btn danger">취소</button>
-        </div>
-    </div>
-</div>
-
-    <!-- 2. 드론 목록 영역 (JS가 여기에 dynamic하게 버튼을 뿌려줍니다) -->
+    <div class="drawer-header">🛸 드론 관제 목록</div>
     <div class="drawer-body">
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
             관제할 드론을 선택하면 실시간 스트리밍 화면으로 이동합니다.
         </p>
 
-        <div id="drone-list-container" style="display: flex; flex-direction: column; gap: 10px;">
-            <!-- JavaScript로 드론 목록이 렌더링됩니다 -->
+        <!-- 드론 이동 버튼 리스트 -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="${pageContext.request.contextPath}/drone/stream?id=A" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 A 관제</span>
+                <span class="drone-status">LIVE</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/drone/stream?id=B" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 B 관제</span>
+                <span class="drone-status">LIVE</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/drone/stream?id=C" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 C 관제</span>
+                <span class="drone-status">LIVE</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/drone/stream?id=D" class="drone-btn">
+                <span class="drone-icon">🛸</span>
+                <span class="drone-name">드론 D 관제</span>
+                <span class="drone-status">OFFLINE</span>
+            </a>
         </div>
     </div>
 </div>
-
 
     <!-- 통합 관제 지도 패널 -->
     <div id="panel-map" class="drawer-content">
@@ -89,31 +91,3 @@
         </div>
     </div>
 </div>
-
-<!-- sidebar.jsp 최하단 위치 -->
-<div id="drone-modal" class="modal-overlay">
-    <div class="modal-content">
-        <h3 id="modal-title" style="color: #ffffff; margin-bottom: 16px; font-size: 16px;">드론 추가</h3>
-        
-        <!-- 수정 대상 ID 저장을 위한 숨김 필드 -->
-        <input type="hidden" id="modal-drone-id" value="" />
-        
-        <!-- 입력 창 -->
-        <input type="text" id="modal-input-name" class="modal-input" placeholder="드론 이름을 입력하세요" />
-        
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-            <button id="btn-modal-cancel" class="mini-btn">취소</button>
-            <button id="btn-modal-save" class="mini-btn primary">저장</button>
-        </div>
-    </div>
-</div>
-
-
-<!-- 외부 스크립트에 contextPath 전달 및 JS 파일 로드 -->
-<script>
-    window.contextPath = '${pageContext.request.contextPath}';
-</script>
-<script src="${pageContext.request.contextPath}/resources/js/drone-sidebar.js"></script>
-
-
-
