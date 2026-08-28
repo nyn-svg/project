@@ -31,9 +31,11 @@ body {
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* 공통 미니 버튼 */
+/* 미니 버튼 높이 고정 및 세로 정렬 상쇄 */
 .mini-btn {
-    padding: 4px 10px;
+    height: 28px;           /* 💡 버튼 높이 고정 */
+    line-height: 26px;      /* 텍스트 수직 중앙 맞춤 (border 1px씩 감안) */
+    padding: 0 8px;         /* 상하 패딩은 0으로 바꾸고 height로 고정 */
     font-size: 11px;
     font-weight: 600;
     border-radius: 6px;
@@ -41,9 +43,13 @@ body {
     background: rgba(255, 255, 255, 0.08);
     color: #cbd5e1;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box; /* 💡 Border 포함 높이 계산 */
 }
-
 .mini-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     color: #ffffff;

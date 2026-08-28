@@ -7,9 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartCrowd GIS 관제 시스템</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/global.css">
-	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/layout.css">
-	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">
-	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-stream.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/layout.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-stream.css">
+    <!-- Font Awesome 최신 버전 CDN 링크 추가 -->
+	<script src="https://kit.fontawesome.com/232b0508f2.js" crossorigin="anonymous"></script>
+
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -61,5 +65,8 @@
         });
     });
     </script>
+
+    <!-- 💡 비동기 화면 전환 스크립트 추가 -->
+    <script src="${pageContext.request.contextPath}/resources/js/app-router.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
+<!-- Pretendard 고급 웹폰트 CDN 로드 -->
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <!-- 1. 우측 60px 고정 퀵바 (아이콘 전용) -->
 <aside class="quick-sidebar">
     <div class="quick-top">
@@ -10,20 +11,20 @@
 
     <nav class="quick-nav">
         <button class="quick-nav-item active" data-target="panel-festival">
-            <span class="nav-icon">🛸</span>
-            <span class="nav-label">드론 관제</span>
+            <span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>
+            <span class="nav-label">드론</span>
         </button>
         <button class="quick-nav-item" data-target="panel-map">
-            <span class="nav-icon">🗺️</span>
-            <span class="nav-label">통합 관제</span>
+            <span class="nav-icon">(?)</span>
+            <span class="nav-label">(?)</span>
         </button>
         <button class="quick-nav-item" data-target="panel-agent">
-            <span class="nav-icon">🚨</span>
-            <span class="nav-label">요원 현황</span>
+            <span class="nav-icon">(?)</span>
+            <span class="nav-label">(?)</span>
         </button>
         <button class="quick-nav-item" data-target="panel-system">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">시스템</span>
+            <span class="nav-icon">(?))</span>
+            <span class="nav-label">(?)</span>
         </button>
     </nav>
 </aside>
@@ -35,13 +36,15 @@
 <div id="panel-festival" class="drawer-content active">
 <!-- 헤더 전체 높이를 40px로 고정하고 flex 수직 중앙 정렬 -->
 <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">🛸 드론 관제 목록</span>
+    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 목록</span>
     
     <!-- 버튼 우측 컨테이너 (높이 및 flex 유지) -->
     <div class="header-btn-group" style="display: flex; align-items: center; height: 100%;">
         <!-- 일반 모드 시 노출 -->
         <div id="mode-default-btns" style="display: flex; align-items: center;">
-            <button id="btn-edit-mode" class="mini-btn">⚙️ 편집</button>
+            <button id="btn-edit-mode" class="mini-btn">
+            <i class="fa-solid fa-gear"></i>
+            </button>
         </div>
         
         <!-- 편집 모드 전환 시 노출 -->
@@ -67,25 +70,25 @@
 
     <!-- 통합 관제 지도 패널 -->
     <div id="panel-map" class="drawer-content">
-        <div class="drawer-header">통합 관제 지도</div>
+        <div class="drawer-header">(?)</div>
         <div class="drawer-body">
-            <p>관제 지도 레이어 컨트롤 및 필터 옵션입니다. ( 임시 )</p>
+            <p> ( 임시 )</p>
         </div>
     </div>
 
     <!-- 현장 요원 지시 패널 -->
     <div id="panel-agent" class="drawer-content">
-        <div class="drawer-header">안전 요원 근무 현황</div>
+        <div class="drawer-header">(?)</div>
         <div class="drawer-body">
-            <p>현장 요원 출동 현황 및 긴급 메시지 발송 기능입니다. ( 임시 )</p>
+            <p>( 임시 )</p>
         </div>
     </div>
 
     <!-- 시스템 관리 패널 -->
     <div id="panel-system" class="drawer-content">
-        <div class="drawer-header">시스템 관리</div>
+        <div class="drawer-header">(?)</div>
         <div class="drawer-body">
-            <p>시스템 설정 및 권한 관리 패널입니다. ( 임시 )</p>
+            <p> ( 임시 )</p>
         </div>
     </div>
 </div>
@@ -102,8 +105,8 @@
         <input type="text" id="modal-input-name" class="modal-input" placeholder="드론 이름을 입력하세요" />
         
         <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-            <button id="btn-modal-cancel" class="mini-btn">취소</button>
             <button id="btn-modal-save" class="mini-btn primary">저장</button>
+            <button id="btn-modal-cancel" class="mini-btn">취소</button>
         </div>
     </div>
 </div>

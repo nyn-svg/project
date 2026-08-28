@@ -25,35 +25,35 @@ $(document).ready(function() {
         renderDroneList();
     }
 
-    // 3. 드론 목록 화면에 동적 렌더링
-    function renderDroneList() {
-        var drones = getDrones();
-        var $container = $('#drone-list-container');
-        $container.empty();
+	// 3. 드론 목록 화면에 동적 렌더링
+	function renderDroneList() {
+	    var drones = getDrones();
+	    var $container = $('#drone-list-container');
+	    $container.empty();
 
-        var ctx = window.contextPath || '';
+	    var ctx = window.contextPath || '';
 
-        drones.forEach(function(drone) {
-            var html = '<div class="drone-item-wrapper" data-id="' + drone.id + '">'
-                     + '<a href="' + ctx + '/drone/stream?id=' + drone.id + '" class="drone-btn" style="flex: 1;">'
-                     + '<span class="drone-icon">🛸</span>'
-                     + '<span class="drone-name">' + drone.name + ' 관제</span>'
-                     + '<span class="drone-status">' + (drone.status || 'LIVE') + '</span>'
-                     + '</a>';
+	    drones.forEach(function(drone) {
+	        // 💡 href는 '#'으로 변경하고, sidebar-link 클래스와 data-id 속성을 추가합니다.
+			var html = '<div class="drone-item-wrapper" data-id="' + drone.id + '">'
+			         + '<a href="' + ctx + '/drone/stream?id=' + drone.id + '" class="drone-btn sidebar-link" data-id="' + drone.id + '">'
+			         + '<span class="drone-icon">🛸</span>'
+			         + '<span class="drone-name">' + drone.name + ' 관제</span>'
+			         + '<span class="drone-status">' + (drone.status || 'LIVE') + '</span>'
+			         + '</a>';
 
-            // 편집 모드일 때만 ... (더보기) 버튼 추가
-            if (isEditMode) {
-                html += '<button class="more-btn btn-drone-more">⋮</button>'
-                      + '<div class="drone-menu-dropdown" style="display: none;">'
-                      + '<button class="dropdown-item btn-edit-drone">✏️ 수정</button>'
-                      + '<button class="dropdown-item delete btn-delete-drone">🗑️ 삭제</button>'
-                      + '</div>';
-            }
+	        if (isEditMode) {
+	            html += '<button class="more-btn btn-drone-more">⋮</button>'
+	                  + '<div class="drone-menu-dropdown" style="display: none;">'
+	                  + '<button class="dropdown-item btn-edit-drone">✏️ 수정</button>'
+	                  + '<button class="dropdown-item delete btn-delete-drone">🗑️ 삭제</button>'
+	                  + '</div>';
+	        }
 
-            html += '</div>';
-            $container.append(html);
-        });
-    }
+	        html += '</div>';
+	        $container.append(html);
+	    });
+	}
 
     // 4. 편집 모드 토글 이벤트
     $('#btn-edit-mode').on('click', function() {
@@ -79,7 +79,6 @@ $(document).ready(function() {
         $dropdown.toggle();
     });
 
-    // 바깥 클릭 시 드롭다운 닫기
     $(document).on('click', function() {
         $('.drone-menu-dropdown').hide();
     });
@@ -88,8 +87,8 @@ $(document).ready(function() {
     $('#btn-open-add-modal').on('click', function() {
         $('#modal-title').text('🛸 신규 드론 등록');
         $('#modal-drone-id').val('');
-        $('#modal-drone-name').val('');
-        $('#drone-modal').css('display', 'flex');
+        $('#modal-input-name').val('');
+        $('#drone-modal').addClass('active');
     });
 
     // 7. 모달 열기 (수정)
@@ -101,19 +100,19 @@ $(document).ready(function() {
         if (target) {
             $('#modal-title').text('✏️ 드론 이름 수정');
             $('#modal-drone-id').val(target.id);
-            $('#modal-drone-name').val(target.name);
-            $('#drone-modal').css('display', 'flex');
+            $('#modal-input-name').val(target.name);
+            $('#drone-modal').addClass('active');
         }
     });
 
     // 8. 모달 닫기
-    $('#btn-close-modal').on('click', function() {
-        $('#drone-modal').hide();
+    $('#btn-modal-cancel').on('click', function() {
+        $('#drone-modal').removeClass('active');
     });
 
     // 9. 드론 저장 (신규 또는 수정)
-    $('#btn-save-drone').on('click', function() {
-        var name = $('#modal-drone-name').val().trim();
+    $('#btn-modal-save').on('click', function() {
+        var name = $('#modal-input-name').val().trim();
         var id = $('#modal-drone-id').val();
 
         if (!name) {
@@ -136,7 +135,7 @@ $(document).ready(function() {
         }
 
         saveDrones(drones);
-        $('#drone-modal').hide();
+        $('#drone-modal').removeClass('active');
     });
 
     // 10. 드론 삭제
@@ -149,6 +148,57 @@ $(document).ready(function() {
         }
     });
 
+    // ==========================================
+    // 11. 모달리스 플로팅 윈도우 드래그 앤 드롭
+    // ==========================================
+    var isModalDragging = false;
+    var modalShiftX = 0;
+    var modalShiftY = 0;
+
+    $(document).on('mousedown', '.modal-content', function(e) {
+        // 입력창, 버튼 클릭 시 드래그 동작 제외
+        if ($(e.target).is('input, button, a, select, textarea')) {
+            return;
+        }
+
+        isModalDragging = true;
+        var modalEl = this;
+        var rect = modalEl.getBoundingClientRect();
+
+        // 마우스 클릭 위치와 팝업창 좌상단 좌표 오프셋 계산
+        modalShiftX = e.clientX - rect.left;
+        modalShiftY = e.clientY - rect.top;
+
+        $(modalEl).css('cursor', 'grabbing');
+    });
+
+    $(document).on('mousemove', function(e) {
+        if (isModalDragging) {
+            var left = e.clientX - modalShiftX;
+            var top = e.clientY - modalShiftY;
+
+            $('.modal-content').css({
+                'left': left + 'px',
+                'top': top + 'px'
+            });
+        }
+    });
+
+    $(document).on('mouseup', function() {
+        if (isModalDragging) {
+            isModalDragging = false;
+            $('.modal-content').css('cursor', 'move');
+        }
+    });
+
+	// 8-1. ESC 키 입력 시 팝업창 닫기
+	    $(document).on('keydown', function(e) {
+	        if (e.key === 'Escape' || e.keyCode === 27) {
+	            $('#drone-modal').removeClass('active');
+	        }
+	    });
+	
+	
     // 초기화 실행
     renderDroneList();
 });
