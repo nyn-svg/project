@@ -1,0 +1,138 @@
+/* ==========================================
+   사이드바 드론 관제 전용 스타일
+   ========================================== */
+
+/* 1. 드론 버튼 */
+.drone-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: #f8fafc;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.drone-btn:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    transform: translateX(-3px);
+}
+
+.drone-status {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+/* 2. 더보기 (...) 버튼 및 드롭다운 */
+.drone-item-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.more-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 16px;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.more-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.drone-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 1050;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    min-width: 90px;
+}
+
+.dropdown-item {
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    padding: 6px 10px;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.dropdown-item.delete {
+    color: #f87171;
+}
+
+.dropdown-item.delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* 3. 신규/수정 모달 팝업 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    width: 280px;
+    padding: 20px;
+    border-radius: 14px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.modal-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 13px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.modal-input:focus {
+    border-color: #38bdf8;
+}
