@@ -34,13 +34,13 @@ $(document).ready(function() {
 	    var ctx = window.contextPath || '';
 
 	    drones.forEach(function(drone) {
-	        // 💡 href는 '#'으로 변경하고, sidebar-link 클래스와 data-id 속성을 추가합니다.
-			var html = '<div class="drone-item-wrapper" data-id="' + drone.id + '">'
-			         + '<a href="' + ctx + '/drone/stream?id=' + drone.id + '" class="drone-btn sidebar-link" data-id="' + drone.id + '">'
-			         + '<span class="drone-icon">🛸</span>'
-			         + '<span class="drone-name">' + drone.name + ' 관제</span>'
-			         + '<span class="drone-status">' + (drone.status || 'LIVE') + '</span>'
-			         + '</a>';
+	        // 💡 href 주소 뒤에 &name= 파라미터를 추가합니다.
+	        var html = '<div class="drone-item-wrapper" data-id="' + drone.id + '" data-name="' + drone.name + '">'
+	                 + '<a href="' + ctx + '/drone/stream?id=' + drone.id + '&name=' + encodeURIComponent(drone.name) + '" class="drone-btn sidebar-link" data-id="' + drone.id + '" data-name="' + drone.name + '">'
+	                 + '<span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>'
+	                 + '<span class="drone-name">' + drone.name + ' 관제</span>'
+	                 + '<span class="drone-status">' + (drone.status || 'LIVE') + '</span>'
+	                 + '</a>';
 
 	        if (isEditMode) {
 	            html += '<button class="more-btn btn-drone-more">⋮</button>'

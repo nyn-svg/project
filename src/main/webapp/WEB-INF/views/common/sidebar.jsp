@@ -10,7 +10,7 @@
     </div>
 
     <nav class="quick-nav">
-        <button class="quick-nav-item active" data-target="panel-festival">
+        <button class="quick-nav-item" data-target="panel-festival">
             <span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>
             <span class="nav-label">드론</span>
         </button>
@@ -57,9 +57,7 @@
 
     <!-- 2. 드론 목록 영역 (JS가 여기에 dynamic하게 버튼을 뿌려줍니다) -->
     <div class="drawer-body">
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">
-            관제할 드론을 선택하면 실시간 스트리밍 화면으로 이동합니다.
-        </p>
+        
 
         <div id="drone-list-container" style="display: flex; flex-direction: column; gap: 10px;">
             <!-- JavaScript로 드론 목록이 렌더링됩니다 -->

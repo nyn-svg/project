@@ -16,14 +16,22 @@ public class MainController {
         return "main";
     }
 
-    // 2. 드론 관제 화면 (/drone/stream)
+ // 2. 드론 관제 화면 (/drone/stream)
     @GetMapping("/drone/stream")
     public String droneStream(
             @RequestParam(value = "id", required = false, defaultValue = "A") String droneId,
+            @RequestParam(value = "name", required = false) String droneName, // ★ 추가
             HttpServletRequest request,
             Model model) {
 
+        // droneName이 들어오지 않은 경우 droneId를 기본값으로 사용
+        if (droneName == null || droneName.trim().isEmpty()) {
+            droneName = droneId;
+        }
+
         model.addAttribute("droneId", droneId);
+        model.addAttribute("droneName", droneName); // ★ JSP로 droneName 전달
+
         String viewPath = "/WEB-INF/views/drone/stream.jsp";
 
         // AJAX 비동기 요청 시 JSP 조각만 응답

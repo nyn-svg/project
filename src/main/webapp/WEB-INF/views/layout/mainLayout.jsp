@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/layout.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-stream.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <!-- Font Awesome 최신 버전 CDN 링크 추가 -->
 	<script src="https://kit.fontawesome.com/232b0508f2.js" crossorigin="anonymous"></script>
 
@@ -40,31 +41,81 @@
     <!-- 공통 스크립트 -->
     <script>
     $(document).ready(function() {
-        // 1. 우측 메뉴 버튼 클릭 시 탭 전환 및 드로어 열기
-        $('.quick-nav-item').on('click', function() {
-            const targetId = $(this).data('target');
-            
-            // 메뉴 활성화 상태 변경
+        // 1. 페이지 로드 시 저장된 사이드바 상태 복원
+        var savedTarget = sessionStorage.getItem('activeNavTarget');
+        var isDrawerOpen = sessionStorage.getItem('isDrawerOpen');
+
+        if (isDrawerOpen === 'true' && savedTarget) {
+            // 이전 버튼 active 처리
             $('.quick-nav-item').removeClass('active');
-            $(this).addClass('active');
+            var $activeBtn = $('.quick-nav-item[data-target="' + savedTarget + '"]');
+            $activeBtn.addClass('active');
+
+            // 이전 탭 내용 활성화
+            $('.drawer-content').removeClass('active');
+            $('#' + savedTarget).addClass('active');
+
+            // 사이드바 열기
+            $('#sub-drawer').removeClass('collapsed');
+            $('.quick-sidebar').addClass('is-open');
+        }
+
+        // 2. 우측 메뉴 버튼 클릭 이벤트
+        $('.quick-nav-item').on('click', function() {
+            const $this = $(this);
+            const targetId = $this.data('target');
+
+            // 이미 활성화된 탭을 다시 누른 경우 -> 닫기
+            if ($this.hasClass('active')) {
+                $this.removeClass('active');
+                $('#sub-drawer').addClass('collapsed');
+                $('.quick-sidebar').removeClass('is-open');
+                $('.drawer-content').removeClass('active');
+
+                // ★ 상태 저장: 닫힘
+                sessionStorage.setItem('isDrawerOpen', 'false');
+                sessionStorage.removeItem('activeNavTarget');
+                return;
+            }
+
+            // 새 메뉴 선택 -> 열기
+            $('.quick-nav-item').removeClass('active');
+            $this.addClass('active');
             
-            // 해당 탭 내용 변경
             $('.drawer-content').removeClass('active');
             $('#' + targetId).addClass('active');
             
-            // 서브 드로어 패널 열기
             $('#sub-drawer').removeClass('collapsed');
             $('.quick-sidebar').addClass('is-open');
+
+            // ★ 상태 저장: 열림 및 선택된 탭 ID 기록
+            sessionStorage.setItem('isDrawerOpen', 'true');
+            sessionStorage.setItem('activeNavTarget', targetId);
         });
 
-        // 2. << 토글 버튼 클릭 시 서브 드로어 열기/닫기
+     // 3. << / >> 토글 버튼 클릭 이벤트
         $('#toggle-drawer-btn').on('click', function() {
             const $drawer = $('#sub-drawer');
+            const $sidebar = $('.quick-sidebar');
+            
             $drawer.toggleClass('collapsed');
-            $('.quick-sidebar').toggleClass('is-open');
+            $sidebar.toggleClass('is-open');
+
+            var isOpen = $sidebar.hasClass('is-open');
+
+            // ★ 닫혔을 경우 (>> 눌러서 닫을 때) 선택된 메뉴 및 불빛 비활성화
+            if (!isOpen) {
+                $('.quick-nav-item').removeClass('active');
+                $('.drawer-content').removeClass('active');
+                
+                sessionStorage.setItem('isDrawerOpen', 'false');
+                sessionStorage.removeItem('activeNavTarget');
+            } else {
+                sessionStorage.setItem('isDrawerOpen', 'true');
+            }
         });
     });
-    </script>
+</script>
 
     <!-- 💡 비동기 화면 전환 스크립트 추가 -->
     <script src="${pageContext.request.contextPath}/resources/js/app-router.js"></script>

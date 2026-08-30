@@ -1,0 +1,72 @@
+.app-header {
+    height: 64px;
+    z-index: 900;
+    flex-shrink: 0;
+    gap: 20px;
+    background-color: rgba(30, 41, 69, 0.55);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 18px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+
+/* 헤더 전체 컨테이너 */
+.header-bar {
+    display: flex;
+    align-items: center;
+    gap: 40px; /* 로고와 메뉴 사이 간격 */
+    padding: 0 20px;
+    height: 60px;
+    background-color: #121c2d; /* 기존 헤더 배경색 */
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 네비게이션 메뉴 컨테이너 */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* 메뉴 항목 간 간격 */
+}
+
+/* 메뉴 링크 기본 스타일 */
+.header-nav .nav-link {
+    color: #a0aec0;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+/* 마우스 호버 및 선택(active) 상태 스타일 */
+.header-nav .nav-link:hover,
+.header-nav .nav-link.active {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+
+
+
+
