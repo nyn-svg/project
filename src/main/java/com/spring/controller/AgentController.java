@@ -38,4 +38,10 @@ public class AgentController {
     public String agentHistoryPage() {
         return "agent/agentHistory"; // WEB-INF/views/agent/agentHistory.jsp
     }
+    
+ // 업무 등록 페이지 이동
+    @GetMapping("/task/register")
+    public String agentTaskRegisterPage() {
+        return "agent/agentTaskRegister"; // WEB-INF/views/agent/agentTaskRegister.jsp
+    }
 }

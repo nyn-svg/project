@@ -1,0 +1,211 @@
+/* 기본 리셋 및 레이아웃 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: #f8fafc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* 모바일 컨테이너 */
+.mobile-container {
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    max-height: 932px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow-y: auto;
+}
+
+/* 상단 헤더 */
+.mobile-header {
+    height: 56px;
+    background-color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    color: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.btn-back {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.header-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.header-dummy {
+    width: 24px;
+}
+
+/* 메인 컨텐츠 영역 */
+.mobile-content {
+    padding: 20px 16px;
+    flex: 1;
+}
+
+/* 폼 레이아웃 */
+.task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 가로 수평 정렬 행 */
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* 세로 정렬 행 (입력창이 큰 경우) */
+.form-row.vertical {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.form-row.vertical .form-label {
+    width: 100%;
+}
+
+/* 입력 폼 공통 스타일 */
+.form-input, .form-select {
+    flex: 1;
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #334155;
+    background-color: #ffffff;
+    outline: none;
+}
+
+.form-input::placeholder {
+    color: #94a3b8;
+}
+
+.form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%3c64748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+}
+
+/* 날짜 입력 래퍼 */
+.date-input-wrapper {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-wrapper .form-input {
+    padding-right: 36px;
+}
+
+.calendar-icon {
+    position: absolute;
+    right: 12px;
+    color: #64748b;
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+/* 텍스트 영역 */
+.textarea-wrapper {
+    width: 100%;
+    position: relative;
+}
+
+.form-textarea {
+    width: 100%;
+    height: 110px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #334155;
+    resize: none;
+    outline: none;
+}
+
+.form-textarea.short {
+    height: 70px;
+}
+
+.form-textarea::placeholder {
+    color: #94a3b8;
+}
+
+/* 글자 수 카운터 */
+.char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* 하단 버튼 그룹 */
+.form-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-cancel, .btn-submit {
+    flex: 1;
+    height: 48px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+}
+
+.btn-submit {
+    background-color: #1d4ed8;
+    border: none;
+    color: #ffffff;
+}
