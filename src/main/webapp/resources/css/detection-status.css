@@ -1,0 +1,316 @@
+/* 메인 컨테이너 */
+.detection-container {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    padding-right: 80px; /* 우측 사이드바 여백 미리 확보 */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+}
+
+/* 카드 공통 스타일 */
+.dashboard-card,
+.search-form-card,
+.list-card {
+    background: #121319;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+/* 1. 상단 대시보드 */
+.dashboard-card {
+    position: relative;
+    min-height: 220px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-action-btns {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.btn-action {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-action:hover {
+    background: #334155;
+    color: #ffffff;
+}
+
+/* 2. 탭 메뉴 바 */
+.tab-menu-bar {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+    background: #181a20;
+    color: #64748b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: #cbd5e1;
+}
+
+.tab-btn.active {
+    background: #121319;
+    color: #ffffff;
+    font-weight: 600;
+    border-color: rgba(255, 255, 255, 0.18);
+    border-bottom: 2px solid #38bdf8;
+}
+
+/* 3. 검색폼 영역 */
+.search-form-card {
+    min-height: 120px;
+    padding: 20px;
+}
+
+/* 4. 하단 목록 영역 */
+.list-card {
+    min-height: 280px;
+    padding: 20px;
+    flex: 1;
+}
+
+/* 탭 패널 제어 (숨김/표시) */
+.dashboard-panel,
+.search-panel {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.dashboard-panel.active,
+.search-panel.active {
+    display: block;
+}
+
+/* 텍스트 가이드용 플레이스홀더 */
+.panel-placeholder {
+    color: #94a3b8;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    height: 100%;
+}
+/* 관제 시스템 테이블 패널 공통 */
+.list-panel {
+    display: none;
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 20px;
+    color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.list-panel.active {
+    display: block;
+}
+
+/* 상단 헤더 영역 (제목 + 총 건수 + 버튼) */
+.panel-header-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.panel-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.panel-title-group h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+
+.total-count-badge {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 12px;
+}
+
+.btn-manual-event {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-manual-event:hover {
+    background: #1d4ed8;
+}
+
+/* 테이블 기본 구조 */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: center;
+}
+
+.custom-table th {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 12px 8px;
+    font-weight: 600;
+    border-bottom: 1px solid #334155;
+}
+
+.custom-table td {
+    padding: 14px 8px;
+    border-bottom: 1px solid #1e293b;
+    color: #cbd5e1;
+}
+
+.custom-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* 위험 등급 뱃지 */
+.badge-risk {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.badge-risk.심각 { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
+.badge-risk.경계 { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid #f59e0b; }
+.badge-risk.주의 { background: rgba(234, 179, 8, 0.2); color: #fef08a; border: 1px solid #eab308; }
+.badge-risk.관심 { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid #3b82f6; }
+
+/* 처리 상태 뱃지 */
+.badge-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+.badge-status.미확인 { background: rgba(2, 132, 199, 0.2); color: #38bdf8; border: 1px solid #0284c7; }
+.badge-status.조치중 { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #d97706; }
+.badge-status.완료   { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+.badge-status.오탐   { background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid #64748b; }
+
+/* 하단 범례 영역 */
+.table-legend-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #1e293b;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ==========================================
+   지시 현황 전용 스타일
+========================================== */
+
+/* 구역명 '관제실' (관리자 하달 지시) 강조 뱃지 */
+.badge-control-room {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+    border: 1px solid #6366f1;
+}
+
+/* 지시 현황 처리 상태 뱃지 (처리대기, 처리중) */
+.badge-status.처리대기 {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fcd34d;
+    border: 1px solid #f59e0b;
+}
+
+.badge-status.처리중 {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    border: 1px solid #3b82f6;
+}
+
+
+
+/* 종료 이력 처리 상태 뱃지 (처리완료, 미해결, 취소) */
+.badge-status.처리완료 {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid #10b981;
+}
+
+.badge-status.미해결 {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 1px solid #ef4444;
+}
+
+.badge-status.취소 {
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
+    border: 1px solid #64748b;
+}
+
+/* 보고 현황 처리 상태 뱃지 (미확인, 확인) */
+.badge-status.미확인 {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid #f59e0b;
+}
+
+.badge-status.확인 {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid #3b82f6;
+}

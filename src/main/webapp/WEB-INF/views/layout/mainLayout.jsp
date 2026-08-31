@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-stream.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
+    <!-- 감지 이력 현황 전용 CSS -->
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/detection-status.css">	
     <!-- Font Awesome 최신 버전 CDN 링크 추가 -->
 	<script src="https://kit.fontawesome.com/232b0508f2.js" crossorigin="anonymous"></script>
 

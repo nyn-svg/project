@@ -180,6 +180,13 @@
 			<version>${org.aspectj.aspectjweaver-version}</version>
 		</dependency>
 		
+		<dependency>
+	    <groupId>org.projectlombok</groupId>
+	    <artifactId>lombok</artifactId>
+	    <version>1.18.46</version> <!-- 사용 중인 버전 입력 -->
+	    <scope>provided</scope>
+		</dependency>
+
 			
 		
 	</dependencies>

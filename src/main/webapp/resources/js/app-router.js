@@ -54,28 +54,33 @@ $(document).ready(function() {
 			    }
 
 	    // 2. 비동기로 메인 영역 컨텐츠만 수신
-	    $.ajax({
-	        url: targetUrl,
-	        type: 'GET',
-	        dataType: 'html',
-	        success: function(response) {
-	            // 가져온 HTML에서 #main-container 내부 알맹이만 추출하여 교체
-	            var newContent = $(response).find('#main-container').html();
-	            
-	            if (newContent) {
-	                $('#main-container').html(newContent);
-	            } else {
-	                // #main-container 구조가 아닐 경우 전체 응답을 메인 영역에 주입
-	                $('#main-container').html(response);
-	            }
+		$.ajax({
+		    url: targetUrl,
+		    type: 'GET',
+		    dataType: 'html',
+		    success: function(response) {
+		        // 가져온 HTML에서 #main-container 내부 알맹이만 추출하여 교체
+		        var newContent = $(response).find('#main-container').html();
+		        
+		        if (newContent) {
+		            $('#main-container').html(newContent);
+		        } else {
+		            // #main-container 구조가 아닐 경우 전체 응답을 메인 영역에 주입
+		            $('#main-container').html(response);
+		        }
 
-	            // 3. 브라우저 주소창 URL 변경 (뒤로가기 지원)
-	            history.pushState(null, '', targetUrl);
-	        },
-	        error: function(xhr, status, error) {
-	            console.error('페이지를 불러오는 중 오류가 발생했습니다:', error);
-	        }
-	    });
+		        // ★ [추가된 코드] 감지 이력 페이지 로드 시 더미 데이터 렌더링 함수 실행
+		        if (typeof initDetectionPage === 'function') {
+		            initDetectionPage();
+		        }
+
+		        // 3. 브라우저 주소창 URL 변경 (뒤로가기 지원)
+		        history.pushState(null, '', targetUrl);
+		    },
+		    error: function(xhr, status, error) {
+		        console.error('페이지를 불러오는 중 오류가 발생했습니다:', error);
+		    }
+		});
 	});
 
 	// 브라우저 뒤로가기 / 앞으로가기 버튼 대응

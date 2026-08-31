@@ -60,4 +60,10 @@ public class MainController {
         return "main";
     }
     */
+ // 실시간 감지 임시 페이지 이동 매핑
+    @GetMapping("/realtime")
+    public String realtimePage() {
+        return "realtime"; // realtime.jsp 파일명 (폴더 구조에 따라 "detection/realtime" 등으로 수정)
+    }
+    
 }

@@ -22,6 +22,10 @@
 			<param-value>classpath:com/spring/context/servlet-context.xml</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
+
+		<!-- 💡 비동기(SSE) 지원 옵션 추가 -->
+		<async-supported>true</async-supported>
+
 		<multipart-config>
 			<max-file-size>52428800</max-file-size> <!-- 50MB -->
 			<max-request-size>104857600</max-request-size> <!-- 100MB -->

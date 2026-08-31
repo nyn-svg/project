@@ -1,0 +1,366 @@
+/* 전체 리셋 및 모바일 컨테이너 설정 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    background-color: #f1f5f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* 모바일 화면 규격 (스마트폰 비율 고정) */
+.mobile-container {
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    max-height: 932px;
+    background-color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+/* 1. 상단 헤더 */
+.mobile-header {
+    background-color: #0c4a6e;
+    color: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-icon {
+    font-size: 1.4rem;
+    color: #e0f2fe;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.badge-work {
+    background-color: #16a34a;
+    color: #ffffff;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.notification-bell {
+    position: relative;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.bell-count {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background-color: #ef4444;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 2. 본문 메인 콘텐츠 영역 */
+.mobile-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 3. 하단 네비게이션 바 */
+.bottom-nav {
+    height: 60px;
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+.nav-item i {
+    font-size: 1.2rem;
+}
+
+.nav-item.active {
+    color: #0284c7;
+    font-weight: 600;
+}
+
+/* 현재 위험 알림 카드 */
+.alert-card {
+    background-color: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
+}
+
+.alert-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.alert-icon {
+    color: #ef4444;
+    font-size: 1.2rem;
+}
+
+.alert-title {
+    color: #b91c1c;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.alert-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.alert-desc {
+    color: #334155;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.alert-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.pin-icon {
+    color: #ef4444;
+    font-size: 0.85rem;
+}
+
+/* 내 위치 및 담당 구역 (지도 카드) */
+.map-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.map-card-header {
+    margin-bottom: 12px;
+}
+
+.map-card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.map-container {
+    width: 100%;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+}
+
+#agent-map {
+    width: 100%;
+    height: 100%;
+}
+
+/* 주요 액션 버튼 영역 */
+.action-btn-group {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-action {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-report {
+    background-color: #2563eb; /* 파란색 */
+}
+
+.btn-emergency {
+    background-color: #dc2626; /* 빨간색 */
+}
+
+/* 안전수칙 카드 */
+.rules-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.rules-card-header {
+    margin-bottom: 12px;
+}
+
+.rules-card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.rules-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rules-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.badge-guide {
+    color: #0284c7;
+    font-weight: 700;
+}
+
+.badge-notice {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+.rules-text {
+    flex: 1;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rules-date {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+/* 모달 오버레이 (배경 레이어) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none; /* 기본 상태는 숨김 */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 모달 활성화 시 표시 */
+.modal-overlay.active {
+    display: flex;
+}
+
+/* 모달 컨텐츠 창 */
+.modal-content {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 380px;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+.modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-body {
+    padding-top: 12px;
+}
+
+.modal-date {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.modal-text {
+    font-size: 0.85rem;
+    color: #334155;
+    line-height: 1.5;
+    white-space: pre-line;
+}
