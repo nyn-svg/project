@@ -31,10 +31,10 @@
                 <div class="form-row">
                     <label class="form-label" for="taskType">업무 유형</label>
                     <select id="taskType" name="taskType" class="form-select">
-                        <option value="PATROL">순찰</option>
-                        <option value="INSPECTION">점검</option>
-                        <option value="SUPPORT">지원</option>
-                        <option value="OTHER">기타</option>
+                        <option value="순찰" selected>순찰</option>
+                        <option value="점검">점검</option>
+                        <option value="지원">지원</option>
+                        <option value="기타">기타</option>
                     </select>
                 </div>
 

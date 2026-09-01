@@ -287,7 +287,7 @@ function createCardHtml(task) {
     } else if (rawType === 'PATROL' || rawType === '순찰') {
         taskTypeText = '순찰';
         badgeClass = "badge-patrol";
-    } else if (rawType === 'CHECK' || rawType === '점검') {
+    } else if (rawType === 'INSPECTION' || rawType === '점검') {
         taskTypeText = '점검';
         badgeClass = "badge-check";
     } else if (rawType === 'SUPPORT' || rawType === '지원') {
@@ -299,28 +299,29 @@ function createCardHtml(task) {
     }
 
     var statusText = task.actionStatus || '';
-    if (task.actionStatus === 'PENDING') statusText = '대기';
-    else if (task.actionStatus === 'IN_PROGRESS') statusText = '진행중';
-    else if (task.actionStatus === 'COMPLETED') statusText = '완료';
+    if (task.actionStatus === 'PENDING') statusText = '조치중';
+    else if (task.actionStatus === 'PENDING_CLOSED') statusText = '미조치 종결';
+    else if (task.actionStatus === 'COMPLETED') statusText = '조치완료';
 
     var taskTitle = task.taskTitle || '';
     var taskArea = task.taskArea || '';
     var startTime = task.startTime || '';
+    startTime = startTime.replace('T', ' '); // '2026-09-01 17:22' 로 변환
 
     var taskId = task.taskId || task.id || ''; // task 객체의 ID 필드명 사용
-    return '<div class="history-card">' +
-                '<div class="card-main">' +
-                    '<div class="title-row">' +
-                        '<span class="badge ' + badgeClass + '">' + taskTypeText + '</span>' +
-                        '<span class="history-title">' + taskTitle + '</span>' +
-                    '</div>' +
-                    '<div class="info-meta">' +
-                        '<span>' + taskArea + '구역</span>' +
-                        '<span>' + startTime + '</span>' +
-                    '</div>' +
-                '</div>' +
-                '<span class="badge-status">' + statusText + '</span>' +
-            '</div>';
+    return '<div class="history-card" data-id="' + taskId + '" style="cursor: pointer;">' +
+			    '<div class="card-main">' +
+			        '<div class="title-row">' +
+			            '<span class="badge ' + badgeClass + '">' + taskTypeText + '</span>' +
+			            '<span class="history-title">' + taskTitle + '</span>' +
+			        '</div>' +
+			        '<div class="info-meta">' +
+			            '<span>' + taskArea + '구역</span>' +
+			            '<span>' + startTime + '</span>' +
+			        '</div>' +
+			    '</div>' +
+			    '<span class="badge-status">' + statusText + '</span>' +
+			'</div>';
 }
 </script>
 </html>

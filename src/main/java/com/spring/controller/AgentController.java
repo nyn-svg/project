@@ -75,15 +75,28 @@ public class AgentController {
     }
     
  // 업무 수정 페이지 이동
-    @GetMapping("/task/edit")
-    public String agentTaskEditPage() {
-        return "agent/agentTaskEdit"; // WEB-INF/views/agent/agentTaskEdit.jsp
+    @GetMapping("/taskEdit")
+    public String agentTaskEditPage(@RequestParam("id") Long taskId, Model model) {
+        // 1. DB에서 넘어온 ID로 상세 데이터 조회
+        AgentTaskDTO task = agentTaskService.getTaskById(taskId);
+        
+        // 💡 디버깅용 로그: 콘솔창에서 task 객체 및 taskId가 제대로 들어오는지 확인!
+        System.out.println("=== 넘겨받은 taskId: " + taskId);
+        System.out.println("=== DB에서 조회된 task: " + task);
+        
+        // 2. JSP로 전달할 이름("task")이 ${task.taskId}와 일치해야 합니다.
+        model.addAttribute("task", task);
+        
+        return "agent/agentTaskEdit";
     }
  // 업무 수정 처리 (POST)
-    @PostMapping("/task/edit")
-    public String editTask(AgentTaskDTO dto) {
-        agentTaskService.modifyTask(dto);
-        return "redirect:/agent/history"; // 수정 후 목록 페이지로 이동
+    @PostMapping("/taskEdit")
+    public String modifyTask(AgentTaskDTO dto) {
+        // 1. 서비스의 modifyTask 실행 (DB UPDATE)
+        boolean result = agentTaskService.modifyTask(dto);
+        
+        // 2. 수정 완료 후 업무 목록 페이지로 이동
+        return "redirect:/agent/history"; // 기존 목록 URL 경로로 설정
     }
     
  // 무한 스크롤용 REST API (목록 + 전체 개수 반환)

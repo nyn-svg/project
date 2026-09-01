@@ -19,4 +19,6 @@ public interface AgentTaskService {
     public List<AgentTaskDTO> getTaskListPaged(Map<String, Object> paramMap);
     
     int getTaskListCount(Map<String, Object> paramMap);
+    
+    AgentTaskDTO getTaskById(Long taskId); // 또는 int taskId
 }

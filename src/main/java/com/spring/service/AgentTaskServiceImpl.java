@@ -56,4 +56,9 @@ public class AgentTaskServiceImpl implements AgentTaskService {
     public int getTaskListCount(Map<String, Object> paramMap) {
         return agentTaskMapper.getTaskListCount(paramMap);
     }
+    
+    @Override
+    public AgentTaskDTO getTaskById(Long taskId) {
+        return agentTaskMapper.getTaskById(taskId);
+    }
 }
