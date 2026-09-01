@@ -119,7 +119,7 @@ let isEnd = false;
 
 document.addEventListener("DOMContentLoaded", function() {
     
-    // 1. Litepicker 연동 (오류 방지를 위해 닫는 괄호 }); 추가 정돈)
+    // 1. Litepicker 연동 (오류 방지를 위해 닫는 괄호 ); 추가 정돈)
     if (typeof Litepicker !== 'undefined' && document.getElementById('filterDate')) {
         new Litepicker({
             element: document.getElementById('filterDate'),
@@ -141,7 +141,20 @@ document.addEventListener("DOMContentLoaded", function() {
         historyList.addEventListener("scroll", handleScroll);
     }
     window.addEventListener("scroll", handleScroll);
-
+    
+ 	// 클릭 이벤트 (독립적으로 실행)
+    if (historyList) {
+        historyList.addEventListener("click", function(e) {
+            var card = e.target.closest(".history-card");
+            if (card) {
+                var taskId = card.getAttribute("data-id");
+                if (taskId) {
+                    var contextPath = "${pageContext.request.contextPath}";
+                    location.href = contextPath + "/agent/taskEdit?id=" + taskId;
+                }
+            }
+        });
+    }
     // 4. 검색 버튼 클릭 이벤트
     const btnSearch = document.getElementById("btnSearch");
     if (btnSearch) {
@@ -294,6 +307,7 @@ function createCardHtml(task) {
     var taskArea = task.taskArea || '';
     var startTime = task.startTime || '';
 
+    var taskId = task.taskId || task.id || ''; // task 객체의 ID 필드명 사용
     return '<div class="history-card">' +
                 '<div class="card-main">' +
                     '<div class="title-row">' +

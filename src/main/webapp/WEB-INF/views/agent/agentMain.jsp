@@ -12,7 +12,7 @@
     <!-- 모바일 전용 CSS (추후 작성) -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/agent/agentMain.css">
 	<!-- 카카오맵 API 로드 -->
-<script type="text/javascript" src="http://dapi.kakao.com/v2/maps/sdk.js?appkey=893d42a705b8275bf35865b1d40e6d96&autoload=false"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=893d42a705b8275bf35865b1d40e6d96&autoload=false"></script>
 </head>
 <body>
 
@@ -135,51 +135,14 @@
 </body>
 
 <script>
-kakao.maps.load(function() {
-    var container = document.getElementById('agent-map');
-    var myPosition = new kakao.maps.LatLng(36.3504, 127.3845); // 예시: 대전 중심/현장 위치
-    var dangerPosition = new kakao.maps.LatLng(36.3512, 127.3855); // 위험 구역 위치
-
-    var options = {
-        center: myPosition,
-        level: 3
-    };
-
-    var map = new kakao.maps.Map(container, options);
-
-    // 1. 내 위치 마커 생성 (초록색 핀 아이콘 등)
-    var myMarker = new kakao.maps.Marker({
-        position: myPosition,
-        map: map
-    });
-
-    // 2. 위험 구역 마커 생성
-    var dangerMarker = new kakao.maps.Marker({
-        position: dangerPosition,
-        map: map
-    });
-
-    // 3. 위험 구역 서클(원) 표시 (이미지 시안의 빨간 반경)
-    var circle = new kakao.maps.Circle({
-        center: dangerPosition,
-        radius: 60, // 미터 단위
-        strokeWeight: 1,
-        strokeColor: '#ef4444',
-        strokeOpacity: 0.8,
-        strokeStyle: 'solid',
-        fillColor: '#ef4444',
-        fillOpacity: 0.2
-    });
-
-    circle.setMap(map);
-});
-
+// 1. 안전수칙 모달 로직 (페이지 로드 완료 후 독립 실행)
 document.addEventListener("DOMContentLoaded", function() {
+    
+    // 1. 안전수칙 모달 로직
     var modal = document.getElementById("rulesModal");
     var closeBtn = document.getElementById("closeModalBtn");
     var ruleItems = document.querySelectorAll(".rules-item");
 
-    // 안전수칙 항목 클릭 시 모달 열기
     ruleItems.forEach(function(item) {
         item.style.cursor = "pointer";
         item.addEventListener("click", function() {
@@ -195,17 +158,57 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // 닫기 버튼(X) 클릭 시 모달 닫기
-    closeBtn.addEventListener("click", function() {
-        modal.classList.remove("active");
-    });
-
-    // 모달 바깥 배경 클릭 시 닫기
-    modal.addEventListener("click", function(event) {
-        if (event.target === modal) {
+    if (closeBtn) {
+        closeBtn.addEventListener("click", function() {
             modal.classList.remove("active");
-        }
-    });
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener("click", function(event) {
+            if (event.target === modal) {
+                modal.classList.remove("active");
+            }
+        });
+    }
+    window.addEventListener('load', function() {
+    // 2. 카카오 지도 로직 (kakao.maps.load 없이 직접 생성)
+    var container = document.getElementById('agent-map');
+    if (container && typeof kakao !== 'undefined' && kakao.maps) {
+        var myPosition = new kakao.maps.LatLng(36.3504, 127.3845);
+        var dangerPosition = new kakao.maps.LatLng(36.3512, 127.3855);
+
+        var options = {
+            center: myPosition,
+            level: 3
+        };
+
+        var map = new kakao.maps.Map(container, options);
+
+        var myMarker = new kakao.maps.Marker({
+            position: myPosition,
+            map: map
+        });
+
+        var dangerMarker = new kakao.maps.Marker({
+            position: dangerPosition,
+            map: map
+        });
+
+        var circle = new kakao.maps.Circle({
+            center: dangerPosition,
+            radius: 60,
+            strokeWeight: 1,
+            strokeColor: '#ef4444',
+            strokeOpacity: 0.8,
+            strokeStyle: 'solid',
+            fillColor: '#ef4444',
+            fillOpacity: 0.2
+        });
+
+        circle.setMap(map);
+    	}
+	});
 });
 </script>
 </html>
