@@ -148,21 +148,57 @@ body {
 
 /* 카운트 헤더 */
 .list-count-header {
-    font-size: 0.9rem;
-    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 10px 0;
+}
+
+.list-count-header .count-text {
+    font-size: 14px;
+    font-weight: 600;
     color: #334155;
-    margin-bottom: 12px;
 }
 
 .list-count-header .count {
-    color: #1d4ed8;
+    color: #1d4ed8; /* 건수 강조 컬러 */
+    font-weight: 700;
 }
 
 /* 이력 리스트 영역 */
 .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    max-height: 520px;       /* 모바일 화면에 맞게 조절 */
+    overflow-y: auto;        /* 내부 스크롤 허용 */
+    -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
+    padding-bottom: 10px;
+}
+
+/* Chrome, Safari, Opera 스크롤바 감추기 */
+.history-list::-webkit-scrollbar {
+    display: none;
+}
+
+.btn-task-register {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #1d4ed8;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-task-register:active {
+    background-color: #1e40af;
+}
+
+.btn-task-register i {
+    font-size: 11px;
 }
 
 .history-card {
@@ -189,10 +225,12 @@ body {
 
 /* 배지 공통 */
 .badge {
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    margin-right: 6px;
 }
 
 .badge-emergency {
@@ -211,6 +249,23 @@ body {
     color: #2563eb;
     border: 1px solid #bfdbfe;
     background-color: #eff6ff;
+}
+
+.badge-check {
+    background-color: #e6f4ea;
+    color: #137333;
+}
+
+/* 5. 지원 (보라색) */
+.badge-support {
+    background-color: #f3e8fd;
+    color: #8430ce;
+}
+
+/* 6. 기타 (회색) */
+.badge-other {
+    background-color: #f1f3f4;
+    color: #5f6368;
 }
 
 .history-title {

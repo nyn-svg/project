@@ -1,0 +1,295 @@
+@charset "UTF-8";
+
+/* ==========================================
+   메인 대시보드 레이아웃
+   ========================================== */
+.dashboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 글래스모피즘 공통 카드 */
+.aurora-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 20px;
+    color: #ffffff;
+    box-sizing: border-box;
+}
+
+/* 상단 위젯 2열 그리드 */
+.top-widget-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* ==========================================
+   위젯 공통 요소 (타이틀, 배지)
+   ========================================== */
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.widget-title {
+    font-size: 16px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alert-title { color: #f87171; }
+.weather-title { color: #38bdf8; }
+
+.badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.badge-alert {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.badge-success {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+/* ==========================================
+   [상단 좌측] 사건/사고 발생 현황
+   ========================================== */
+.alert-widget {
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.stat-badge-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stat-badge {
+    flex: 1;
+    background: rgba(30, 41, 59, 0.6);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-badge-danger {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.stat-label { font-size: 11px; color: #94a3b8; }
+.stat-value { font-size: 18px; font-weight: bold; color: #f8fafc; margin-top: 2px; }
+
+.timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.timeline-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.timeline-danger { border-left: 3px solid #ef4444; }
+.timeline-warning { border-left: 3px solid #f59e0b; }
+
+.timeline-content { display: flex; align-items: center; gap: 8px; }
+.timeline-sub { color: #94a3b8; font-size: 11px; }
+.timeline-time { color: #64748b; font-size: 11px; }
+
+/* ==========================================
+   [상단 우측] 기상 및 비행 환경
+   ========================================== */
+.weather-widget {
+    border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.env-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.metric-card {
+    background: rgba(30, 41, 59, 0.6);
+    padding: 12px 8px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.metric-label { font-size: 11px; color: #94a3b8; }
+.metric-value { font-size: 16px; font-weight: bold; color: #f8fafc; margin-top: 4px; }
+
+.flight-guide-box {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ==========================================
+   [하단] 안전관리 가이드 영역 (하단여백 채움)
+   ========================================== */
+.safety-guide-section {
+    flex: 1; /* 남은 세로 공간을 자동으로 꽉 채움 */
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.section-title {
+    color: #38bdf8;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-card-grid {
+    flex: 1; /* 카드 영역 확장 */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.guide-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.guide-title {
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+    margin-top: 0;
+    margin-bottom: 14px;
+}
+
+.guide-content {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.guide-item p { margin: 2px 0 0 0; color: #94a3b8; font-size: 11px; }
+
+/* 2. 프로세스 */
+.process-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.process-step {
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid #f59e0b;
+    padding: 8px 10px;
+    border-radius: 0 4px 4px 0;
+}
+
+.process-step p { margin: 2px 0 0 0; color: #94a3b8; }
+
+/* 3. 비상연락망 테이블 */
+.contact-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+.contact-table tr { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.contact-table tr:last-child { border-bottom: none; }
+
+.contact-table th {
+    padding: 8px 0;
+    color: #f8fafc;
+    font-weight: bold;
+    text-align: left;
+}
+
+.contact-table td {
+    padding: 8px 0;
+    text-align: right;
+}
+
+/* 하단 공지사항 티커 */
+.notice-ticker {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    margin-top: 16px;
+}
+
+.ticker-badge {
+    background: #ef4444;
+    color: #fff;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.ticker-text {
+    color: #e2e8f0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* 유틸리티 컬러 클래스 */
+.text-info { color: #38bdf8; }
+.text-danger { color: #ef4444; }
+.text-danger-light { color: #fca5a5; }
+.text-warning { color: #f59e0b; }
+.text-warning-light { color: #fbbf24; }
+.text-muted { color: #64748b; }

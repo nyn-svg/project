@@ -92,7 +92,7 @@ $(document).ready(function() {
 	    // 1. 모든 헤더 active 불빛 제거
 	    $('.header-nav .nav-link').removeClass('active');
 
-	    // 2. 현재 브라우저의 URL 경로 가져오기 (예: "/detection", "/history", "/")
+	    // 2. 현재 브라우저의 URL 경로 가져오기 (예: "/detection", "/realtime", "/actionLog", "/")
 	    var currentPath = window.location.pathname;
 
 	    // 3. 경로 비교 후 해당되는 메뉴에만 active 추가
@@ -100,10 +100,13 @@ $(document).ready(function() {
 	        $('.header-nav .nav-link[href$="/"]').addClass('active');
 	    } else if (currentPath.includes('/detection')) {
 	        $('.header-nav .nav-link[href*="detection"]').addClass('active');
+	    } else if (currentPath.includes('/realtime')) {
+	        $('.header-nav .nav-link[href*="realtime"]').addClass('active');
+	    } else if (currentPath.includes('/actionLog')) {
+	        $('.header-nav .nav-link[href*="actionLog"]').addClass('active');
 	    } else if (currentPath.includes('/history')) {
 	        $('.header-nav .nav-link[href*="history"]').addClass('active');
 	    }
-	    // 드론 등 그 외 페이지는 조건문에서 제외되므로 어디에도 active가 붙지 않습니다.
 	}
 	
 });

@@ -1,0 +1,232 @@
+@charset "UTF-8";
+
+/* ==========================================
+   업무 수정 페이지
+   ========================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.mobile-container {
+    width: 100%;
+    max-width: 430px; /* 모바일 디바이스 기준 너비 */
+    height: 100vh;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ==========================================
+   상단 헤더
+   ========================================== */
+.mobile-header {
+    height: 56px;
+    background-color: #1d4ed8; /* 메인 블루 테마 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.btn-back {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-dummy {
+    width: 34px; /* 좌측 뒤로가기 버튼과 대칭 맞춤용 */
+}
+
+/* ==========================================
+   메인 폼 콘텐츠 영역
+   ========================================== */
+.mobile-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+}
+
+.task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 폼 행 (가로 수평 배치 기본) */
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* 폼 행 (세로 배치용 - textarea 등) */
+.form-row.vertical {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+/* 입력 필드 & 셀렉트 박스 공통 */
+.form-input,
+.form-select {
+    flex: 1;
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #1e293b;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* 셀렉트 화살표 아이콘 커스텀 */
+.form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%64748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+/* Textarea 영역 및 글자 수 카운터 */
+.textarea-wrapper {
+    width: 100%;
+    position: relative;
+    margin-top: 6px;
+}
+
+.form-textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px 12px 28px 12px;
+    font-size: 14px;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.form-textarea.short {
+    height: 70px;
+    padding-bottom: 10px;
+}
+
+.char-count {
+    position: absolute;
+    right: 12px;
+    bottom: 8px;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* 날짜 입력 래퍼 & 아이콘 */
+.date-input-wrapper {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-wrapper .form-input {
+    padding-right: 36px;
+}
+
+.calendar-icon {
+    position: absolute;
+    right: 12px;
+    color: #64748b;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+/* ==========================================
+   하단 버튼 그룹
+   ========================================== */
+.form-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    padding-bottom: 20px;
+}
+
+.btn-cancel,
+.btn-submit {
+    flex: 1;
+    height: 48px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-cancel {
+    background-color: #ffffff;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-cancel:active {
+    background-color: #f1f5f9;
+}
+
+.btn-submit {
+    background-color: #1d4ed8;
+    color: #ffffff;
+}
+
+.btn-submit:active {
+    background-color: #1e40af;
+}

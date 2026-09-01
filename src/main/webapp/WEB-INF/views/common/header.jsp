@@ -11,5 +11,6 @@
         <a href="${pageContext.request.contextPath}/" class="nav-link header-link">홈</a>
         <a href="${pageContext.request.contextPath}/detection" class="nav-link header-link">감지 이력</a>
 		<a href="${pageContext.request.contextPath}/realtime" class="nav-link header-link">실시간 감지</a>
+    	<a href="${pageContext.request.contextPath}/actionLog" class="nav-link header-link">조치록</a>
     </nav>
 </header>

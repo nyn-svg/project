@@ -43,27 +43,37 @@ public class MainController {
         model.addAttribute("contentPage", viewPath);
         return "main";
     }
+    /**
+     * 감지 이력 현황 페이지 이동
+     */
+    @GetMapping("/detection")
+    public String detectionStatusPage(Model model) {
+        
+        // 메인 레이아웃(main.jsp)의 <jsp:include page="${contentPage}" /> 에 주입될 경로
+        model.addAttribute("contentPage", "/WEB-INF/views/detection/detection-status.jsp");
+        
+        // 상단 헤더 메뉴 active 처리를 위한 구분값 (필요 시 활용)
+        model.addAttribute("currentMenu", "detection");
 
-    /* 
-     * 3. 추후 새로 만드는 페이지들도 동일한 패턴으로 추가하면 됩니다.
-     * 예시: 통합 관제 지도 (/map/view)
-     *
-    @GetMapping("/map/view")
-    public String mapView(HttpServletRequest request, Model model) {
-        String viewPath = "/WEB-INF/views/map/view.jsp";
-
-        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-            return "map/view";
-        }
-
-        model.addAttribute("contentPage", viewPath);
-        return "main";
+        // 메인 레이아웃 JSP 파일명을 리턴 (예: main, index, layout 등 프로젝트 설정명에 맞게 지정)
+        return "main"; 
     }
-    */
+    
  // 실시간 감지 임시 페이지 이동 매핑
     @GetMapping("/realtime")
-    public String realtimePage() {
-        return "realtime"; // realtime.jsp 파일명 (폴더 구조에 따라 "detection/realtime" 등으로 수정)
+    public String realtimePage(Model model) {
+    	model.addAttribute("contentPage", "/WEB-INF/views/realtime.jsp");
+    	model.addAttribute("currentMenu", "realtime");
+        return "main"; 
+    }
+    
+ // 조치록 메인/목록 페이지 이동 
+    @GetMapping("/actionLog")
+    public String actionLogPage(Model model) {
+        // 메인 컨텐츠 영역에 들어갈 조치록 JSP 경로 설정
+        model.addAttribute("contentPage", "/WEB-INF/views/control/actionLog.jsp");
+        model.addAttribute("currentMenu", "actionLog");
+        return "main"; 
     }
     
 }

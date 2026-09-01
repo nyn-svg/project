@@ -1,0 +1,110 @@
+/* 조치록 화면 */ 
+
+/* 컨테이너 레이아웃 (배경 제거 및 투명 처리) */
+.action-log-container {
+    width: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: transparent;
+    min-height: calc(100vh - 120px);
+}
+
+/* 1. 상단 통계 카드 영역 */
+.summary-card {
+    background: rgba(30, 32, 58, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 20px 24px;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+.summary-label {
+    color: #a0aec0;
+    letter-spacing: -0.3px;
+}
+
+.summary-value {
+    font-weight: 700;
+    color: #6366f1; /* 관제 시스템 포인트 보라/파랑 컬러 */
+    font-size: 1.15rem;
+}
+
+/* 2. 하단 목록 영역 */
+.list-section {
+    background: rgba(30, 32, 58, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 테이블 디자인 (다크 모드 스타일) */
+.action-log-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.action-log-table th {
+    background-color: rgba(15, 23, 42, 0.6);
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-log-table td {
+    background-color: rgba(255, 255, 255, 0.02);
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.action-log-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.action-log-table tbody tr:hover td {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.empty-msg {
+    padding: 60px 0 !important;
+    color: #94a3b8 !important;
+}
