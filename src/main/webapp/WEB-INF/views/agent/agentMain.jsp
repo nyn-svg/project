@@ -12,25 +12,31 @@
     <!-- 모바일 전용 CSS (추후 작성) -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/agent/agentMain.css">
 	<!-- 카카오맵 API 로드 -->
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=893d42a705b8275bf35865b1d40e6d96&autoload=false"></script>
+	<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=893d42a705b8275bf35865b1d40e6d96"></script>
 </head>
 <body>
 
     <div class="mobile-container">
         <!-- 1. 상단 파란색 헤더 (프로필 및 알림) -->
         <header class="mobile-header">
-            <div class="user-info">
-                <i class="fa-solid fa-user-circle profile-icon"></i>
-                <span class="user-name">김이슬 요원</span>
-                <span class="badge-work">근무중</span>
-            </div>
-            <div class="header-right">
-                <div class="notification-bell">
-                    <i class="fa-solid fa-bell"></i>
-                    <span class="bell-count">2</span>
-                </div>
-            </div>
-        </header>
+		    <div class="user-info">
+		        <i class="fa-solid fa-user-circle profile-icon"></i>
+		        <!-- DB 유저 이름 바인딩 (값이 없으면 기본값 표시) -->
+		        <span class="user-name">
+		            ${not empty user.userName ? user.userName : '김이슬'} 요원
+		        </span>
+		        <!-- DB 근무 상태 바인딩 -->
+		        <span class="badge-work">
+		            ${not empty user.workStatus ? user.workStatus : '근무중'}
+		        </span>
+		    </div>
+		    <div class="header-right">
+		        <div class="notification-bell">
+		            <i class="fa-solid fa-bell"></i>
+		            <span class="bell-count">0</span>
+		        </div>
+		    </div>
+		</header>
 
         <!-- 2. 본문 메인 콘텐츠 영역 -->
         <main class="mobile-content">
@@ -107,7 +113,7 @@
                 <i class="fa-solid fa-clipboard-list"></i>
                 <span>업무</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/agent/info" class="nav-item">
                 <i class="fa-solid fa-user"></i>
                 <span>정보</span>
             </a>
@@ -171,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
-    window.addEventListener('load', function() {
+    kakao.maps.load(function() {
     // 2. 카카오 지도 로직 (kakao.maps.load 없이 직접 생성)
     var container = document.getElementById('agent-map');
     if (container && typeof kakao !== 'undefined' && kakao.maps) {

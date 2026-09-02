@@ -1,0 +1,80 @@
+@charset "UTF-8";
+
+/* ==========================================
+   관리자 대시보드 커스텀 스타일
+   ========================================== */
+
+/* 대시보드 영역 상단 헤더 간격 정돈 */
+.safety-guide-section .widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.safety-guide-section .section-title {
+    margin-bottom: 0;
+}
+
+/* 요원 관리 이동 버튼 스타일 */
+.btn-link-badge {
+    border: none;
+    cursor: pointer;
+    background-color: #0284c7;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-link-badge:hover {
+    background-color: #0369a1;
+}
+
+/* 하단 요원 현황 테이블 스타일 */
+.agent-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.agent-status-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.agent-status-table th {
+    padding: 12px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+}
+
+.agent-status-table td {
+    padding: 12px;
+    font-size: 0.88rem;
+    color: #f1f5f9;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.agent-status-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* 근무 상태 관련 뱃지 */
+.badge-offduty {
+    background-color: #64748b;
+    color: #ffffff;
+}
+
+/* 알림 티커 하단 여백 추가 */
+.dashboard-wrapper .notice-ticker {
+    margin-top: 20px;
+}

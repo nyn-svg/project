@@ -14,21 +14,36 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.dto.AgentTaskDTO;
+import com.spring.dto.UserDTO;
 import com.spring.service.AgentTaskService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/agent")
 public class AgentController {
-	
+
 	@Autowired
     private AgentTaskService agentTaskService;
 
-    // 안전요원 메인 페이지 이동
-    @GetMapping("/main")
-    public String agentMainPage() {
-        // WEB-INF/views/agent/agentMain.jsp 를 호출합니다.
-        return "agent/agentMain"; 
-    }
+	// 안전요원 메인 페이지 이동
+	@GetMapping("/main")
+	public String agentMainPage(HttpSession session, Model model) {
+	    // 1. 세션에서 로그인한 유저 ID 가져오기
+	    String loginUserId = (String) session.getAttribute("userId");
+
+	    if (loginUserId == null) {
+	        loginUserId = "agent01"; // 테스트용 기본 ID
+	    }
+
+	    // 2. DB에서 유저 정보 + 요원 상세 정보 조회
+	    UserDTO user = agentTaskService.findByUserId(loginUserId);
+
+	    // 3. JSP로 유저 객체 전달
+	    model.addAttribute("user", user);
+
+	    return "agent/agentMain"; 
+	}
     
  // 상황 보고 페이지 이동
     @GetMapping("/report")
@@ -133,4 +148,52 @@ public class AgentController {
 
         return resultMap;
     }
+    
+    
+ // 내 정보 페이지 이동 (GET)
+    @GetMapping("/info")
+    public String agentInfoPage(HttpSession session, Model model) {
+        // 1. 세션에서 로그인한 유저 ID 가져오기
+        String loginUserId = (String) session.getAttribute("userId");
+
+        // 로그인 구현 전이거나 세션이 비어있을 경우 테스트용 기본 ID 세팅
+        if (loginUserId == null) {
+            loginUserId = "agent01"; 
+        }
+
+        // 2. DB에서 유저 기본 정보 + 안전요원 상세 정보 조회
+        UserDTO user = agentTaskService.findByUserId(loginUserId);
+
+        // 3. JSP로 전달
+        model.addAttribute("user", user);
+
+        // WEB-INF/views/agent/agentInfo.jsp 호출
+        return "agent/agentInfo"; 
+    }
+    
+ // 근무 상태 변경 페이지 이동 (GET)
+    @GetMapping("/status/edit")
+    public String agentStatusEditPage(HttpSession session, Model model) {
+        String loginUserId = (String) session.getAttribute("userId");
+        if (loginUserId == null) loginUserId = "agent01";
+
+        UserDTO user = agentTaskService.findByUserId(loginUserId);
+        model.addAttribute("user", user);
+
+        return "agent/agentStatusEdit"; // agentStatusEdit.jsp
+    }
+
+    // 근무 상태 변경 처리 (POST)
+    @PostMapping("/status/edit")
+    public String updateWorkStatus(@RequestParam("workStatus") String workStatus, HttpSession session) {
+        String loginUserId = (String) session.getAttribute("userId");
+        if (loginUserId == null) loginUserId = "agent01";
+
+        // DB 업데이트 실행
+        agentTaskService.updateWorkStatus(loginUserId, workStatus);
+
+        return "redirect:/agent/info"; // 변경 후 내 정보 페이지로 이동
+    }
+    
+    
 }

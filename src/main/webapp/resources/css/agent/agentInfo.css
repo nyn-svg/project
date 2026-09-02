@@ -1,0 +1,121 @@
+/* agentInfo.css - 내 정보 페이지 전용 스타일 */
+
+/* 1. 상단 서브 헤더 (뒤로가기 버튼 + 중앙 타이틀) */
+.sub-header {
+    background-color: #0c4a6e;
+    color: #ffffff;
+    height: 56px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sub-header .btn-back {
+    position: absolute;
+    left: 16px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.sub-header .header-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+/* 2. 내 정보 프로필 카드 */
+.info-profile-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.info-profile-avatar {
+    width: 56px;
+    height: 56px;
+    background-color: #e0f2fe;
+    color: #0284c7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+}
+
+.info-profile-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-profile-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* 3. 상세 정보 카드 */
+.info-detail-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 4px 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+/* 4. 로그아웃 버튼 */
+.btn-logout {
+    width: 100%;
+    padding: 14px 0;
+    background-color: #ffffff;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin-top: auto; /* 하단 네비바 위쪽으로 자연스럽게 밀어내기 */
+}
+
+.btn-logout:active {
+    background-color: #fef2f2;
+}

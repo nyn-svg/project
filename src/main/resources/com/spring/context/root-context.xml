@@ -16,5 +16,9 @@
 	
 	<!-- MyBatis Mapper 인터페이스 자동 등록 설정 -->
 	<mybatis-spring:scan base-package="com.spring.mapper" factory-ref="sqlSessionFactory" />
+	
+	<!-- Spring Security 설정 및 서비스/핸들러 빈 스캔 -->
+	<context:component-scan base-package="com.spring.config" />
+	<context:component-scan base-package="com.spring.security" />
 
 </beans>

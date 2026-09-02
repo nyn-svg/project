@@ -1,0 +1,225 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   1. 기본 설정 및 리셋
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body.guide-body {
+    background-color: #0b132b;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 24px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.guide-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   2. 헤더 영역 (타이틀 & 로그인 버튼)
+   ========================================================================== */
+.guide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-icon {
+    color: #38bdf8;
+}
+
+.btn-login {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-login:hover {
+    background-color: #1d4ed8;
+}
+
+/* ==========================================================================
+   3. 섹션 공통 스타일
+   ========================================================================== */
+.guide-section {
+    margin-bottom: 32px;
+}
+
+.section-header-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.section-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.section-header-wrap .section-title {
+    margin-bottom: 0;
+}
+
+.section-subtext {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* 색상 분류 (사진 포인트 컬러 매칭) */
+.title-blue { color: #38bdf8; }
+.title-orange { color: #f97316; }
+.title-red { color: #ef4444; }
+
+/* ==========================================================================
+   4. 카드 레이아웃 Grid (3열 배치)
+   ========================================================================== */
+.card-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.guide-card {
+    background-color: #182238;
+    border: 1px solid #23314e;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-title i {
+    color: #38bdf8;
+}
+
+/* ==========================================================================
+   5. 수칙 / 프로세스 리스트 스타일
+   ========================================================================== */
+.guide-list {
+    list-style: none;
+}
+
+.guide-list li {
+    position: relative;
+    padding-left: 14px;
+    margin-bottom: 10px;
+    color: #cbd5e1;
+    font-size: 13.5px;
+}
+
+.guide-list li:last-child {
+    margin-bottom: 0;
+}
+
+.guide-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #64748b;
+}
+
+.guide-list strong {
+    color: #ffffff;
+}
+
+/* Step 카드 전용 스타일 */
+.step-card {
+    border-left: 4px solid #3b82f6;
+}
+
+.step-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.badge-step1 { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+.badge-step2 { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+.badge-step3 { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+/* ==========================================================================
+   6. 비상연락망 테이블 스타일
+   ========================================================================== */
+.table-card {
+    padding: 16px;
+}
+
+.contact-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.contact-table th,
+.contact-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #23314e;
+}
+
+.contact-table th {
+    background-color: #111827;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.contact-table td {
+    color: #e2e8f0;
+}
+
+.contact-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ==========================================================================
+   7. 반응형 해상도 대응 (모바일 / 태블릿)
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}

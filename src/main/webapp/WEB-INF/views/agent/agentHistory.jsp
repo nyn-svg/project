@@ -101,7 +101,7 @@
                 <i class="fa-solid fa-clipboard-list"></i>
                 <span>업무</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/agent/info" class="nav-item">
                 <i class="fa-solid fa-user"></i>
                 <span>정보</span>
             </a>

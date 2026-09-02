@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.spring.dto.AgentTaskDTO;
+import com.spring.dto.UserDTO;
 
 @Mapper
 public interface AgentTaskMapper {
@@ -24,4 +26,8 @@ public interface AgentTaskMapper {
     int getTaskListCount(Map<String, Object> paramMap);
     
     AgentTaskDTO getTaskById(Long taskId);
+    
+    UserDTO findByUserId(String userId);
+    
+    void updateWorkStatus(@Param("userId") String userId, @Param("workStatus") String workStatus);
 }

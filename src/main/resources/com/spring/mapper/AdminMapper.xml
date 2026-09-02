@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.mapper.AdminMapper">
+
+    <!-- 1. 전체 요원 수 -->
+    <select id="getTotalAgentCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM USERS U
+        JOIN USER_ROLES R ON U.USER_ID = R.USER_ID
+        WHERE R.ROLE_NAME = 'ROLE_AGENT'
+    </select>
+
+    <!-- 2. 근무중 요원 수 -->
+    <select id="getOnDutyAgentCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM USERS U
+        JOIN USER_ROLES R ON U.USER_ID = R.USER_ID
+        JOIN AGENT_DETAIL A ON U.USER_ID = A.USER_ID
+        WHERE R.ROLE_NAME = 'ROLE_AGENT'
+          AND A.WORK_STATUS = '근무중'
+    </select>
+
+    <!-- 3. 휴식/외출 요원 수 -->
+    <select id="getBreakAgentCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM USERS U
+        JOIN USER_ROLES R ON U.USER_ID = R.USER_ID
+        JOIN AGENT_DETAIL A ON U.USER_ID = A.USER_ID
+        WHERE R.ROLE_NAME = 'ROLE_AGENT'
+          AND A.WORK_STATUS IN ('휴식중', '외출중')
+    </select>
+
+    <!-- 4. 퇴근 요원 수 -->
+    <select id="getOffDutyAgentCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM USERS U
+        JOIN USER_ROLES R ON U.USER_ID = R.USER_ID
+        JOIN AGENT_DETAIL A ON U.USER_ID = A.USER_ID
+        WHERE R.ROLE_NAME = 'ROLE_AGENT'
+          AND A.WORK_STATUS = '퇴근'
+    </select>
+
+    <!-- 5. 전체 안전요원 목록 조회 -->
+    <select id="getAllAgentList" resultType="com.spring.dto.UserDTO">
+        SELECT 
+            U.USER_ID    AS userId,
+            U.USER_NAME  AS userName,
+            U.PHONE      AS phone,
+            A.WORK_AREA  AS workArea,
+            A.WORK_TIME  AS workTime,
+            A.WORK_STATUS AS workStatus
+        FROM USERS U
+        JOIN USER_ROLES R ON U.USER_ID = R.USER_ID
+        LEFT JOIN AGENT_DETAIL A ON U.USER_ID = A.USER_ID
+        WHERE R.ROLE_NAME = 'ROLE_AGENT'
+        ORDER BY U.USER_NAME ASC
+    </select>
+
+</mapper>
