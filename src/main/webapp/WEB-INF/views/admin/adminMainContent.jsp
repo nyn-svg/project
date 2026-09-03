@@ -1,173 +1,179 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<!-- 기존 관제사 대시보드 공통 CSS -->
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/maincontent.css">
-<!-- 관리자 메인 전용 CSS -->
+<!-- 대시보드 전용 CSS 연동 -->
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/adminMainContent.css">
 
-<div class="dashboard-wrapper">
-
-    <!-- 상단 대시보드 요약 영역 (2열 레이아웃) -->
-    <div class="top-widget-grid">
-        
-        <!-- [상단 좌측] 실시간 안전요원 근무 현황 -->
-        <div class="aurora-card alert-widget">
-            <div class="widget-header">
-                <h3 class="widget-title alert-title">
-                    👮‍♂️ 실시간 안전요원 근무 현황
-                </h3>
-                <span class="badge badge-success">총 요원: ${totalAgentCount != null ? totalAgentCount : 12}명</span>
+<div class="admin-dashboard-container">
+    
+    <!-- 1. 상단 요약 KPI 카드 (5개 영역) -->
+    <section class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-title">밀집도 위험구역</div>
+            <div class="kpi-value-group">
+                <span class="kpi-value warning">5</span><span class="kpi-unit">개</span>
             </div>
-
-            <div class="stat-badge-group">
-                <div class="stat-badge">
-                    <div class="stat-label">근무중</div>
-                    <div class="stat-value text-info">${onDutyCount != null ? onDutyCount : 8}명</div>
-                </div>
-                <div class="stat-badge stat-badge-warning">
-                    <div class="stat-label text-warning">휴식/외출</div>
-                    <div class="stat-value text-warning">${breakCount != null ? breakCount : 2}명</div>
-                </div>
-                <div class="stat-badge">
-                    <div class="stat-label">퇴근</div>
-                    <div class="stat-value text-muted">${offDutyCount != null ? offDutyCount : 2}명</div>
-                </div>
+            <div class="kpi-sub diff-up">↑ 2</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">야생동물 위험</div>
+            <div class="kpi-value-group">
+                <span class="kpi-value warning">3</span><span class="kpi-unit">건</span>
             </div>
+            <div class="kpi-sub diff-up">↑ 1</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">근무중 안전요원</div>
+            <div class="kpi-value-group">
+                <span class="kpi-value primary">94</span><span class="kpi-unit">명</span>
+            </div>
+            <div class="kpi-sub status-ok">정상</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">비행중 드론</div>
+            <div class="kpi-value-group">
+                <span class="kpi-value primary">4</span><span class="kpi-unit">대</span>
+            </div>
+            <div class="kpi-sub status-ok">정상</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">미확인 긴급보고</div>
+            <div class="kpi-value-group">
+                <span class="kpi-value danger">3</span><span class="kpi-unit">건</span>
+            </div>
+            <div class="kpi-sub diff-up">↑ 2</div>
+        </div>
+    </section>
 
-            <!-- 최근 실시간 상태 변경 타임라인 -->
-            <div class="timeline-list">
-                <div class="timeline-item timeline-success">
-                    <div class="timeline-content">
-                        <strong>[김이슬 요원] 근무 상태 변경</strong>
-                        <span class="timeline-sub">휴식중 ➔ 근무중 (A구역)</span>
+    <!-- 2. 중단 영역 (좌: 지도 관제 / 우: 대응 현황) -->
+    <section class="dashboard-middle">
+        <!-- 행사장 실시간 관제 지도 -->
+        <div class="dashboard-card map-card">
+            <div class="card-header">
+                <span class="card-title">행사장 실시간 관제 지도</span>
+            </div>
+            <div class="card-body map-body">
+                <!-- 실제 GIS 지도(Kakao, VWorld 등) 또는 Canvas 영역 -->
+                <div id="admin-map" class="map-view-area">
+                    <!-- 지도 위에 표시될 범례 오버레이 -->
+                    <div class="map-legend-overlay">
+                        <div class="legend-item"><span class="dot agent"></span> 안전요원</div>
+                        <div class="legend-item"><span class="dot drone"></span> 드론 위치</div>
+                        <div class="legend-item"><span class="dot danger-zone"></span> 위험구역</div>
+                        <div class="legend-item"><span class="dot density-high"></span> 밀집도 높음</div>
                     </div>
-                    <span class="timeline-time">5분 전</span>
                 </div>
-                <div class="timeline-item timeline-warning">
-                    <div class="timeline-content">
-                        <strong>[박안전 요원] 근무 상태 변경</strong>
-                        <span class="timeline-sub">근무중 ➔ 외출중 (외부 업무)</span>
+            </div>
+        </div>
+
+        <!-- 실시간 위험 대응 현황 -->
+        <div class="dashboard-card status-card">
+            <div class="card-header">
+                <span class="card-title">실시간 위험 대응 현황</span>
+            </div>
+            <div class="card-body">
+                <ul class="status-list">
+                    <li class="status-item">
+                        <span class="status-label"><i class="fa-solid fa-triangle-exclamation color-danger"></i> 심각</span>
+                        <span class="status-count">2 건</span>
+                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                    </li>
+                    <li class="status-item">
+                        <span class="status-label"><i class="fa-solid fa-circle-exclamation color-warning"></i> 경계</span>
+                        <span class="status-count">5 건</span>
+                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                    </li>
+                    <li class="status-item">
+                        <span class="status-label"><i class="fa-solid fa-triangle-exclamation color-caution"></i> 주의</span>
+                        <span class="status-count">8 건</span>
+                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                    </li>
+                    <li class="status-item">
+                        <span class="status-label"><i class="fa-solid fa-circle-info color-info"></i> 관심</span>
+                        <span class="status-count">21 건</span>
+                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                    </li>
+                </ul>
+
+                <hr class="card-divider" />
+
+                <ul class="status-list sub-list">
+                    <li class="status-item">
+                        <span class="status-label">미확인 긴급보고</span>
+                        <span class="status-count danger">3 건</span>
+                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                    </li>
+                    <li class="status-item">
+                        <span class="status-label">조치필요 업무지시</span>
+                        <span class="status-count">5 건</span>
+                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                    </li>
+                    <li class="status-item">
+                        <span class="status-label">조치중 업무지시</span>
+                        <span class="status-count">2 건</span>
+                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 하단 영역 (좌: 차트 2종 / 우: 최근 위험 이벤트) -->
+    <section class="dashboard-bottom">
+        <!-- 통계 차트 영역 -->
+        <div class="dashboard-card chart-card">
+            <div class="chart-box">
+                <div class="card-header">
+                    <span class="card-title">시간대별 밀집도 추이 (전체)</span>
+                </div>
+                <div class="card-body">
+                    <!-- Chart.js 등의 라인 차트 영역 -->
+                    <div class="chart-wrapper">
+                        <canvas id="densityChart"></canvas>
                     </div>
-                    <span class="timeline-time">20분 전</span>
+                </div>
+            </div>
+            <div class="chart-box">
+                <div class="card-header">
+                    <span class="card-title">야생동물 출현 빈도 (최근 7일)</span>
+                </div>
+                <div class="card-body">
+                    <!-- Chart.js 등의 바 차트 영역 -->
+                    <div class="chart-wrapper">
+                        <canvas id="animalChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- [상단 우측] 금일 업무 및 상황 보고 요약 -->
-        <div class="aurora-card weather-widget">
-            <div class="widget-header">
-                <h3 class="widget-title weather-title">
-                    📋 금일 현장 보고 접수 요약
-                </h3>
-                <span class="badge badge-alert">긴급 보고: 1건</span>
+        <!-- 최근 위험 이벤트 -->
+        <div class="dashboard-card event-card">
+            <div class="card-header">
+                <span class="card-title">최근 위험 이벤트</span>
             </div>
-
-            <div class="env-metric-grid">
-                <div class="metric-card">
-                    <div class="metric-label">일반 보고</div>
-                    <div class="metric-value text-info">18 건</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">긴급 보고</div>
-                    <div class="metric-value text-danger">1 건</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">조치 완료</div>
-                    <div class="metric-value">17 건</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">조치 진행중</div>
-                    <div class="metric-value text-warning">2 건</div>
-                </div>
-            </div>
-
-            <div class="flight-guide-box">
-                <span>⚡ 최근 긴급 보고: A구역 인파 밀집에 따른 추가 인력 배치 요청</span>
-                <span class="text-muted">접수 시간: 14:20</span>
+            <div class="card-body">
+                <ul class="event-list">
+                    <li class="event-item">
+                        <span class="event-time">14:32</span>
+                        <span class="event-desc">푸드존 인근 밀집</span>
+                        <span class="badge-tag danger">심각</span>
+                        <span class="action-status">처리중</span>
+                    </li>
+                    <li class="event-item">
+                        <span class="event-time">14:28</span>
+                        <span class="event-desc">산책로 멧돼지 출현</span>
+                        <span class="badge-tag warning">경계</span>
+                        <span class="action-status">출동</span>
+                    </li>
+                    <li class="event-item">
+                        <span class="event-time">14:21</span>
+                        <span class="event-desc">입구 인과 엉킴</span>
+                        <span class="badge-tag caution">주의</span>
+                        <span class="action-status done">완료</span>
+                    </li>
+                </ul>
             </div>
         </div>
-
-    </div>
-
-    <!-- 하단 영역: 안전요원 관리 및 상태 현황 테이블 -->
-    <div class="aurora-card safety-guide-section">
-        <div class="widget-header">
-            <h2 class="section-title">
-                👥 현장 안전요원 실시간 목록
-            </h2>
-            <button type="button" class="btn-link-badge" onclick="location.href='${pageContext.request.contextPath}/admin/agents'">
-                전체 요원 관리 ➔
-            </button>
-        </div>
-
-        <!-- 요원 현황 테이블 -->
-        <div class="agent-table-wrapper">
-            <table class="agent-status-table">
-                <thead>
-                    <tr>
-                        <th>요원 ID</th>
-                        <th>이름</th>
-                        <th>연락처</th>
-                        <th>담당 구역</th>
-                        <th>근무 시간</th>
-                        <th>현재 상태</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <c:forEach var="agent" items="${agentList}">
-                        <tr>
-                            <td>${agent.userId}</td>
-                            <td><strong>${agent.userName}</strong></td>
-                            <td>${agent.phone}</td>
-                            <td><span class="badge badge-info">${agent.workArea}</span></td>
-                            <td>${agent.workTime}</td>
-                            <td>
-                                <c:choose>
-                                    <c:when test="${agent.workStatus eq '근무중'}">
-                                        <span class="badge badge-success">근무중</span>
-                                    </c:when>
-                                    <c:when test="${agent.workStatus eq '휴식중' or agent.workStatus eq '외출중'}">
-                                        <span class="badge badge-warning">${agent.workStatus}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="badge badge-offduty">${agent.workStatus}</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                        </tr>
-                    </c:forEach>
-                    
-                    <!-- DB 데이터 연결 전 테스트용 데이터 -->
-                    <c:if test="${empty agentList}">
-                        <tr>
-                            <td>agent01</td>
-                            <td><strong>김이슬</strong></td>
-                            <td>010-1234-5678</td>
-                            <td><span class="badge badge-info">A구역</span></td>
-                            <td>09:00 ~ 18:00</td>
-                            <td><span class="badge badge-success">근무중</span></td>
-                        </tr>
-                        <tr>
-                            <td>agent02</td>
-                            <td><strong>박안전</strong></td>
-                            <td>010-9876-5432</td>
-                            <td><span class="badge badge-info">B구역</span></td>
-                            <td>09:00 ~ 18:00</td>
-                            <td><span class="badge badge-warning">휴식중</span></td>
-                        </tr>
-                    </c:if>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="notice-ticker">
-            <span class="ticker-badge">관리자 알림</span>
-            <div class="ticker-text">
-                안전요원의 근무 구역 변경 및 상태 수정은 '전체 요원 관리' 메뉴에서 가능합니다.
-            </div>
-        </div>
-
-    </div>
+    </section>
 
 </div>

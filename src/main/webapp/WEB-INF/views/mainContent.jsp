@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/maincontent.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/controlMaincontent.css">
 <div class="dashboard-wrapper">
 
     <!-- 상단 대시보드 요약 영역 -->
