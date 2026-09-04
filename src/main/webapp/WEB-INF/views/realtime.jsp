@@ -113,9 +113,9 @@
 <script>
 (function() {
     const droneList = [
-        { id: 'DRONE-01', name: '1호기 (A구역)', videoSrc: '/resources/video/sample1.mp4' },
-        { id: 'DRONE-02', name: '2호기 (B구역)', videoSrc: '/resources/video/sample2.mp4' },
-        { id: 'DRONE-03', name: '3호기 (C구역)', videoSrc: '/resources/video/sample3.mp4' },
+        { id: 'DRONE-01', name: '1호기', zone: 'A구역', status: '비행', videoSrc: '/resources/video/sample1.mp4' },
+        { id: 'DRONE-02', name: '2호기', zone: 'B구역', status: '비행', videoSrc: '/resources/video/sample2.mp4' },
+        { id: 'DRONE-03', name: '3호기', zone: 'C구역', status: '비행', videoSrc: '/resources/video/sample3.mp4' },
     ];
 
     function renderDroneGrid(drones) {
@@ -137,8 +137,8 @@
             const headerElement = document.createElement('div');
             headerElement.className = 'drone-card-header';
             headerElement.innerHTML = `
-                <span class="drone-name">${drone.name}</span>
-                <span class="status-dot"></span>
+                <span class="drone-name">${drone.name} | ${drone.zone}</span>
+                <span class="status-dot">${drone.status}</span>
             `;
 
             // 3. 비디오 wrapper 및 video 객체 직접 생성

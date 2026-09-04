@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="com.spring.mapper.DroneMapper">
+
+	<!-- 드론아이디로 드론 정보 조회 -->
+	<select id="findByDroneId" parameterType="string" resultType="com.spring.dto.DroneDTO">
+		SELECT
+			DRONE_ID 		AS droneId,
+			URL 			AS url,
+			DRONE_STATUS 	AS droneStatus,
+			ACTIVE_STATUS 	AS activeStatus,
+			ZONE_NAME 		AS zoneName
+		FROM DRONES
+		WHERE DRONE_ID = #{droneId}
+	</select>
+	
+	<!-- 전체 드론 목록 조회 -->
+	<select id="findAllDrones" resultType="com.spring.dto.DroneDTO">
+		SELECT
+			DRONE_ID 		AS droneId,
+			URL 			AS url,
+			DRONE_STATUS 	AS droneStatus,
+			ACTIVE_STATUS 	AS activeStatus,
+			ZONE_NAME 		AS zoneName
+		FROM DRONES
+		ORDER BY TO_NUMBER(SUBSTR(DRONE_ID, 7)) ASC
+	</select>
+	
+	<!-- 새 드론 등록 -->
+	<insert id="insertDrone" parameterType="com.spring.dto.DroneDTO">
+		INSERT INTO DRONES (
+            DRONE_ID,
+			URL,
+			DRONE_STATUS,
+			ACTIVE_STATUS,
+			ZONE_NAME
+        ) VALUES (
+            #{droneId},
+            #{url},
+            #{droneStatus},
+            #{activeStatus},
+            #{zoneName}
+        )
+	</insert>
+	
+	<!-- 드론 정보 수정 -->
+	<update id="updateDrone" parameterType="com.spring.dto.DroneDTO">
+		UPDATE DRONES
+        SET 
+            URL				= #{url},
+            DRONE_STATUS	= #{droneStatus},
+            ACTIVE_STATUS	= #{activeStatus},
+            ZONE_NAME		= #{zoneName}
+        WHERE DRONE_ID = #{droneId}
+	</update>
+	
+	
+	<!-- 전체 드론 수 -->
+    <select id="getTotalDroneCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM DRONES
+    </select>
+</mapper>
