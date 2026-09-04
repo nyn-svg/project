@@ -66,6 +66,31 @@
     font-weight: 600;
 }
 
+/* 헤더 로그아웃 버튼 */
+.btn-logout {
+	width: 78px;
+	height: 36px;
+	display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+	
+	background-color: #dc2626;
+	color: #ffffff;
+	border: none;
+    font-size: 14px;
+    font-weight: 600;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	
+	margin-left: auto;
+}
+
+.btn-logout:hover {
+    background-color: #b91c1c;
+}
+
 /* ==========================================
    관리자 헤더 전용 추가 스타일
    ========================================== */
