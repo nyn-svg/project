@@ -7,7 +7,7 @@
     <!-- 1. 좌측: 안전요원 목록 패널 -->
     <div class="agent-card list-panel">
         <div class="panel-header">
-            <h3 class="panel-title"><i class="fa-solid fa-users"></i> 안전요원 목록</h3>
+            <h3 class="panel-title"><i class="fa-solid fa-users"></i> 사용자 목록</h3>
             <button type="button" class="mini-btn primary" id="btn-reset-form">
                 <i class="fa-solid fa-plus"></i> 신규 등록
             </button>
@@ -28,7 +28,7 @@
     <!-- 2. 우측: 요원 상세 및 등록/수정 폼 패널 -->
     <div class="agent-card detail-panel">
         <div class="panel-header">
-            <h3 class="panel-title" id="form-title"><i class="fa-solid fa-user-gear"></i> 요원 상세 정보</h3>
+            <h3 class="panel-title" id="form-title"><i class="fa-solid fa-user-gear"></i>사용자 상세 정보</h3>
             <span class="badge badge-active" id="status-badge">상태</span>
         </div>
 

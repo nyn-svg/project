@@ -15,8 +15,8 @@
     <nav class="quick-nav">
         <!-- 1) 대시보드 요약 -->
         <button class="quick-nav-item active" data-target="panel-admin-dashboard">
-            <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
-            <span class="nav-label">요약</span>
+            <span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>
+            <span class="nav-label">드론</span>
         </button>
         <!-- 2) 안전요원 관리 -->
         <button class="quick-nav-item" data-target="panel-admin-agents">
@@ -93,3 +93,4 @@
 <script>
     window.contextPath = '${pageContext.request.contextPath}';
 </script>
+<script src="${pageContext.request.contextPath}/resources/js/drone-sidebar.js"></script>

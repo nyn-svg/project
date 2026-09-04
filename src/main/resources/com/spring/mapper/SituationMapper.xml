@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.mapper.SituationMapper">
+
+    <!-- 신규 상황 보고 등록 -->
+    <insert id="insertSituation" parameterType="com.spring.dto.SituationDTO">
+        <selectKey keyProperty="situNo" resultType="string" order="BEFORE">
+            SELECT 'SITU_' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '_' || LPAD(SITU_SEQ.NEXTVAL, 4, '0')
+            FROM DUAL
+        </selectKey>
+        
+        INSERT INTO SITUATIONS (
+            SITU_NO,
+            DNGR_TYPE,
+            SITU_STATUS,
+            SITU_CONTENT,
+            SITU_LAT,
+            SITU_LON,
+            SITU_DATE,
+            ZONE_NAME,
+            USER_ID,
+            SITU_IMAGE
+        ) VALUES (
+            #{situNo},
+            #{dngrType},
+            '대기',
+            #{situContent, jdbcType=VARCHAR},
+            #{situLat, jdbcType=DOUBLE},
+            #{situLon, jdbcType=DOUBLE},
+            SYSDATE,
+            #{zoneName, jdbcType=VARCHAR},
+            #{userId},
+            #{situImage, jdbcType=VARCHAR}
+        )
+    </insert>
+
+</mapper>

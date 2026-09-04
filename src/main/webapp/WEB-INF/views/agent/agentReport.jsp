@@ -140,27 +140,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 3. 폼 제출 이벤트 (완료 페이지 이동)
+ // 3. 폼 제출 이벤트 (FormData 기반 AJAX 전송)
     var reportForm = document.getElementById('reportForm');
-if (reportForm) {
-    reportForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // 입력값 가져오기
-        var typeSelect = document.getElementById('reportType');
-        var areaSelect = document.getElementById('reportArea');
-        
-        var reportType = typeSelect.options[typeSelect.selectedIndex].text; // 선택된 옵션의 글자 (예: 인파 밀집)
-        var reportArea = areaSelect.options[areaSelect.selectedIndex].text; // 선택된 옵션의 글자 (예: A구역)
-        
-        // URL 파라미터로 생성하여 이동
-        var url = '${pageContext.request.contextPath}/agent/report/complete'
-                + '?type=' + encodeURIComponent(reportType)
-                + '&area=' + encodeURIComponent(reportArea);
-                
-        location.href = url;
-    });
-}
+    if (reportForm) {
+        reportForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData();
+            
+            // 입력값 수집
+            var reportType = document.getElementById('reportType').value;
+            var reportAreaSelect = document.getElementById('reportArea');
+            var zoneName = reportAreaSelect.options[reportAreaSelect.selectedIndex].text; // 예: "A구역"
+            var reportText = document.getElementById('reportText').value;
+            
+            // 실제 JSP의 file input id('photoInput') 적용
+            var fileInput = document.getElementById('photoInput'); 
+            
+            formData.append('dngrType', reportType);
+            formData.append('zoneName', zoneName);
+            formData.append('situContent', reportText);
+            
+            // 첨부된 사진 파일이 있으면 'photo' 이름으로 FormData에 추가
+            if (fileInput && fileInput.files.length > 0) {
+                formData.append('photo', fileInput.files[0]);
+            }
+
+            // AJAX (fetch API) 전송
+            // ※ headers에 Content-Type을 지정하지 않아야 브라우저가 boundary를 자동으로 생성합니다.
+            fetch('${pageContext.request.contextPath}/agent/api/report', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    // 저장 성공 시 완료 페이지로 이동
+                    var url = '${pageContext.request.contextPath}/agent/report/complete'
+                            + '?type=' + encodeURIComponent(reportType)
+                            + '&area=' + encodeURIComponent(zoneName);
+                    location.href = url;
+                } else {
+                    alert('상황 보고 등록에 실패했습니다. 다시 시도해 주세요.');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('서버 통신 중 오류가 발생했습니다.');
+            });
+        });
+    }
 });
 </script>
 
