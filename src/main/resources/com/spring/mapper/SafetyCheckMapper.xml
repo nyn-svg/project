@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.SafetyCheckMapper">
+
+    <!-- 1. 마스터 데이터 저장 (시퀀스 미리 채번하여 DTO의 checkId에 세팅) -->
+    <insert id="insertMaster" parameterType="com.spring.dto.SafetyCheckMasterDTO">
+        <selectKey keyProperty="checkId" resultType="long" order="BEFORE">
+            SELECT SEQ_SAFETY_CHECK_MASTER.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO SAFETY_CHECK_MASTER (
+            CHECK_ID,
+            CHECK_DATE,
+            CHECK_ROUND,
+            INSPECTOR,
+            REG_DATE
+        ) VALUES (
+            #{checkId},
+            #{checkDate},
+            #{checkRound},
+            #{inspector},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 2. 상세 항목 데이터 저장 -->
+    <insert id="insertDetail" parameterType="com.spring.dto.SafetyCheckDetailDTO">
+        INSERT INTO SAFETY_CHECK_DETAIL (
+            DETAIL_ID,
+            CHECK_ID,
+            ITEM_NO,
+            STATUS_CODE,
+            REMARK
+        ) VALUES (
+            SEQ_SAFETY_CHECK_DETAIL.NEXTVAL,
+            #{checkId},
+            #{itemNo},
+            #{statusCode},
+            #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
+
+</mapper>

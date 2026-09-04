@@ -9,6 +9,7 @@
 
     <nav class="header-nav">
         <a href="${pageContext.request.contextPath}/admin/main" class="nav-link header-link">홈</a>
+        <a href="${pageContext.request.contextPath}/admin/safetyCheck" class="nav-link header-link">안전점검</a>
         <a href="${pageContext.request.contextPath}/admin/areaManagement" class="nav-link header-link">관제구역 관리</a>
         <a href="${pageContext.request.contextPath}/admin/userManagement" class="nav-link header-link">사용자 관리</a>
     </nav>
