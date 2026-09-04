@@ -13,4 +13,9 @@
 		<a href="${pageContext.request.contextPath}/realtime" class="nav-link header-link">실시간 감지</a>
     	<a href="${pageContext.request.contextPath}/actionLog" class="nav-link header-link">조치록</a>
     </nav>
+    
+    <!-- 로그아웃 버튼 -->
+    <button type="button" class="btn-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
+    	로그아웃
+    </button>
 </header>

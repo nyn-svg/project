@@ -24,8 +24,8 @@
             <span class="nav-label">(?)</span>
         </button>
         <button class="quick-nav-item" data-target="panel-system">
-            <span class="nav-icon">(?))</span>
-            <span class="nav-label">(?)</span>
+            <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
+            <span class="nav-label">시스템</span>
         </button>
     </nav>
 </aside>
@@ -90,9 +90,9 @@
 
 
     <div id="panel-system" class="drawer-content">
-        <div class="drawer-header">(?)</div>
+        <div class="drawer-header">시스템</div>
         <div class="drawer-body">
-            <p> ( 임시 )</p>
+            <p>( 임시 )</p>
         </div>
     </div>
 </div>

@@ -12,4 +12,9 @@
         <a href="${pageContext.request.contextPath}/admin/areaManagement" class="nav-link header-link">관제구역 관리</a>
         <a href="${pageContext.request.contextPath}/admin/userManagement" class="nav-link header-link">사용자 관리</a>
     </nav>
+    
+    <!-- 로그아웃 버튼 -->
+    <button type="button" class="btn-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
+    	로그아웃
+    </button>
 </header>
