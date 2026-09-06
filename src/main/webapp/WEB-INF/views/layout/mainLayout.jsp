@@ -19,11 +19,14 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/actionLog.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/guideMain.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/userManagement.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/safetyCheck.css">
     <!-- Font Awesome 최신 버전 CDN 링크 추가 -->
 	<script src="https://kit.fontawesome.com/232b0508f2.js" crossorigin="anonymous"></script>
 
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	
+
 </head>
 <body>
 

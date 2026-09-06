@@ -9,15 +9,39 @@
     padding: 20px 30px;
 }
 
-/* 2. 메인 컨테이너 (좌우 폭 확대: 1560px) */
+/* 2. 메인 컨테이너 (글래스모피즘 테마 적용) */
 .safety-container {
     max-width: 1560px;
     margin: 0 auto;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    
+    /* 사용자 관리(.agent-card)와 동일한 반투명 다크 글래스 스타일 */
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    
     padding: 25px 35px;
+    box-sizing: border-box;
+    
+    /* 레이아웃 높이 및 스크롤 설정 */
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+/* 안전점검 전체 카드 패널 (사용자 관리의 .agent-card 스타일과 동일) */
+.safety-card {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 /* 3. 상단 헤더 & 요약 대시보드 */
@@ -254,4 +278,34 @@
 
 .input-remark:focus {
     border-color: #0284c7;
+}
+
+/* ==========================================
+   다크 테마 커스텀 스크롤바 스타일
+   ========================================== */
+
+/* 1. 스크롤바 전체 너비 */
+.safety-container::-webkit-scrollbar,
+.checklist-table-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* 2. 스크롤바 트랙 (배경) */
+.safety-container::-webkit-scrollbar-track,
+.checklist-table-wrapper::-webkit-scrollbar-track {
+    background: #111827; /* 어두운 컨테이너 배경색과 동일 */
+    border-radius: 4px;
+}
+
+/* 3. 스크롤바 바 (막대) */
+.safety-container::-webkit-scrollbar-thumb,
+.checklist-table-wrapper::-webkit-scrollbar-thumb {
+    background: #374151; /* 차분한 다크 인디고/그레이 */
+    border-radius: 4px;
+}
+
+/* 4. 마우스 호버 시 약간 밝아짐 */
+.safety-container::-webkit-scrollbar-thumb:hover,
+.checklist-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
 }

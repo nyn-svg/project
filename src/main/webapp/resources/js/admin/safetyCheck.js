@@ -1,12 +1,14 @@
-// 비동기 로딩(AJAX Page Load) 환경을 위한 초기화 실행
-(function initSafetyCheck() {
-
+// 동기/비동기 페이지 이동 모두를 지원하는 초기화 함수
+function initSafetyCheckPage() {
     // 카운터 엘리먼트 참조
     const countTotalEl = document.getElementById('count-total');
     const countDoneEl = document.getElementById('count-done');
     const countNormalEl = document.getElementById('count-normal');
     const countWarningEl = document.getElementById('count-warning');
     const countDangerEl = document.getElementById('count-danger');
+
+    // 엘리먼트가 존재하지 않으면 (페이지가 아직 로드되지 않은 상태) 실행 중단
+    if (!countTotalEl) return;
 
     // 1. 전체 점검 항목 수 계산
     function calculateTotalItems() {
@@ -18,9 +20,7 @@
     }
 
     const totalItems = calculateTotalItems();
-    if (countTotalEl) {
-        countTotalEl.textContent = totalItems;
-    }
+    countTotalEl.textContent = totalItems;
 
     // 2. 선택 상태별 실시간 요약 집계
     function updateSummaryCounters() {
@@ -36,15 +36,10 @@
             const checkedRadio = document.querySelector(`input[name="${name}"]:checked`);
             if (checkedRadio) {
                 doneCount++;
-                
                 const val = checkedRadio.value;
-                if (val === 'NORMAL') {
-                    normalCount++;
-                } else if (val === 'WARN') {
-                    warningCount++;
-                } else if (val === 'DANGER') {
-                    dangerCount++;
-                }
+                if (val === 'NORMAL') normalCount++;
+                else if (val === 'WARN') warningCount++;
+                else if (val === 'DANGER') dangerCount++;
             }
         });
 
@@ -62,7 +57,8 @@
     // 4. 저장 버튼 이벤트
     const btnSave = document.getElementById('btn-save');
     if (btnSave) {
-        btnSave.addEventListener('click', function () {
+        // 중복 이벤트 방지를 위해 기존 이벤트 리스너 제거 효과 (cloneNode 사용 가능하나 일반 적용)
+        btnSave.onclick = function () {
             const doneCount = parseInt(countDoneEl ? countDoneEl.textContent : '0', 10);
             
             if (doneCount < totalItems) {
@@ -100,6 +96,7 @@
                 }
             });
 
+            // 전역 contextPath 확인 (없으면 빈값)
             const basePath = (typeof contextPath !== 'undefined' && contextPath !== null) ? contextPath : '';
             const saveUrl = basePath + '/admin/safetyCheck/save';
 
@@ -111,9 +108,7 @@
                 body: JSON.stringify(masterData)
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('HTTP 에러: ' + response.status);
-                }
+                if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
                 return response.text();
             })
             .then(result => {
@@ -128,15 +123,22 @@
                 console.error('Error:', error);
                 alert('서버 통신 오류가 발생했습니다.');
             });
-        });
+        };
     }
 
     // 5. 출력 버튼 이벤트
     const btnPrint = document.getElementById('btn-print');
     if (btnPrint) {
-        btnPrint.addEventListener('click', function () {
+        btnPrint.onclick = function () {
             window.print();
-        });
+        };
     }
+}
 
-})();
+// [핵심] 새로고침(동기)과 메뉴 이동(비동기) 모두를 감지하여 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSafetyCheckPage);
+} else {
+    // 이미 DOM이 준비된 상태 (비동기 라우팅)
+    initSafetyCheckPage();
+}

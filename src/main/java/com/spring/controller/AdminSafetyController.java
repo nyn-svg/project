@@ -2,6 +2,7 @@ package com.spring.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.dto.SafetyCheckMasterDTO;
 import com.spring.service.SafetyCheckService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin")
@@ -22,8 +25,11 @@ public class AdminSafetyController {
      * 안전점검 페이지 이동
      */
     @GetMapping("/safetyCheck")
-    public String safetyCheckPage() {
-        return "admin/safetyCheck";
+    public String safetyCheckPage(HttpSession session, Model model) {
+        // 본문 JSP 경로 지정
+        model.addAttribute("contentPage", "/WEB-INF/views/admin/safetyCheck.jsp");
+        
+        return "layout/mainLayout";
     }
 
     /**
