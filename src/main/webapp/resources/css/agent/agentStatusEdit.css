@@ -1,0 +1,259 @@
+@charset "UTF-8";
+
+/* ==================================================
+   1. 기본 초기화 및 모바일 레이아웃 설정 (홈과 통일)
+================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    background-color: #f4f6f9; /* 홈 화면과 똑같은 차분한 연그레이 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #1e293b;
+}
+
+.mobile-container {
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    max-height: 932px;
+    background-color: #f8fafc; /* 앱 컨테이너 배경 */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.06);
+    border-radius: 32px; /* 홈 화면과 동일한 라운딩 */
+}
+
+/* ==================================================
+   2. 상단 헤더 영역 (밝은 플랫 헤더로 개편)
+================================================== */
+.mobile-header {
+    flex-shrink: 0;
+    height: 64px;
+    padding: 0 20px;
+    background-color: #f8fafc; /* 어두운 남색을 없애고 투명하게 변경 */
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 뒤로가기 화살표 버튼 */
+.back-btn {
+    text-decoration: none;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #1a1f2c;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.mobile-header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1f2c; /* 다크 텍스트 */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%); /* 정확히 정중앙 정렬 */
+}
+
+/* 헤더 우측 여백 밸런스용 빈 박스 */
+.header-right-empty {
+    width: 32px;
+}
+
+/* ==================================================
+   3. 메인 콘텐츠 영역
+================================================== */
+.mobile-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-content form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.page-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1f2c;
+    margin-bottom: 16px;
+}
+
+/* ==================================================
+   4. 근무 상태 선택 카드 리스트
+================================================== */
+.status-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* 카드간 간격 */
+}
+
+/* 기존 브라우저 라디오 버튼 완전히 숨기기 */
+.status-option-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* 상태 선택지 개별 카드 레이아웃 */
+.status-option-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px; /* 모서리를 둥글게 확장 */
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+    transition: all 0.2s ease;
+}
+
+/* 카드 텍스트 묶음 */
+.status-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.status-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1f2c;
+}
+
+.status-desc {
+    font-size: 12px;
+    color: #8c96a8;
+}
+
+/* 커스텀 라디오 원형 디자인 */
+.custom-radio {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.custom-radio::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background-color: transparent;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: all 0.2s ease;
+}
+
+/* --------------------------------------------------
+   [체크 활성화] 상태 인젝션 스타일링
+-------------------------------------------------- */
+
+/* 1. 공통 체크 설정 (선택 카드 테두리 및 원형 하이라이트) */
+.status-option-input:checked + .custom-radio {
+    border-color: #2563eb; /* 기본 블루 */
+}
+.status-option-input:checked + .custom-radio::after {
+    background-color: #2563eb;
+    transform: scale(1);
+}
+.status-option-input:checked ~ .status-text-group .status-title {
+    color: #1a1f2c;
+}
+
+/* 2. 근무중 카드 체크 시 독점 그린 하이라이트 (시안 싱크 100%) */
+.status-option-card.type-active:has(.status-option-input:checked) {
+    border-color: #10b981 !important;
+    background-color: #f0fdf4 !important; /* 부드러운 그린 배경 */
+}
+.status-option-card.type-active .status-option-input:checked + .custom-radio {
+    border-color: #10b981 !important;
+}
+.status-option-card.type-active .status-option-input:checked + .custom-radio::after {
+    background-color: #10b981 !important;
+}
+
+/* 일반 카드 체크 시 배경 은은한 블루 처리 */
+.status-option-card:not(.type-active):has(.status-option-input:checked) {
+    border-color: #2563eb;
+    background-color: #f0f6ff;
+}
+
+/* ==================================================
+   5. 하단 버튼 영역 (액션 바)
+================================================== */
+.action-buttons {
+    margin-top: auto; /* 리스트 밑으로 완전 밀어내기 */
+    display: grid;
+    grid-template-columns: 1fr 1.2fr; /* 취소보다 변경 버튼을 살짝 넓게 배치 */
+    gap: 12px;
+    padding-top: 24px;
+}
+
+.btn {
+    height: 48px;
+    border: none;
+    border-radius: 12px; /* 버튼 모서리 조절 */
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* 취소 버튼 스타일링 */
+.btn-cancel {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+}
+
+.btn-cancel:active {
+    background-color: #f1f5f9;
+}
+
+/* 변경 버튼 스타일링 (포인트 블루) */
+.btn-submit {
+    background-color: #121824; /* 홈 화면 메인 컬러 */
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.btn-submit:active {
+    background-color: #1d4ed8;
+}

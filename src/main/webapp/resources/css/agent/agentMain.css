@@ -1,366 +1,445 @@
-/* 전체 리셋 및 모바일 컨테이너 설정 */
+@charset "UTF-8";
+
+/* ==================================================
+   1. 기본 초기화 및 모바일 레이아웃 설정
+================================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
 body {
-    background-color: #f1f5f9;
+    background-color: #f7f9fc;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    color: #1a1f2c;
 }
 
-/* 모바일 화면 규격 (스마트폰 비율 고정) */
+/* 스마트폰 화면 규격 제한 */
 .mobile-container {
     width: 100%;
-    max-width: 430px;
+    max-width: 430px; /* 아이폰 프로맥스 규격 */
     height: 100vh;
-    max-height: 932px;
+    max-height: 920px;
     background-color: #f8fafc;
+    position: relative;
     display: flex;
     flex-direction: column;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     overflow: hidden;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.05), 0 10px 10px rgba(0,0,0,0.05);
+    border-radius: 30px; /* 시안 같은 부드러운 라운딩 */
 }
 
-/* 1. 상단 헤더 */
+/* ==================================================
+   2. 상단 헤더 영역 (HEADER)
+================================================== */
 .mobile-header {
-    background-color: #0c4a6e;
-    color: #ffffff;
-    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 24px 20px 12px 20px;
+    background-color: #f8fafc;
 }
 
-.user-info {
+.user-profile {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
+/* 프로필 아이콘 숨김 (시안에 없음) */
 .profile-icon {
-    font-size: 1.4rem;
-    color: #e0f2fe;
+    display: none; 
+}
+
+.user-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.welcome-text {
+    font-size: 13px;
+    color: #8c96a8;
 }
 
 .user-name {
-    font-weight: 600;
-    font-size: 1rem;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1f2c;
 }
 
-.badge-work {
-    background-color: #16a34a;
-    color: #ffffff;
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-}
-
+/* 알림 벨 버튼 */
 .notification-bell {
     position: relative;
-    font-size: 1.3rem;
+    border: none;
+    background: none;
+    font-size: 22px;
+    color: #1a1f2c;
     cursor: pointer;
 }
 
 .bell-count {
     position: absolute;
-    top: -4px;
-    right: -6px;
-    background-color: #ef4444;
-    color: #ffffff;
-    font-size: 0.65rem;
-    font-weight: bold;
-    width: 16px;
-    height: 16px;
+    top: -2px;
+    right: -2px;
+    background-color: #ea4335;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
 }
 
-/* 2. 본문 메인 콘텐츠 영역 */
+/* ==================================================
+   3. 메인 콘텐츠 스크롤 영역
+================================================== */
 .mobile-content {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
+    padding: 12px 20px 100px 20px; /* 하단 바에 안가려지게 패딩 부여 */
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 스크롤바 숨기기 */
+.mobile-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==================================================
+   4. 현재 근무 상태 섹션 (다크 카드)
+================================================== */
+.status-card {
+    background-color: #121824; /* 시안의 딥 다크 네이비 */
+    border-radius: 20px;
+    padding: 20px;
+    color: #ffffff;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    box-shadow: 0 8px 20px rgba(18, 24, 36, 0.15);
 }
 
-/* 3. 하단 네비게이션 바 */
-.bottom-nav {
-    height: 60px;
+.status-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-label {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+/* 근무중 초록 뱃지 */
+.status-badge {
+    background-color: #10b981;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
     background-color: #ffffff;
+    border-radius: 50%;
+}
+
+.status-main h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+}
+
+.status-main p {
+    font-size: 13px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 상태 변경 버튼 */
+.status-change-btn {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.status-change-btn:active {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ==================================================
+   5. 주요 알림 섹션 (화이트 카드 팩)
+================================================== */
+.notice-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1f2c;
+}
+
+.more-btn {
+    background: none;
+    border: none;
+    color: #2563eb; /* 블루 포인트 컬러 */
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+}
+
+/* 알림 리스트 랩핑 박스 */
+.notice-list {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 8px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 리스트 아이템 버튼 */
+.notice-item {
+    width: 100%;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    gap: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* 아이템 구분선 */
+.notice-item:not(:last-child) {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.notice-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+}
+
+/* 알림 종류별 아이콘 색상 세팅 */
+.notice-item.danger .notice-icon { background-color: #fef2f2; color: #ef4444; }
+.notice-item.warning .notice-icon { background-color: #fffbeb; color: #f59e0b; }
+.notice-item.info .notice-icon { background-color: #eff6ff; color: #3b82f6; }
+
+.notice-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.notice-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1f2c;
+}
+
+.notice-text {
+    font-size: 13px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-transform: ellipsis;
+}
+
+.notice-time {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* ==================================================
+   6. 바로가기 그리드 영역 (Quick Menu)
+================================================== */
+.quick-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2열 배치 */
+    gap: 12px;
+}
+
+.quick-card {
+    background-color: #ffffff;
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.quick-card:active {
+    transform: scale(0.97);
+}
+
+.quick-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+}
+
+/* 그리드용 아이콘 커스텀 컬러 */
+.quick-danger .quick-icon { background-color: #fef2f2; color: #ef4444; }
+.quick-patrol .quick-icon { background-color: #eff6ff; color: #2563eb; }
+.quick-area .quick-icon { background-color: #f0fdf4; color: #16a34a; }
+.quick-report .quick-icon { background-color: #faf5ff; color: #7c3aed; }
+
+.quick-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-text strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1f2c;
+}
+
+.quick-text span {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 1px;
+    display: none; /* 시안 서브텍스트 미노출 처리 */
+}
+
+/* 화살표 숨김처리 (시안에 없음) */
+.quick-arrow {
+    display: none;
+}
+
+/* 로그아웃 섹션 간격조절 */
+.logout-section {
+    margin-top: 8px;
+    margin-bottom: 20px;
+}
+
+.logout-btn {
+    width: 100%;
+    background-color: #f1f5f9;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* ==================================================
+   7. 고정 하단 탭 메뉴바 (BOTTOM NAVIGATION)
+================================================== */
+.bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    background-color: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px); /* 투명 유리 효과 */
     border-top: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-around;
     align-items: center;
+    padding-bottom: 8px; /* 아래쪽 여백 확보 */
+    z-index: 10;
 }
 
 .nav-item {
+    background: none;
+    border: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    text-decoration: none;
     color: #94a3b8;
-    font-size: 0.75rem;
+    cursor: pointer;
+    width: 60px;
 }
 
 .nav-item i {
-    font-size: 1.2rem;
+    font-size: 20px;
 }
 
-.nav-item.active {
-    color: #0284c7;
-    font-weight: 600;
-}
-
-/* 현재 위험 알림 카드 */
-.alert-card {
-    background-color: #fff5f5;
-    border: 1px solid #fecaca;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
-}
-
-.alert-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.alert-icon {
-    color: #ef4444;
-    font-size: 1.2rem;
-}
-
-.alert-title {
-    color: #b91c1c;
-    font-weight: 700;
-    font-size: 1.05rem;
-}
-
-.alert-body {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.alert-desc {
-    color: #334155;
-    font-size: 0.9rem;
+.nav-item span {
+    font-size: 11px;
     font-weight: 500;
-    line-height: 1.4;
 }
 
-.alert-location {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #64748b;
-    font-size: 0.8rem;
-    margin-top: 2px;
+/* 활성화 상태 (Home) 폰트 색상 및 가 강조 */
+.nav-item.active {
+    color: #1a1f2c;
 }
 
-.pin-icon {
-    color: #ef4444;
-    font-size: 0.85rem;
-}
-
-/* 내 위치 및 담당 구역 (지도 카드) */
-.map-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.map-card-header {
-    margin-bottom: 12px;
-}
-
-.map-card-title {
+.nav-item.active span {
     font-weight: 700;
-    font-size: 1rem;
-    color: #1e293b;
-}
-
-.map-container {
-    width: 100%;
-    height: 180px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #cbd5e1;
-}
-
-#agent-map {
-    width: 100%;
-    height: 100%;
-}
-
-/* 주요 액션 버튼 영역 */
-.action-btn-group {
-    display: flex;
-    gap: 12px;
-}
-
-.btn-action {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px 0;
-    border: none;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #ffffff;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn-report {
-    background-color: #2563eb; /* 파란색 */
-}
-
-.btn-emergency {
-    background-color: #dc2626; /* 빨간색 */
-}
-
-/* 안전수칙 카드 */
-.rules-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.rules-card-header {
-    margin-bottom: 12px;
-}
-
-.rules-card-title {
-    font-weight: 700;
-    font-size: 1rem;
-    color: #1e293b;
-}
-
-.rules-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.rules-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-}
-
-.badge-guide {
-    color: #0284c7;
-    font-weight: 700;
-}
-
-.badge-notice {
-    color: #16a34a;
-    font-weight: 700;
-}
-
-.rules-text {
-    flex: 1;
-    color: #334155;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.rules-date {
-    color: #94a3b8;
-    font-size: 0.75rem;
-}
-
-/* 모달 오버레이 (배경 레이어) */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none; /* 기본 상태는 숨김 */
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-/* 모달 활성화 시 표시 */
-.modal-overlay.active {
-    display: flex;
-}
-
-/* 모달 컨텐츠 창 */
-.modal-content {
-    background-color: #ffffff;
-    width: 90%;
-    max-width: 380px;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 10px;
-}
-
-.modal-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1e293b;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #94a3b8;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.modal-body {
-    padding-top: 12px;
-}
-
-.modal-date {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin-bottom: 10px;
-}
-
-.modal-text {
-    font-size: 0.85rem;
-    color: #334155;
-    line-height: 1.5;
-    white-space: pre-line;
 }
