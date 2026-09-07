@@ -100,7 +100,7 @@ $(document).ready(function () {
     // 조치보고
     $("#navReport").on("click", function () {
         console.log("하단 메뉴 : 조치보고");
-        location.href = contextPath + "/agent/report";
+        location.href = contextPath + "/agent/history";
     });
 
 
