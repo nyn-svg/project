@@ -18,19 +18,11 @@ public class MainController {
 
  // 2. 드론 관제 화면 (/drone/stream)
     @GetMapping("/drone/stream")
-    public String droneStream(
-            @RequestParam(value = "id", required = false, defaultValue = "A") String droneId,
-            @RequestParam(value = "name", required = false) String droneName, // ★ 추가
-            HttpServletRequest request,
-            Model model) {
-
-        // droneName이 들어오지 않은 경우 droneId를 기본값으로 사용
-        if (droneName == null || droneName.trim().isEmpty()) {
-            droneName = droneId;
-        }
+    public String droneStream(@RequestParam(value = "id", required = false) String droneId,
+    						  @RequestParam(value = "zone", required = false) String zoneName, HttpServletRequest request, Model model) {
 
         model.addAttribute("droneId", droneId);
-        model.addAttribute("droneName", droneName); // ★ JSP로 droneName 전달
+        model.addAttribute("zoneName", zoneName);
 
         String viewPath = "/WEB-INF/views/drone/stream.jsp";
 
@@ -43,6 +35,7 @@ public class MainController {
         model.addAttribute("contentPage", viewPath);
         return "main";
     }
+    
     /**
      * 감지 이력 현황 페이지 이동
      */
@@ -60,9 +53,10 @@ public class MainController {
     }
     
  // 실시간 감지 임시 페이지 이동 매핑
-    @GetMapping("/realtime")
+    @GetMapping("/drone/realtime")
     public String realtimePage(Model model) {
-    	model.addAttribute("contentPage", "/WEB-INF/views/realtime.jsp");
+    	
+    	model.addAttribute("contentPage", "/WEB-INF/views/drone/realtime.jsp");
     	model.addAttribute("currentMenu", "realtime");
         return "main"; 
     }

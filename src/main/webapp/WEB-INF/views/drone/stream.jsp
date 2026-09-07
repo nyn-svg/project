@@ -13,10 +13,10 @@
 	    <div class="stream-main-area">
 	        <div class="stream-video-box">
 	            <div class="stream-header-info">
-	                <span class="drone-title"> [ ${droneName} ] 실시간 스트리밍</span>
+	                <span class="drone-title"> [ ${droneId} ] 실시간 스트리밍</span>
 	            </div>
 	            <div class="stream-placeholder">
-	                <p>[ ${droneName} ] 실시간 영상 스트리밍 영역</p>
+	                <p>[ ${droneId} ] 실시간 영상 스트리밍 영역</p>
 	            </div>
 	        </div>
 	    </div>
@@ -26,14 +26,14 @@
 	
 	        <!-- 1. 드론 정보 카드 -->
 	        <div class="control-card drone-info-card">
-	            <div class="card-title" id="drone-name-display">${droneName}</div>
+	            <div class="card-title" id="drone-name-display">${droneId}</div>
 	            <div class="info-row">
 	                <span>배터리</span>
 	                <span class="info-value" id="drone-battery-display">70%</span>
 	            </div>
 	            <div class="info-row">
 	                <span>구역명</span>
-	                <span class="info-value" id="drone-zone-display">A구역</span>
+	                <span class="info-value" id="drone-zone-display">${zoneName}</span>
 	            </div>
 	        </div>
 	

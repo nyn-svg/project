@@ -37,6 +37,11 @@ body, button, input, select, textarea {
     position: relative;
     width: 100%;
     margin-bottom: 10px; /* 카드 간 간격 */
+    box-sizing: border-box;
+}
+.drone-item-wrapper:has(.drone-status.ready) .sidebar-link,
+.drone-item-wrapper:has(.drone-status.error) .sidebar-link {
+    cursor: not-allowed !important;
 }
 
 /* 드론 카드 버튼 (우측 여백을 미리 확보하여 너비 고정) */
@@ -48,7 +53,7 @@ body, button, input, select, textarea {
     padding: 12px 14px;
     
     /* 편집 모드 시 더보기 버튼이 들어올 오프셋 영역 확보 */
-    padding-right: 40px; 
+    padding-right: 28px; 
     
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -58,6 +63,7 @@ body, button, input, select, textarea {
     font-size: 13px;
     font-weight: 600;
     transition: background 0.2s, border-color 0.2s;
+    box-sizing: border-box;
 }
 
 .drone-btn:hover {
@@ -66,24 +72,82 @@ body, button, input, select, textarea {
     color: #38bdf8;
 }
 
+/* 버튼 내부 컨테이너 전체 너비 처리 */
+.drone-info-box {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 3px; /* 1열과 2열 사이의 간격 */
+}
+
+/* 1열: 아이콘+드론ID (좌) / 비행상태 (우) 양끝 정렬 */
+.drone-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* 2열: 구역명 (아이콘 위치에 맞춰 정렬) */
+.drone-zone-name {
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    padding-left: 20px; /* 아이콘 너비만큼 살짝 들여쓰기 */
+    text-align: left;
+}
+
+/* 드론 이름 영역 (아이콘과 텍스트 정렬) */
+.drone-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;      /* 🌟 글자가 좁아도 절대 아래로 꺾이지 않게 철벽 고정 */
+    overflow: hidden;         /* 혹시 너무 길면 삐져나가지 않게 마감 */
+    text-overflow: ellipsis;  /* 너무 길면 ... 처리 */
+    max-width: 70%;           /* 이름이 차지할 최대 가로 영역 제한 */
+}
+
 .drone-name {
     font-weight: 600 !important;
     color: #f8fafc !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
 }
 
-/* 드론 상태 태그 (LIVE / OFFLINE) */
+/* 드론 상태 태그 */
 .drone-status {
-    font-size: 11px !important;
+    font-size: 10px !important;
     font-weight: 700 !important;
-    padding: 2px 8px !important;
+    padding: 2px 6px !important;
     border-radius: 6px !important;
     letter-spacing: 0.03em !important;
+    white-space: nowrap;      /* 🌟 상태 글자(비행, 대기)도 줄바꿈 방지 */
+    box-sizing: border-box;
+}
+
+/* 1. 비행 상태 (녹색) */
+.drone-status.flying {
     color: #4ade80 !important;
     background: rgba(34, 197, 94, 0.15) !important;
     border: 1px solid rgba(74, 222, 128, 0.3) !important;
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.2);
 }
+
+/* 2. 대기 상태 (파란색) */
+.drone-status.ready {
+    color: #38bdf8 !important;
+    background: rgba(14, 165, 233, 0.15) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+}
+
+/* 3. 고장 상태 (빨간색) */
+.drone-status.error {
+    color: #f87171 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+    border: 1px solid rgba(248, 113, 113, 0.3) !important;
+    box-shadow: 0 0 10px rgba(248, 113, 113, 0.25);
+}
+
 
 /* ==========================================
    3. 더보기 (...) 버튼 및 드롭다운 메뉴
@@ -91,7 +155,7 @@ body, button, input, select, textarea {
 .more-btn {
     position: absolute;
     right: 8px;           /* 카드 우측 내부 8px 지점에 absolute로 띄움 */
-    top: 50%;
+    top: 23px;
     transform: translateY(-50%); /* 수직 중앙 정렬 */
     
     background: transparent;
@@ -213,4 +277,38 @@ body, button, input, select, textarea {
 
 .modal-input:focus {
     border-color: #38bdf8 !important;
+}
+
+/* 상태 선택 버튼 기본 디자인 */
+.status-select-btn {
+    flex: 1;
+    padding: 10px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 클릭되었을 때 각 상태별 네온 불빛 효과 🌟 */
+.status-select-btn.ready.active {
+    color: #38bdf8;
+    background: rgba(14, 165, 233, 0.15);
+    border-color: #38bdf8;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+.status-select-btn.flying.active {
+    color: #4ade80;
+    background: rgba(34, 197, 94, 0.15);
+    border-color: #4ade80;
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.3);
+}
+.status-select-btn.error.active {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #f87171;
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.3);
 }
