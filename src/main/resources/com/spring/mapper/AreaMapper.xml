@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.AreaMapper">
+
+    <!-- 도면 배치 JSON 저장 (없으면 INSERT, 있으면 UPDATE) -->
+    <insert id="saveAreaConfig">
+        MERGE INTO FESTIVAL_AREA_CONFIG A
+        USING DUAL
+           ON (A.MAP_NAME = #{mapName})
+        WHEN MATCHED THEN
+            UPDATE SET 
+                A.CONFIG_JSON = #{configJson},
+                A.UPDATED_AT = SYSDATE
+        WHEN NOT MATCHED THEN
+            INSERT (CONFIG_ID, MAP_NAME, CONFIG_JSON, UPDATED_AT)
+            VALUES (SEQ_AREA_CONFIG.NEXTVAL, #{mapName}, #{configJson}, SYSDATE)
+    </insert>
+
+    <!-- 도면 배치 JSON 조회 -->
+    <select id="selectAreaConfig" resultType="string">
+        SELECT CONFIG_JSON
+          FROM FESTIVAL_AREA_CONFIG
+         WHERE MAP_NAME = #{mapName}
+    </select>
+
+</mapper>

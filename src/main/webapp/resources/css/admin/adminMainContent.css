@@ -318,3 +318,66 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* 메인 화면 지도 래퍼 스타일 */
+#admin-map.map-container-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #1e293b;
+    border-radius: 8px;
+    cursor: grab;
+    user-select: none;
+}
+
+#admin-map.map-container-wrapper:active {
+    cursor: grabbing;
+}
+
+/* 1. 배경 이미지 레이어 */
+#admin-map .bg-map-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 👈 fill 대신 contain 적용 (찌그러짐 방지) */
+    pointer-events: none;
+}
+
+/* 2. 구역 Canvas 레이어 */
+#admin-map .drawing-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    transform-origin: 0 0;
+}
+
+/* 3. 시설물 아이콘 DOM 레이어 */
+#admin-map .facility-dom-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 하위 마커 요소만 이벤트 허용 */
+    transform-origin: 0 0;
+}
+
+/* 시설물 아이콘 개별 클릭 허용 */
+#admin-map .facility-dom-layer .facility-marker {
+    pointer-events: auto;
+}
+
+/* 안내 메시지 중앙 정렬 */
+#admin-map .empty-map-notice {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #94a3b8;
+    z-index: 5;
+}

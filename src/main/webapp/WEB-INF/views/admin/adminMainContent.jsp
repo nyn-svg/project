@@ -48,23 +48,38 @@
     <!-- 2. 중단 영역 (좌: 지도 관제 / 우: 대응 현황) -->
     <section class="dashboard-middle">
         <!-- 행사장 실시간 관제 지도 -->
-        <div class="dashboard-card map-card">
-            <div class="card-header">
-                <span class="card-title">행사장 실시간 관제 지도</span>
-            </div>
-            <div class="card-body map-body">
-                <!-- 실제 GIS 지도(Kakao, VWorld 등) 또는 Canvas 영역 -->
-                <div id="admin-map" class="map-view-area">
-                    <!-- 지도 위에 표시될 범례 오버레이 -->
-                    <div class="map-legend-overlay">
-                        <div class="legend-item"><span class="dot agent"></span> 안전요원</div>
-                        <div class="legend-item"><span class="dot drone"></span> 드론 위치</div>
-                        <div class="legend-item"><span class="dot danger-zone"></span> 위험구역</div>
-                        <div class="legend-item"><span class="dot density-high"></span> 밀집도 높음</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+		<div class="dashboard-card map-card">
+		    <div class="card-header">
+		        <span class="card-title">행사장 실시간 관제 지도</span>
+		    </div>
+		    <div class="card-body map-body">
+		        <!-- 메인 화면용 지도 래퍼 (줌/팬 및 레이어 통합 영역) -->
+		        <div id="admin-map" class="map-container-wrapper">
+		            <!-- (1) 배경 도면 이미지 -->
+		            <img id="bgMapImage" src="" alt="등록된 도면이 없습니다" class="bg-map-img" style="display:none;">
+		
+		            <!-- (2) 구역(Polygon) 드로잉 Canvas Layer -->
+		            <canvas id="zoneCanvas" class="drawing-layer"></canvas>
+		
+		            <!-- (3) 시설물 아이콘(Marker) 배치 DOM Layer -->
+		            <div id="facilityLayer" class="facility-dom-layer"></div>
+		
+		            <!-- 지도 위에 표시될 범례 오버레이 -->
+		            <div class="map-legend-overlay">
+		                <div class="legend-item"><span class="dot agent"></span> 안전요원</div>
+		                <div class="legend-item"><span class="dot drone"></span> 드론 위치</div>
+		                <div class="legend-item"><span class="dot danger-zone"></span> 위험구역</div>
+		                <div class="legend-item"><span class="dot density-high"></span> 밀집도 높음</div>
+		            </div>
+		
+		            <!-- 도면 미등록 안내 메시지 -->
+		            <div class="empty-map-notice" id="emptyNotice">
+		                <i class="fa-solid fa-map-location-dot"></i>
+		                <p>등록된 행사장 평면도가 없습니다.</p>
+		            </div>
+		        </div>
+		    </div>
+		</div>
 
         <!-- 실시간 위험 대응 현황 -->
         <div class="dashboard-card status-card">
@@ -177,3 +192,5 @@
     </section>
 
 </div>
+<!-- adminMain.js 파일이 들어있는 정확한 경로로 지정 -->
+<script src="${pageContext.request.contextPath}/resources/js/admin/adminMain.js"></script>

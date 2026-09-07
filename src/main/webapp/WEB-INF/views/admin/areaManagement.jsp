@@ -1,147 +1,144 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>관제구역 관리</title>
-    <!-- 외부 CSS 불러오기 -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/areaManagement.css">
-    <!-- 카카오맵 API (Drawing 라이브러리 포함) -->
-    <!-- appkey 부분은 실제 발급받으신 자바스크립트 키로 대체하세요 -->
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_JAVASCRIPT_APP_KEY&libraries=drawing,services"></script>
-</head>
-<body>
 
-    <div class="area-container">
-        
-        <!-- 1. 좌측: 구역 목록 패널 -->
-        <div class="area-card area-list-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">구역 목록</h2>
-            </div>
-            
-            <div class="search-box">
-                <input type="text" id="searchAreaInput" class="form-input" placeholder="구역명 검색">
-                <button type="button" class="btn-search">🔍</button>
-            </div>
+<div class="festival-container">
 
-            <div class="area-list" id="areaList">
-                <!-- 구역 아이템 예시 (스크립트로 동적 생성 가능) -->
-                <div class="area-item active">
-                    <div class="area-item-header">
-                        <span class="area-name">구역 A (푸드존)</span>
-                        <span class="badge badge-active">활성</span>
-                    </div>
-                    <div class="area-item-info">
-                        <span>면적: 12,540 m²</span>
-                        <span>안전요원: 0/8</span>
-                    </div>
-                </div>
-
-                <div class="area-item">
-                    <div class="area-item-header">
-                        <span class="area-name">구역 B (산책로)</span>
-                        <span class="badge badge-inactive">비활성</span>
-                    </div>
-                    <div class="area-item-info">
-                        <span>면적: 8,320 m²</span>
-                        <span>안전요원: 0/6</span>
-                    </div>
-                </div>
-            </div>
-
-            <button type="button" class="btn-primary btn-add-area" id="btnAddArea">+ 구역 추가</button>
+    <!-- 1. 상단 툴바 (도면 업로드, 레이어 토글, 드로잉 도구) -->
+    <div class="festival-card top-toolbar">
+        <div class="toolbar-group">
+            <label class="btn-file-upload">
+                <i class="fa-solid fa-file-image"></i> 도면 업로드
+                <input type="file" id="uploadMapImage" accept="image/*" style="display: none;">
+            </label>
+            <span class="divider"></span>
+            <button type="button" class="tool-btn active" id="btnModeSelect"><i class="fa-solid fa-hand"></i> 선택/이동</button>
+            <button type="button" class="tool-btn" id="btnModePolygon"><i class="fa-solid fa-draw-polygon"></i> 구역 그리기</button>
         </div>
 
-        <!-- 2. 중앙: 구역 세부 정보 상세 설정 패널 -->
-        <div class="area-card area-info-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">구역 정보</h2>
-            </div>
-
-            <form id="areaDetailForm" class="info-form">
-                <div class="form-group">
-                    <label class="form-label" for="areaName">구역명</label>
-                    <input type="text" id="areaName" class="form-input" value="구역 A (푸드존)">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">면적</label>
-                    <div class="readonly-value" id="areaSize">12,540 m²</div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">탐지 대상</label>
-                    <div class="readonly-value">사람, 야생동물, 안전요원</div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="detectInterval">탐지 주기</label>
-                    <select id="detectInterval" class="form-select">
-                        <option value="0.5">0.5 초</option>
-                        <option value="0.8" selected>0.8 초</option>
-                        <option value="1.0">1.0 초</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="retentionPeriod">이벤트 기록 보관 기간</label>
-                    <select id="retentionPeriod" class="form-select">
-                        <option value="7">7 일</option>
-                        <option value="14" selected>14 일</option>
-                        <option value="30">30 일</option>
-                    </select>
-                </div>
-
-                <div class="form-group row-group">
-                    <label class="form-label">활성 상태</label>
-                    <label class="switch">
-                        <input type="checkbox" id="areaStatus" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="areaMemo">메모</label>
-                    <textarea id="areaMemo" class="form-textarea" rows="3">푸드트럭 및 휴게 공간 포함 구역</textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-danger" id="btnDelete">삭제</button>
-                    <button type="submit" class="btn-success" id="btnSave">저장 (State 저장)</button>
-                </div>
-            </form>
+        <!-- 레이어 On/Off 토글 버튼 -->
+        <div class="toolbar-group layer-toggles">
+            <span class="toolbar-label"><i class="fa-solid fa-layer-group"></i> 레이어:</span>
+            <button type="button" class="toggle-btn active" id="toggleZoneLayer" data-layer="zone">
+                <i class="fa-solid fa-eye"></i> 구역
+            </button>
+            <button type="button" class="toggle-btn active" id="toggleFacilityLayer" data-layer="facility">
+                <i class="fa-solid fa-eye"></i> 시설물
+            </button>
         </div>
 
-        <!-- 3. 우측: 카카오맵 지도 & 드로잉 영역 -->
-        <div class="area-card area-map-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">구역 지도 (편집 모드)</h2>
-                <div class="map-controls">
-                    <button type="button" class="btn-secondary" id="btnDrawPolygon">📐 영역 그리기</button>
-                    <button type="button" class="btn-secondary" id="btnClearDraw">🗑️ 영역 삭제</button>
-                    <button type="button" class="btn-primary" id="btnToggleEdit">✏️ 편집 시작</button>
-                </div>
-            </div>
-
-            <div class="map-wrapper">
-                <!-- 카카오맵 랜더링 피치 -->
-                <div id="kakaoMap" class="map-view"></div>
-            </div>
-
-            <!-- 하단 시설물 아이콘 툴바 (필요 시 활용) -->
-            <div class="facility-toolbar">
-                <span class="toolbar-title">시설물 배치:</span>
-                <div class="facility-item" data-type="PARKING">🅿️ 주차장</div>
-                <div class="facility-item" data-type="RESTROOM">🚻 화장실</div>
-                <div class="facility-item" data-type="INFO">ℹ️ 안내소</div>
-                <div class="facility-item" data-type="MEDICAL">➕ 의무실</div>
-                <div class="facility-item" data-type="CCTV">📷 CCTV</div>
-            </div>
+        <div class="toolbar-group">
+            <button type="button" class="mini-btn danger" id="btnDeleteSelected"><i class="fa-solid fa-trash"></i> 선택 삭제</button>
+            <button type="button" class="btn-success" id="btnExportJson"><i class="fa-solid fa-floppy-disk"></i> 최종 데이터 저장</button>
         </div>
-
     </div>
 
-</body>
-</html>
+    <!-- 2. 하단 메인 워크스페이스 영역 (좌: 캔버스 / 우: 속성 패널) -->
+    <div class="main-workspace">
+        
+        <!-- 좌측: 메인 도면 뷰포트 카드 -->
+        <div class="festival-card map-viewport-card">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fa-solid fa-map"></i> 행사장 도면 편집기</h3>
+                <span class="zoom-info" id="zoomLevel">100%</span>
+            </div>
+
+            <!-- 도면 캔버스 오버레이 래퍼 -->
+			<div class="map-container-wrapper" id="mapWrapper">
+			    <!-- (1) 배경 도면 이미지 -->
+			    <img id="bgMapImage" src="" alt="행사장 도면을 업로드하세요" class="bg-map-img" style="display:none;">
+			
+			    <!-- (2) 구역(Polygon) 드로잉 Canvas Layer -->
+			    <canvas id="zoneCanvas" class="drawing-layer"></canvas>
+			
+			    <!-- (3) 시설물 아이콘(Marker) 배치 DOM Layer -->
+			    <div id="facilityLayer" class="facility-dom-layer"></div>
+			
+			    <!-- 도면 미업로드 시 안내 메시지 -->
+			    <div class="empty-map-notice" id="emptyNotice">
+			        <i class="fa-solid fa-cloud-arrow-up"></i>
+			        <p>상단의 [도면 업로드] 버튼을 눌러 행사장 평면도 이미지를 등록하세요.</p>
+			    </div>
+			</div>
+
+            <!-- 하단 시설물 아이콘 툴바 (드래그앤드롭 배치용) -->
+            <div class="facility-drag-bar">
+                <span class="bar-title">시설물 배치 (도면으로 클릭/드래그):</span>
+                <div class="facility-chip" data-type="CCTV" draggable="true"><i class="fa-solid fa-video"></i> CCTV</div>
+                <div class="facility-chip" data-type="EMERGENCY" draggable="true"><i class="fa-solid fa-bell"></i> 비상구</div>
+                <div class="facility-chip" data-type="FIRE_EXT" draggable="true"><i class="fa-solid fa-fire-extinguisher"></i> 소화기</div>
+                <div class="facility-chip" data-type="INFO" draggable="true"><i class="fa-solid fa-circle-info"></i> 안내소</div>
+                <div class="facility-chip" data-type="MEDICAL" draggable="true"><i class="fa-solid fa-kit-medical"></i> 의무실</div>
+                <div class="facility-chip" data-type="RESTROOM" draggable="true"><i class="fa-solid fa-restroom"></i> 화장실</div>
+            </div>
+        </div>
+
+        <!-- 우측: 선택한 요소 세부 정보 설정 패널 -->
+        <div class="festival-card detail-panel">
+            <!-- 1. 상단 타이틀 (고정 영역) -->
+            <div class="panel-header">
+                <h3 class="panel-title" id="selectedTitle"><i class="fa-solid fa-sliders"></i> 선택 요소 정보</h3>
+            </div>
+
+            <!-- 2. 세부 내용 및 폼 (스크롤 발생 영역) -->
+            <div class="panel-body">
+                <!-- 선택 요소가 없을 때 -->
+                <div class="empty-detail-msg" id="emptyDetailMsg">
+                    <i class="fa-solid fa-mouse-pointer"></i>
+                    <p>도면 상의 구역이나 시설물 아이콘을 클릭하면 세부 정보를 수정할 수 있습니다.</p>
+                </div>
+
+                <!-- 선택 시 나타나는 속성 폼 (기본 숨김 -> 테스트 시 style="" 로 풀어서 확인 가능) -->
+                <form id="elementDetailForm" class="info-form" style="display: none;">
+                    <input type="hidden" id="selectedElementId" />
+                    <input type="hidden" id="selectedElementType" /> <!-- ZONE or FACILITY -->
+
+                    <div class="form-group">
+                        <label class="form-label">유형</label>
+                        <input type="text" id="elemTypeDisplay" class="form-input" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">명칭 (이름)</label>
+                        <input type="text" id="elemName" class="form-input" placeholder="예: 1구역 (메인무대)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">상세 설명</label>
+                        <textarea id="elemDesc" class="form-textarea" rows="3" placeholder="구역 또는 아이콘에 대한 상세 정보 입력"></textarea>
+                    </div>
+
+                    <!-- 구역(Zone) 전용 설정 필드 -->
+                    <div class="zone-only-fields" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">구역 채우기 색상</label>
+                            <input type="color" id="elemColor" class="form-color-picker" value="#38bdf8" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">담당 안전요원 배치</label>
+                            <select id="elemAgent" class="form-select">
+                                <option value="">-- 요원 선택 --</option>
+                                <!-- AJAX로 요원 목록 동적 로드 -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 시설물(CCTV 등) 전용 설정 필드 -->
+                    <div class="facility-only-fields" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">스트리밍 IP / RTSP URL</label>
+                            <input type="text" id="elemStreamUrl" class="form-input" placeholder="rtsp://192.168.0.100:554/stream" />
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-primary" id="btnApplyElement"><i class="fa-solid fa-check"></i> 정보 적용</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div> <!-- .main-workspace 끝 -->
+
+</div> <!-- .festival-container 끝 -->
+<!-- 맨 밑 </div> 태그 바로 아래에 추가 -->
+<script src="${pageContext.request.contextPath}/resources/js/admin/areaManagement.js"></script>
