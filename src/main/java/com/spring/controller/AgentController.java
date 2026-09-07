@@ -192,7 +192,7 @@ public class AgentController {
         // DB 업데이트 실행
         agentTaskService.updateWorkStatus(loginUserId, workStatus);
 
-        return "redirect:/agent/info"; // 변경 후 내 정보 페이지로 이동
+        return "redirect:/agent/main"; // 변경 후 내 정보 페이지로 이동
     }
     
     @GetMapping("/logout")

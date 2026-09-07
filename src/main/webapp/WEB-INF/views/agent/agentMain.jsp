@@ -189,9 +189,8 @@
 
         <!-- 로그아웃 -->
         <section class="logout-section">
-            <button type="button" class="logout-btn" id="logoutBtn">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span> 로그아웃 </span>
+            <button type="button" class="logout-btn" onclick="location.href='${pageContext.request.contextPath}/logout'">
+                <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
             </button>
         </section>
     </main>
@@ -218,10 +217,7 @@
     </nav>
 </div>
 
-<!-- ==================================================
-     JS
-================================================== -->
-
+<!-- JS -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/agent/agentMain.js"></script>
 
