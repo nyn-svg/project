@@ -195,5 +195,12 @@ public class AgentController {
         return "redirect:/agent/info"; // 변경 후 내 정보 페이지로 이동
     }
     
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+
+        session.invalidate();
+
+        return "redirect:/login";
+    }
     
 }
