@@ -42,7 +42,7 @@ $(document).ready(function() {
 					var currentClass = statusClassMap[drone.droneStatus] || 'ready';
 					
 					var html = '<div class="drone-item-wrapper" data-id="' + drone.droneId + '" data-zone="' + drone.zoneName + '" data-url="' + drone.url + '" data-active="' + drone.activeStatus + '">'
-					         + '<a href="' + ctx + '/drone/stream?id=' + drone.droneId + '&zone=' + encodeURIComponent(drone.zoneName) + '" class="drone-btn sidebar-link" data-id="' + drone.droneId + '" data-zone="' + drone.zoneName + '">'
+					         + '<a href="' + ctx + '/drone/stream?id=' + drone.droneId + '&zone=' + encodeURIComponent(drone.zoneName) + '" class="drone-btn sidebar-link">'
 					         + '<div class="drone-info-box">'
 					         +   '<div class="drone-top-row">'
 					         +     '<div class="drone-name-wrapper">'
@@ -84,9 +84,12 @@ $(document).ready(function() {
 	    if (currentStatus !== '비행') {
 	        e.preventDefault();  // <a> 태그 고유의 링크 이동 기능을 마비시킴
 	        e.stopPropagation(); // 부모 태그로 클릭 이벤트가 퍼지는 것을 방지
-			e.stopImmediatePropagation();   // document에 걸린 다른 클릭 이벤트 실행 즉시 중단
+	        e.stopImmediatePropagation(); // document에 걸린 다른 클릭 이벤트 실행 즉시 중단
 	        
 	        alert('현재 비행 중인 드론이 아니므로 접근할 수 없는 페이지입니다.');
+	    } else {
+	        // 🌟 사용자가 직접 다른 비행 드론을 선택해 이동하는 경우 순회 관제 모드 자동 OFF
+	        localStorage.setItem('droneAutoSwitch', 'false');
 	    }
 	});
 
@@ -229,7 +232,6 @@ $(document).ready(function() {
 	
 	// 프론트엔드 JS 하단에 추가
 	function initSSE() {
-	    var ctx = window.contextPath || '';
 	    // 분리된 SseController 매핑 경로로 연결
 	    var eventSource = new EventSource(ctx + '/api/sse/subscribe');
 
@@ -296,8 +298,4 @@ $(document).ready(function() {
 	            $('#drone-modal').removeClass('active');
 	        }
 	    });
-	
-	
-    // 초기화 실행
-    renderDroneList();
 });
