@@ -10,7 +10,7 @@
     </div>
 
     <nav class="quick-nav">
-        <button class="quick-nav-item" data-target="panel-festival">
+        <button class="quick-nav-item" data-target="panel-drones">
             <span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>
             <span class="nav-label">드론</span>
         </button>
@@ -34,7 +34,7 @@
 <div id="sub-drawer" class="sub-drawer collapsed">
     <!-- 드론 관제 패널 -->
 <!-- 드론 관제 패널 -->
-<div id="panel-festival" class="drawer-content active">
+<div id="panel-drones" class="drawer-content active">
 <!-- 헤더 전체 높이를 40px로 고정하고 flex 수직 중앙 정렬 -->
 <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
     <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 목록</span>
@@ -97,16 +97,30 @@
     </div>
 </div>
 
-<!-- sidebar.jsp 최하단 위치 -->
+<!-- sidebar.jsp 최하단 위치, 새 드론 등록 모달창 -->
 <div id="drone-modal" class="modal-overlay">
     <div class="modal-content">
-        <h3 id="modal-title" style="color: #ffffff; margin-bottom: 16px; font-size: 16px;">드론 추가</h3>
+        <h3 id="modal-title" style="color: #ffffff; margin-bottom: 16px; font-size: 16px;">드론 정보 수정</h3>
         
-        <!-- 수정 대상 ID 저장을 위한 숨김 필드 -->
-        <input type="hidden" id="modal-drone-id" value="" />
+        <!-- 수정 대상 숨김 필드 -->
+        <input type="hidden" id="modal-drone-id" />
+        <input type="hidden" id="modal-drone-active" />
         
         <!-- 입력 창 -->
-        <input type="text" id="modal-input-name" class="modal-input" placeholder="드론 이름을 입력하세요" />
+        <input type="text" id="modal-input-zone" class="modal-input" placeholder="비행 구역을 입력하세요" />
+        <input type="text" id="modal-input-url" class="modal-input" placeholder="스트리밍 주소(URL)을 입력하세요" />
+        <div class="modal-input-group" style="margin-top: 14px;">
+		    <label style="font-size: 11px; color: #94a3b8; font-weight: 600;">드론 상태</label>
+		    
+		    <!-- 실제 데이터 전송용 숨김 input -->
+		    <input type="hidden" id="modal-input-status" value="대기" />
+		    
+		    <div class="status-badge-group" style="display: flex; gap: 8px; margin-top: 8px;">
+		        <button type="button" class="status-select-btn ready active" data-value="대기">대기</button>
+		        <button type="button" class="status-select-btn flying" data-value="비행">비행</button>
+		        <button type="button" class="status-select-btn error" data-value="고장">고장</button>
+		    </div>
+		</div>
         
         <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
             <button id="btn-modal-save" class="mini-btn primary">저장</button>

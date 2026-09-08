@@ -1,8 +1,8 @@
 $(document).ready(function() {
     var isEditMode = false;
     var ctx = window.contextPath || '';
-
-    // 1. 서버에서 드론 목록 가져와서 렌더링
+	
+	// 1. 서버에서 드론 목록 가져와서 렌더링
     function renderDroneList() {
         $.ajax({
             url: ctx + '/drone/api/list',
@@ -11,15 +11,50 @@ $(document).ready(function() {
             success: function(drones) {
                 var $container = $('#drone-list-container');
                 $container.empty();
+				
+				// 🌟 상태별 우선순위 정의 (비행: 1, 대기: 2, 고장: 3)
+				var statusPriority = {
+					'비행': 1,
+					'대기': 2,
+					'고장': 3
+				};
+				
+				// 우선순위에 따라 배열 정렬
+				drones.sort(function(a, b) {
+					var pA = statusPriority[a.droneStatus] || 99;
+					var pB = statusPriority[b.droneStatus] || 99;
+					
+					// 상태가 다르면 우선순위 순 정렬
+					if (pA !== pB) {
+						return pA - pB;
+					}
+					// 상태가 같으면 드론 ID 오름차순 정렬
+					return a.droneId.localeCompare(b.droneId);
+				});
+				
+				var statusClassMap = {
+					'대기': 'ready',
+					'비행': 'flying',
+					'고장': 'error'
+				};
 
                 drones.forEach(function(drone) {
-                    var html = '<div class="drone-item-wrapper" data-id="' + drone.id + '" data-name="' + drone.name + '">'
-                             + '<a href="' + ctx + '/drone/stream?id=' + drone.id + '&name=' + encodeURIComponent(drone.name) + '" class="drone-btn sidebar-link" data-id="' + drone.id + '" data-name="' + drone.name + '">'
-                             + '<span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>'
-                             + '<span class="drone-name">' + drone.name + ' 관제</span>'
-                             + '<span class="drone-status">' + (drone.status || 'LIVE') + '</span>'
-                             + '</a>';
-
+					var currentClass = statusClassMap[drone.droneStatus] || 'ready';
+					
+					var html = '<div class="drone-item-wrapper" data-id="' + drone.droneId + '" data-zone="' + drone.zoneName + '" data-url="' + drone.url + '" data-active="' + drone.activeStatus + '">'
+					         + '<a href="' + ctx + '/drone/stream?id=' + drone.droneId + '&zone=' + encodeURIComponent(drone.zoneName) + '" class="drone-btn sidebar-link" data-id="' + drone.droneId + '" data-zone="' + drone.zoneName + '">'
+					         + '<div class="drone-info-box">'
+					         +   '<div class="drone-top-row">'
+					         +     '<div class="drone-name-wrapper">'
+					         +       '<span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>'
+					         +       '<span class="drone-name">' + drone.droneId + '</span>'
+					         +     '</div>'
+					         +     '<span class="drone-status ' + currentClass + '">' + drone.droneStatus + '</span>'
+					         +   '</div>'
+					         +   '<div class="drone-zone-name">' + drone.zoneName + '</div>'
+					         + '</div>'
+					         + '</a>';
+							 
                     if (isEditMode) {
                         html += '<button class="more-btn btn-drone-more">⋮</button>'
                               + '<div class="drone-menu-dropdown" style="display: none;">'
@@ -28,7 +63,7 @@ $(document).ready(function() {
                               + '</div>';
                     }
 
-                    html += '</div>';
+                    html +='</div>';
                     $container.append(html);
                 });
             },
@@ -40,11 +75,25 @@ $(document).ready(function() {
 
     // 최초 로딩 시 렌더링
     renderDroneList();
+	
+	// 상태가 '비행'이 아니라면 링크 이동을 강제로 취소시킵니다.
+	$(document).on('click', '.sidebar-link', function(e) {
+	    // 클릭한 링크 안의 상태 텍스트(대기, 비행, 고장)를 추출합니다.
+	    var currentStatus = $(this).find('.drone-status').text().trim();
+	    
+	    if (currentStatus !== '비행') {
+	        e.preventDefault();  // <a> 태그 고유의 링크 이동 기능을 마비시킴
+	        e.stopPropagation(); // 부모 태그로 클릭 이벤트가 퍼지는 것을 방지
+			e.stopImmediatePropagation();   // document에 걸린 다른 클릭 이벤트 실행 즉시 중단
+	        
+	        alert('현재 비행 중인 드론이 아니므로 접근할 수 없는 페이지입니다.');
+	    }
+	});
 
     // 2. 편집 모드 토글 이벤트
     $('#btn-edit-mode').on('click', function() {
         isEditMode = true;
-        $('#mode-defaultBtns').hide();
+        $('#mode-default-btns').hide();
         $('#mode-edit-btns').css('display', 'flex');
         renderDroneList();
     });
@@ -52,7 +101,7 @@ $(document).ready(function() {
     $('#btn-cancel-edit').on('click', function() {
         isEditMode = false;
         $('#mode-edit-btns').hide();
-        $('#mode-defaultBtns').show();
+        $('#mode-default-btns').show();
         $('.drone-menu-dropdown').hide();
         renderDroneList();
     });
@@ -72,8 +121,14 @@ $(document).ready(function() {
     // 4. 모달 열기 (신규 등록)
     $('#btn-open-add-modal').on('click', function() {
         $('#modal-title').text('🛸 신규 드론 등록');
-        $('#modal-drone-id').val('');
-        $('#modal-input-name').val('');
+		$('#modal-drone-id').val('');
+		$('#modal-drone-active').val(''); 
+        $('#modal-input-zone').val('');
+		$('#modal-input-url').val('');
+		
+		// ⭕ 신규 등록 창에서는 상태를 고를 필요가 없으므로 버튼 그룹을 통째로 숨깁니다!
+		$('.status-badge-group').closest('.modal-input-group').hide();
+		
         $('#drone-modal').addClass('active');
     });
 
@@ -81,13 +136,32 @@ $(document).ready(function() {
     $(document).on('click', '.btn-edit-drone', function() {
         var $wrapper = $(this).closest('.drone-item-wrapper');
         var droneId = $wrapper.data('id');
-        var droneName = $wrapper.data('name');
+		var activeStatus = $wrapper.data('active');
+        var droneZone = $wrapper.data('zone');
+		var droneUrl = $wrapper.data('url');
+		var droneStatus = $wrapper.find('.drone-status').text().trim() || '대기';
+		// ⭕ 수정 창에서는 드론 상태를 바꿔야 하므로 숨겼던 버튼 그룹을 다시 보여줍니다.
+		$('.status-badge-group').closest('.modal-input-group').show();
+		$('.status-select-btn').removeClass('active');
+		$('.status-select-btn[data-value="' + droneStatus + '"]').addClass('active');
 
-        $('#modal-title').text('✏️ 드론 이름 수정');
+        $('#modal-title').text('✏️ 드론 정보 수정');
         $('#modal-drone-id').val(droneId);
-        $('#modal-input-name').val(droneName);
+		$('#modal-drone-active').val(activeStatus);
+        $('#modal-input-zone').val(droneZone);
+		$('#modal-input-url').val(droneUrl);
+		$('#modal-input-status').val(droneStatus);
         $('#drone-modal').addClass('active');
     });
+	
+	// 모달 내 상태 버튼 클릭 시 작동하는 이벤트 추가
+	$(document).on('click', '.status-select-btn', function() {
+	    var selectedValue = $(this).data('value');
+	    $('#modal-input-status').val(selectedValue); // 숨겨진 input에 값 대입
+	    
+	    $('.status-select-btn').removeClass('active'); // 전체 불빛 끄기
+	    $(this).addClass('active'); // 클릭한 버튼만 불빛 켜기
+	});
 
     // 6. 모달 닫기
     $('#btn-modal-cancel').on('click', function() {
@@ -96,16 +170,24 @@ $(document).ready(function() {
 
     // 7. 드론 저장 (신규 또는 수정) -> 서버 전달
     $('#btn-modal-save').on('click', function() {
-        var name = $('#modal-input-name').val().trim();
+		var status = $('#modal-input-status').val();
+		var stream = $('#modal-input-url').val().trim();
+		var zone = $('#modal-input-zone').val().trim();
+		var active = $('#modal-drone-active').val();
         var id = $('#modal-drone-id').val();
 
-        if (!name) {
-            alert('드론 이름을 입력해주세요.');
+        if (!zone) {
+            alert('드론의 구역명을 입력해 주세요.');
             return;
         }
+		
+		if (!stream) {
+			alert('스트리밍 주소(URL)을 입력해 주세요.');
+			return;
+		}
 
         var url = id ? (ctx + '/drone/api/update') : (ctx + '/drone/api/add');
-        var paramData = id ? { id: id, name: name } : { name: name };
+        var paramData = id ? { droneId: id, activeStatus: active, zoneName: zone, url: stream, droneStatus: status } : { zoneName: zone, url: stream };
 
         $.ajax({
             url: url,
@@ -132,7 +214,7 @@ $(document).ready(function() {
                 url: ctx + '/drone/api/delete',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ id: droneId }),
+                data: JSON.stringify({ droneId: droneId }),
                 success: function(res) {
                     if (res.result === 'SUCCESS') {
                         renderDroneList();

@@ -9,7 +9,7 @@
 
     <nav class="header-nav">
         <a href="${pageContext.request.contextPath}/" class="nav-link header-link">홈</a>
-        <a href="${pageContext.request.contextPath}/realtime" class="nav-link header-link">실시간 감지</a>
+        <a href="${pageContext.request.contextPath}/drone/realtime" class="nav-link header-link">실시간 감지</a>
         <a href="${pageContext.request.contextPath}/detection" class="nav-link header-link">위험 감지 관리</a>
         <a href="${pageContext.request.contextPath}/cooperation" class="nav-link header-link">상황 전파 및 공조</a>
     	<a href="${pageContext.request.contextPath}/actionLog" class="nav-link header-link">관제 보고</a>
