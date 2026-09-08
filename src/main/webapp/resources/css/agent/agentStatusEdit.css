@@ -189,16 +189,28 @@ body {
     color: #1a1f2c;
 }
 
-/* 2. 근무중 카드 체크 시 독점 그린 하이라이트 (시안 싱크 100%) */
+/* 근무중 그린 하이라이트 */
 .status-option-card.type-active:has(.status-option-input:checked) {
     border-color: #10b981 !important;
-    background-color: #f0fdf4 !important; /* 부드러운 그린 배경 */
+    background-color: #f0fdf4 !important;
 }
 .status-option-card.type-active .status-option-input:checked + .custom-radio {
     border-color: #10b981 !important;
 }
 .status-option-card.type-active .status-option-input:checked + .custom-radio::after {
     background-color: #10b981 !important;
+}
+
+/* 퇴근 레드 하이라이트 */
+.status-option-card.type-danger:has(.status-option-input:checked) {
+    border-color: #ef4444 !important;     
+    background-color: #fef2f2 !important;  
+}
+.status-option-card.type-danger .status-option-input:checked + .custom-radio {
+    border-color: #ef4444 !important;
+}
+.status-option-card.type-danger .status-option-input:checked + .custom-radio::after {
+    background-color: #ef4444 !important;
 }
 
 /* 일반 카드 체크 시 배경 은은한 블루 처리 */

@@ -43,20 +43,34 @@
         <!-- 현재 근무 상태 -->
         <section class="status-card">
             <div class="status-card-top">
-                <span class="section-label"> 현재 상태 </span>
-                <span class="status-badge">
-                    <span class="status-dot"></span>
-                    ${user.workStatus}
-                </span>
-            </div>
+            <span class="section-label"> 현재 상태 </span>
             
-            <div class="status-main">
-                <h2>${user.workArea}</h2>
-                <p>
-                    <i class="fa-regular fa-clock"></i>
-                    ${user.workTime}
-                </p>
-            </div>
+            <c:choose>
+                <c:when test="${user.workStatus eq '근무중'}">
+                    <span class="status-badge status-green">
+                        <span class="status-dot"></span> 근무중
+                    </span>
+                </c:when>
+                <c:when test="${user.workStatus eq '휴식중' or user.workStatus eq '외출중'}">
+                    <span class="status-badge status-blue">
+                        <span class="status-dot"></span> ${user.workStatus}
+                    </span>
+                </c:when>
+                <c:when test="${user.workStatus eq '퇴근'}">
+                    <span class="status-badge status-red">
+                        <span class="status-dot"></span> 퇴근
+                    </span>
+                </c:when>
+	            </c:choose>
+        </div>
+        
+        <div class="status-main">
+            <h2>${user.workArea}</h2>
+            <p>
+                <i class="fa-regular fa-clock"></i>
+                ${user.workTime}
+            </p>
+        </div>
 
             <button type="button" class="status-change-btn" id="statusChangeBtn">
                 <span> 근무 상태 변경 </span>
@@ -64,10 +78,10 @@
             </button>
         </section>
 
-        <!-- 주요 알림 -->
+        <!-- 안전수칙 -->
         <section class="notice-section">
             <div class="section-header">
-                <h2> 주요 알림 </h2>
+                <h2> 안전 수칙 </h2>
                 <button type="button" class="more-btn" id="noticeMoreBtn">
                     전체보기
                     <i class="fa-solid fa-chevron-right"></i>
@@ -147,8 +161,8 @@
                     </div>
 
                     <div class="quick-text">
-                        <strong> 안전순찰 </strong>
-                        <span> 담당 구역 순찰 </span>
+                        <strong> 체크 리스트 </strong>
+                        <span> 담당 구역 순찰 사전 점검 </span>
                     </div>
 
                     <i class="fa-solid fa-chevron-right quick-arrow"></i>

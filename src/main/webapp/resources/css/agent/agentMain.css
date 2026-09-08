@@ -105,7 +105,7 @@ body {
 .mobile-content {
     flex: 1;
     overflow-y: auto;
-    padding: 12px 20px 100px 20px; /* 하단 바에 안가려지게 패딩 부여 */
+    padding: 12px 20px 16px 20px; /* 하단 바에 안가려지게 패딩 부여 */
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -139,26 +139,6 @@ body {
 .section-label {
     font-size: 13px;
     color: #94a3b8;
-}
-
-/* 근무중 초록 뱃지 */
-.status-badge {
-    background-color: #10b981;
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 5px 10px;
-    border-radius: 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.status-dot {
-    width: 6px;
-    height: 6px;
-    background-color: #ffffff;
-    border-radius: 50%;
 }
 
 .status-main h2 {
@@ -196,6 +176,52 @@ body {
 
 .status-change-btn:active {
     background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ==================================================
+   근무 상태 배지 (동적 색상 변경 프로토콜)
+================================================== */
+.status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* 1. 근무중 (초록 테마) */
+.status-green {
+    background-color: #10b981;
+    color: #ffffff;
+}
+.status-green .status-dot {
+    background-color: #ffffff;
+}
+
+/* 2. 휴식/외출 (파랑 테마) */
+.status-blue {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+.status-blue .status-dot {
+    background-color: #ffffff;
+}
+
+/* 3. 퇴근 (빨강 테마) */
+.status-red {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+.status-red .status-dot {
+    background-color: #ffffff;
 }
 
 /* ==================================================
@@ -375,8 +401,8 @@ body {
 
 /* 로그아웃 섹션 간격조절 */
 .logout-section {
-    margin-top: 8px;
-    margin-bottom: 20px;
+    margin-top: 16px;
+    padding-bottom: 84px; 
 }
 
 .logout-btn {

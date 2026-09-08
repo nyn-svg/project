@@ -51,16 +51,14 @@ $(document).ready(function () {
     // 위험 알림
     $(".quick-danger").on("click", function () {
         console.log("위험 알림");
-        // 실제 URL 확인 후 연결
-        alert("위험 알림 화면");
+        location.href = "/history/more";
     });
 
-
+	
     // 안전 순찰
     $(".quick-patrol").on("click", function () {
         console.log("안전순찰");
-        // 실제 안전순찰 Controller URL 확인 후 연결
-        alert("안전순찰 화면");
+        location.href = "patrol";
     });
 
 
@@ -75,9 +73,7 @@ $(document).ready(function () {
     // 조치 보고
     $(".quick-report").on("click", function () {
         console.log("조치보고");
-
-        /* 기존에 조치보고 Controller가 /agent/report라면 아래 코드 사용 */
-        location.href = contextPath + "/agent/report";
+		location.href = "/history";
     });
 
 
@@ -85,8 +81,7 @@ $(document).ready(function () {
     // 안전순찰
     $("#navPatrol").on("click", function () {
         console.log("하단 메뉴 : 안전순찰");
-        // 실제 Controller URL 확인 후 변경
-        alert("안전순찰 화면");
+        location.href = "patrol";
     });
 
 
