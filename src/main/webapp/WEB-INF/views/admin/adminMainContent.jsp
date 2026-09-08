@@ -64,13 +64,6 @@
 		            <!-- (3) 시설물 아이콘(Marker) 배치 DOM Layer -->
 		            <div id="facilityLayer" class="facility-dom-layer"></div>
 		
-		            <!-- 지도 위에 표시될 범례 오버레이 -->
-		            <div class="map-legend-overlay">
-		                <div class="legend-item"><span class="dot agent"></span> 안전요원</div>
-		                <div class="legend-item"><span class="dot drone"></span> 드론 위치</div>
-		                <div class="legend-item"><span class="dot danger-zone"></span> 위험구역</div>
-		                <div class="legend-item"><span class="dot density-high"></span> 밀집도 높음</div>
-		            </div>
 		
 		            <!-- 도면 미등록 안내 메시지 -->
 		            <div class="empty-map-notice" id="emptyNotice">
@@ -194,3 +187,14 @@
 </div>
 <!-- adminMain.js 파일이 들어있는 정확한 경로로 지정 -->
 <script src="${pageContext.request.contextPath}/resources/js/admin/adminMain.js"></script>
+
+<!-- WEB-INF/views/admin/adminMain.jsp 파일 최하단 -->
+
+<script>
+    // adminMain.jsp HTML이 비동기로 꽂히는 즉시 지도 초기화 실행
+    setTimeout(function() {
+        if (typeof window.initAdminMainMap === 'function') {
+            window.initAdminMainMap();
+        }
+    }, 50);
+</script>

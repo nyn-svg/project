@@ -237,8 +237,13 @@ $(document).ready(function() {
                 if (res.success) {
                     alert(mode === 'create' ? '신규 요원이 등록되었습니다.' : '요원 정보가 수정되었습니다.');
                     
-                    // 1) 좌측 목록 다시 로드
+                    // 1) 좌측 목록 다시 로드 (메인 화면 요원 관리 패널)
                     loadAgentList();
+
+                    // 💡 [핵심 추가] 저장 성공 시 우측 사이드바의 요원 목록도 즉시 새로고침!
+                    if (typeof loadAdminAgentList === 'function') {
+                        loadAdminAgentList();
+                    }
 
                     if(mode === 'create') {
                         // 신규 등록 시 폼 초기화

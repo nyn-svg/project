@@ -19,7 +19,7 @@ public class SseController {
      * 프론트엔드에서 SSE 연결 구독을 위한 엔드포인트
      * 호출 주소: /api/sse/subscribe
      */
-    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE + ";charset=UTF-8")
     public SseEmitter subscribe() {
         return sseService.subscribe();
     }

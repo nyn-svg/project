@@ -89,7 +89,7 @@ public class AdminController {
 	}
 
 	/**
-	 * 전체 안전요원 목록 AJAX 조회 (JSON)
+	 * 전체 사용자 목록 AJAX 조회 (JSON)
 	 */
 	@GetMapping("/api/agents")
 	@ResponseBody
@@ -121,45 +121,15 @@ public class AdminController {
 		response.put("success", result);
 		return ResponseEntity.ok(response);
 	}
+	
+	@GetMapping("/checklist")
+	public String checklistManagementPage(HttpSession session, Model model) {
+	    // 본문 JSP 경로 지정
+	    model.addAttribute("contentPage", "/WEB-INF/views/admin/checklistManagement.jsp");
+	    
+	    return "layout/mainLayout";
+	}
+	
 
-	/*
-	 * ========================================== [참고] 향후 카카오맵 좌표 및 구역 CRUD 처리를 위한
-	 * REST API 예시 (필요 시 주석 제거 및 DTO/Service 연동)
-	 * ==========================================
-	 */
-
-	/*
-	 * // 1. 관제구역 목록 AJAX 조회 (JSON)
-	 * 
-	 * @GetMapping("/api/areas")
-	 * 
-	 * @ResponseBody public ResponseEntity<List<AreaDTO>> getAreaList() {
-	 * List<AreaDTO> list = adminService.getAreaList(); return
-	 * ResponseEntity.ok(list); }
-	 * 
-	 * // 2. 관제구역 저장/수정 (JSON 좌표 데이터 수신)
-	 * 
-	 * @PostMapping("/api/areas/save")
-	 * 
-	 * @ResponseBody public ResponseEntity<Map<String, Object>>
-	 * saveArea(@RequestBody AreaDTO areaDto) { Map<String, Object> response = new
-	 * HashMap<>(); boolean isSuccess = adminService.saveArea(areaDto);
-	 * 
-	 * response.put("success", isSuccess); response.put("message", isSuccess ?
-	 * "구역이 성공적으로 저장되었습니다." : "저장에 실패했습니다.");
-	 * 
-	 * return ResponseEntity.ok(response); }
-	 * 
-	 * // 3. 관제구역 삭제
-	 * 
-	 * @DeleteMapping("/api/areas/{areaId}")
-	 * 
-	 * @ResponseBody public ResponseEntity<Map<String, Object>>
-	 * deleteArea(@PathVariable("areaId") Long areaId) { Map<String, Object>
-	 * response = new HashMap<>(); boolean isSuccess =
-	 * adminService.deleteArea(areaId);
-	 * 
-	 * response.put("success", isSuccess); return ResponseEntity.ok(response); }
-	 */
 
 }

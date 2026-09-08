@@ -79,7 +79,6 @@
                 <h3 class="panel-title" id="selectedTitle"><i class="fa-solid fa-sliders"></i> 선택 요소 정보</h3>
             </div>
 
-            <!-- 2. 세부 내용 및 폼 (스크롤 발생 영역) -->
             <div class="panel-body">
                 <!-- 선택 요소가 없을 때 -->
                 <div class="empty-detail-msg" id="emptyDetailMsg">
@@ -131,7 +130,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-primary" id="btnApplyElement"><i class="fa-solid fa-check"></i> 정보 적용</button>
+                        <button type="button" class="btn-primary" id="btnApplyElement" onclick="applyElementInfo()"><i class="fa-solid fa-check"></i> 정보 적용</button>
                     </div>
                 </form>
             </div>

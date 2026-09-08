@@ -6,3 +6,4 @@
 
 <!-- 2. 전체 레이아웃 껍데기 불러오기 -->
 <jsp:include page="/WEB-INF/views/layout/mainLayout.jsp" />
+
