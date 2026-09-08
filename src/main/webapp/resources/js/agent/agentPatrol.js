@@ -1,38 +1,17 @@
-/* src/main/webapp/resources/js/agent/agentPatrol.js */
-
 $(document).ready(function() {
-    
-    /* ==================================================
-       1. 하단 고정 네비게이션 메뉴 탭 클릭 이벤트 링크 제어
-    ================================================== */
-    // 홈(Home) 탭 클릭 시 메인 홈 화면으로 이동
-    $("#navHome").on("click", function() {
-        console.log("하단 메뉴 : 홈 이동");
-        location.href = "main";
-    });
 
-    // 조치보고(Report) 탭 클릭 시 조치보고 목록 화면으로 이동
-    $("#navReport").on("click", function() {
-        console.log("하단 메뉴 : 조치보고 이동");
-        location.href = "report";
-    });
-
-
-    /* ==================================================
-       2. 본문 메뉴 카드 클릭 이벤트 핸들러 제어
-    ================================================== */
-    // 사전 점검 하기 카드 클릭 시
+    /* 본문 메뉴 */
+    // 사전 점검
     $("#btnPreCheck").on("click", function() {
         console.log("사전 점검 페이지 이동 요청");
         // 추후 연결할 사전점검 상세 폼 뷰 URL 개발 시 연결
         // location.href = "precheck"; 
     });
 
-    // 긴급 처리보고 카드 클릭 시
+    // 긴급 처리보고
     $("#btnEmergencyReport").on("click", function() {
         console.log("긴급 처리보고 페이지 이동 요청");
-        // 추후 연결할 긴급 처리보고 상세 폼 뷰 URL 개발 시 연결
-        // location.href = "emergency"; 
+		location.href = "emergency"; 
     });
 
     // 유관기관 대형 카드 영역 클릭 시 피드백
@@ -44,4 +23,17 @@ $(document).ready(function() {
     $("#btnDialEtc").on("click", function() {
         alert("기타 관할 유관기관 비상 연락망 명단을 조회합니다.");
     });
+	
+	/* 하단 메뉴 */
+	// 홈 이동
+	$("#navHome").on("click", function() {
+	    console.log("하단 메뉴 : 홈 이동");
+	    location.href = "main";
+	});
+
+	// 조치보고 이동
+	$("#navReport").on("click", function() {
+	    console.log("하단 메뉴 : 조치보고 이동");
+	    location.href = "history";
+	});
 });

@@ -1,69 +1,76 @@
-$(document).ready(function () {
+$(document).ready(function() {
 
     /* Context Path */
     const contextPath = window.contextPath || "";
 
     /* 알림 버튼 */
-    $("#notificationBtn").on("click", function () {
+    $("#notificationBtn").on("click", function() {
         // 현재는 알림 기능 연결 전
         console.log("알림 버튼 클릭");
     });
 
 
     /* 근무 상태 변경 */
-    $("#statusChangeBtn").on("click", function () {
+    $("#statusChangeBtn").on("click", function() {
         location.href = "status/edit";
     });
 
 
-    /* 주요 알림 전체보기 */
-    $("#noticeMoreBtn").on("click", function () {
-        console.log("알림 전체보기");
-        // 실제 알림 조회 화면 URL이 만들어지면 연결
-        // location.href = contextPath + "/agent/notice";
+    /* 안전 수칙 */
+	/* 안전 수칙 클릭 핸들러 */
+	$(".rule-item").on("click", function () {
+	    const title = $(this).data("title");
+	    const rawRule = $(this).data("rule");
+
+	    const ruleArray = rawRule.split("|");
+	    
+	    let htmlContent = "<ol class='modal-rule-list'>";
+	    ruleArray.forEach(function(sentence) {
+	        htmlContent += "<li>" + sentence + "</li>";
+	    });
+	    htmlContent += "</ol>";
+
+	    $("#modalTitle").text(title);
+	    $("#modalBodyText").html(htmlContent);
+
+	    $("#ruleModal").css("display", "flex");
+	});
+
+    // 상단 우측 X 버튼 누를 때 팝업 닫기
+    $("#btnCloseModal").on("click", function() {
+        $("#ruleModal").css("display", "none");
     });
 
+    // 하단 검은색 [확인] 버튼 누를 때 팝업 닫기
+    $("#btnConfirmModal").on("click", function() {
+        $("#ruleModal").css("display", "none");
+    });
 
-    /* 주요 알림 클릭 */
-    $(".notice-item").on("click", function () {
-        const type = $(this).data("type");
-        console.log("알림 종류 : " + type);
-
-        if (type === "danger") {
-            // 위험 알림 상세
-            // location.href = contextPath + "/agent/danger";
-            alert("위험 알림 상세 화면");
-        }
-        else if (type === "request") {
-            // 안전 요청 상세
-            // location.href = contextPath + "/agent/request";
-            alert("안전 요청 상세 화면");
-        }
-        else if (type === "notice") {
-            // 공지사항 상세
-            // location.href = contextPath + "/agent/notice";
-            alert("공지사항 상세 화면");
+    // 팝업 창 바깥 어두운 배경 영역을 터치해도 자연스럽게 닫히도록 예외 처리
+    $("#ruleModal").on("click", function(e) {
+        if ($(e.target).hasClass("custom-modal-overlay")) {
+            $(this).css("display", "none");
         }
     });
 
 
     /* 바로가기 */
     // 위험 알림
-    $(".quick-danger").on("click", function () {
+    $(".quick-danger").on("click", function() {
         console.log("위험 알림");
-        location.href = "/history/more";
+        location.href = "history/more";
     });
 
-	
+
     // 안전 순찰
-    $(".quick-patrol").on("click", function () {
+    $(".quick-patrol").on("click", function() {
         console.log("안전순찰");
         location.href = "patrol";
     });
 
 
     // 나의 구역
-    $(".quick-area").on("click", function () {
+    $(".quick-area").on("click", function() {
         console.log("나의 구역");
         // 실제 담당구역 Controller URL 확인 후 연결
         alert("나의 구역 화면");
@@ -71,36 +78,36 @@ $(document).ready(function () {
 
 
     // 조치 보고
-    $(".quick-report").on("click", function () {
+    $(".quick-report").on("click", function() {
         console.log("조치보고");
-		location.href = "/history";
+        location.href = "history";
     });
 
 
     /* 하단 네비게이션 */
     // 안전순찰
-    $("#navPatrol").on("click", function () {
+    $("#navPatrol").on("click", function() {
         console.log("하단 메뉴 : 안전순찰");
         location.href = "patrol";
     });
 
 
     // 홈
-    $("#navHome").on("click", function () {
+    $("#navHome").on("click", function() {
         console.log("하단 메뉴 : 홈");
-        location.href = contextPath + "/agent/main";
+        location.href = "main";
     });
 
 
     // 조치보고
-    $("#navReport").on("click", function () {
+    $("#navReport").on("click", function() {
         console.log("하단 메뉴 : 조치보고");
-        location.href = contextPath + "/agent/history";
+        location.href = "history";
     });
 
 
     /* 로그아웃 */
-    $("#logoutBtn").on("click", function () {
+    $("#logoutBtn").on("click", function() {
         const result = confirm("로그아웃 하시겠습니까?");
 
         if (!result) {
@@ -108,6 +115,6 @@ $(document).ready(function () {
         }
 
         /* 실제 로그아웃 Controller URL 확인 후 연결 */
-        location.href = contextPath + "/logout";
+        location.href = "logout";
     });
 });
