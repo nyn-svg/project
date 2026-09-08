@@ -12,6 +12,7 @@
         <a href="${pageContext.request.contextPath}/admin/safetyCheck" class="nav-link header-link">안전점검</a>
         <a href="${pageContext.request.contextPath}/admin/areaManagement" class="nav-link header-link">행사장 관리</a>
         <a href="${pageContext.request.contextPath}/admin/userManagement" class="nav-link header-link">사용자 관리</a>
+    	<a href="${pageContext.request.contextPath}/admin/checklist" class="nav-link header-link">점검 관리</a>
     </nav>
     
     <!-- 로그아웃 버튼 -->

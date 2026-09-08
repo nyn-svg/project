@@ -13,4 +13,7 @@ public interface UserService {
     
     // 안전요원 정보 수정
     boolean modifyAgent(UserDTO user);
+    
+    // 담당 구역 업데이트
+    boolean updateWorkArea(String userId, String workArea);
 }

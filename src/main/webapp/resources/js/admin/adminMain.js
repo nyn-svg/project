@@ -1,27 +1,158 @@
-console.log("adminMain.js 파일 로드 성공!");
-
-// 1. 페이지 로드 완료 시 자동 실행
-document.addEventListener("DOMContentLoaded", function () {
-    loadAdminMainMapData();
-});
-
-if (document.readyState === "complete" || document.readyState === "interactive") {
-    loadAdminMainMapData();
-}
-
-// 창 크기가 변경될 때 구역/마커 좌표 재계산
-window.addEventListener("resize", function () {
-    if (window.adminMainConfigData) {
-        renderMapAndOverlays(window.adminMainConfigData);
-    }
-});
-
 // 메인 전용 상태 변수
 window.adminMainFacilities = [];
 window.adminMainZones = [];
 window.adminMainConfigData = null;
 
-// 메인 지도 데이터 로드 함수
+// 이벤트 리스너 해제를 위한 AbortController (중복 이벤트 방지용)
+window.mapEventController = window.mapEventController || null;
+
+// ==================================================
+// [핵심] 비동기 페이지 이동 시 외부에서 직접 호출할 메인 진입점
+// ==================================================
+window.initAdminMainMap = function() {
+    // 1. 상태값 완전 리셋
+    window.currentScale = 1;
+    window.panOffsetX = 0;
+    window.panOffsetY = 0;
+
+    // 2. 안전한 줌 & 팬 이벤트 재등록 (기존 이벤트 완전 제거 후 등록)
+    initSafeZoomAndPan();
+
+    // 3. 지도 데이터 로드 및 렌더링
+    loadAdminMainMapData();
+
+    // 4. [추가] 실시간 SSE 수신기 가동!
+    window.initAdminMainSse();
+};
+
+// 최초 일반 페이지 로드 시 대응
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function() {
+        window.initAdminMainMap();
+    });
+} else {
+    window.initAdminMainMap();
+}
+
+// 창 크기가 변경될 때 구역/마커 좌표 재계산
+window.addEventListener("resize", function() {
+    if (window.adminMainConfigData) {
+        renderMapAndOverlays(window.adminMainConfigData);
+    }
+});
+
+// ==================================================
+// 0. 스케일 계산 보조 함수
+// ==================================================
+function getScaleRatios() {
+    const bgMapImageEl = document.getElementById("bgMapImage");
+    const mapWrapper = document.getElementById("mapWrapper") || document.getElementById("admin-map");
+
+    const naturalWidth = (bgMapImageEl && bgMapImageEl.naturalWidth) ? bgMapImageEl.naturalWidth : 1;
+    const naturalHeight = (bgMapImageEl && bgMapImageEl.naturalHeight) ? bgMapImageEl.naturalHeight : 1;
+    const currentWidth = (mapWrapper && mapWrapper.clientWidth) ? mapWrapper.clientWidth : naturalWidth;
+    const currentHeight = (mapWrapper && mapWrapper.clientHeight) ? mapWrapper.clientHeight : naturalHeight;
+
+    return {
+        scaleX: naturalWidth / currentWidth,
+        scaleY: naturalHeight / currentHeight,
+        renderScaleX: currentWidth / naturalWidth,
+        renderScaleY: currentHeight / naturalHeight
+    };
+}
+
+// ==================================================
+// 1. 안정적인 줌 & 팬(확대/축소 및 이동) 로직
+// ==================================================
+function initSafeZoomAndPan() {
+    // 기존에 등록된 이벤트 리스너가 있다면 모두 제거 (이벤트 중복 쌓임 방지)
+    if (window.mapEventController) {
+        window.mapEventController.abort();
+    }
+    window.mapEventController = new AbortController();
+    const { signal } = window.mapEventController;
+
+    const mapWrapper = document.getElementById("mapWrapper") || document.getElementById("admin-map");
+    const bgMapImageEl = document.getElementById("bgMapImage");
+    const zoneCanvas = document.getElementById("zoneCanvas");
+    const facilityLayer = document.getElementById("facilityLayer");
+    const zoomLevelDisplay = document.getElementById("zoomLevel");
+
+    if (!mapWrapper) return;
+
+    let isPanning = false;
+    let startX = 0;
+    let startY = 0;
+
+    // 모든 레이어에 변환 적용
+    window.applyMapTransform = function() {
+        const transformStr = `translate(${window.panOffsetX}px, ${window.panOffsetY}px) scale(${window.currentScale})`;
+
+        if (bgMapImageEl) {
+            bgMapImageEl.style.transformOrigin = "0 0";
+            bgMapImageEl.style.transform = transformStr;
+        }
+        if (zoneCanvas) {
+            zoneCanvas.style.transformOrigin = "0 0";
+            zoneCanvas.style.transform = transformStr;
+        }
+        if (facilityLayer) {
+            facilityLayer.style.transformOrigin = "0 0";
+            facilityLayer.style.transform = transformStr;
+        }
+
+        if (zoomLevelDisplay) {
+            zoomLevelDisplay.innerText = `${Math.round(window.currentScale * 100)}%`;
+        }
+    };
+
+    // 마우스 휠로 확대 / 축소 ({ signal }을 통해 이전 이벤트 바인딩 자동 해제)
+    mapWrapper.addEventListener("wheel", function(e) {
+        e.preventDefault();
+
+        const zoomFactor = 0.1;
+        const delta = e.deltaY < 0 ? 1 : -1;
+        const newScale = Math.min(Math.max(0.5, window.currentScale + delta * zoomFactor), 3.0);
+
+        if (newScale === window.currentScale) return;
+
+        const rect = mapWrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        window.panOffsetX -= (mouseX - window.panOffsetX) * (newScale / window.currentScale - 1);
+        window.panOffsetY -= (mouseY - window.panOffsetY) * (newScale / window.currentScale - 1);
+        window.currentScale = newScale;
+
+        window.applyMapTransform();
+    }, { passive: false, signal });
+
+    // 마우스 드래그로 이동 (Panning)
+    mapWrapper.addEventListener("mousedown", function(e) {
+        isPanning = true;
+        startX = e.clientX - window.panOffsetX;
+        startY = e.clientY - window.panOffsetY;
+        mapWrapper.style.cursor = "grabbing";
+    }, { signal });
+
+    window.addEventListener("mousemove", function(e) {
+        if (!isPanning) return;
+        window.panOffsetX = e.clientX - startX;
+        window.panOffsetY = e.clientY - startY;
+        window.applyMapTransform();
+    }, { signal });
+
+    window.addEventListener("mouseup", function() {
+        if (isPanning) {
+            isPanning = false;
+            if (mapWrapper) mapWrapper.style.cursor = "default";
+        }
+    }, { signal });
+}
+
+// ==================================================
+// 2. 메인 지도 데이터 로드 함수
+// ==================================================
 function loadAdminMainMapData() {
     fetch('/admin/area/get', {
         method: 'GET',
@@ -29,101 +160,98 @@ function loadAdminMainMapData() {
             'Content-Type': 'application/json'
         }
     })
-    .then(function(response) { return response.json(); })
-    .then(function(data) {
-        console.log("1. 서버 응답:", data);
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data || !data.success || !data.configJson) {
+                console.warn("저장된 배치 데이터가 없습니다:", data.message);
+                return;
+            }
 
-        if (!data || !data.success || !data.configJson) {
-            console.warn("저장된 배치 데이터가 없습니다:", data.message);
-            return;
-        }
+            var configData = {};
+            try {
+                configData = typeof data.configJson === 'string' ? JSON.parse(data.configJson) : data.configJson;
+                window.adminMainConfigData = configData;
+            } catch (e) {
+                console.error("JSON 파싱 에러:", e);
+                return;
+            }
 
-        var configData = {};
-        try {
-            configData = typeof data.configJson === 'string' ? JSON.parse(data.configJson) : data.configJson;
-            window.adminMainConfigData = configData; // 글로벌 저장
-            console.log("2. 파싱된 JSON 객체:", configData);
-        } catch (e) {
-            console.error("JSON 파싱 에러:", e);
-            return;
-        }
+            var mapConfig = configData.mapConfig || {};
+            var imageSrc = configData.bgImageSrc
+                || configData.bgImage
+                || configData.imagePath
+                || configData.mapImage
+                || mapConfig.filePath
+                || mapConfig.src;
 
-        var mapConfig = configData.mapConfig || {};
-        var imageSrc = configData.bgImageSrc 
-                    || configData.bgImage 
-                    || configData.imagePath 
-                    || configData.mapImage 
-                    || mapConfig.filePath 
-                    || mapConfig.src;
+            var bgMapImage = document.getElementById("bgMapImage");
+            var emptyNotice = document.getElementById("emptyNotice");
 
-        console.log("3. 찾은 이미지 경로:", imageSrc);
+            if (bgMapImage && imageSrc) {
+                if (emptyNotice) emptyNotice.style.display = "none";
 
-        var bgMapImage = document.getElementById("bgMapImage");
-        var emptyNotice = document.getElementById("emptyNotice");
+                bgMapImage.src = imageSrc;
+                bgMapImage.style.display = "block";
 
-        if (bgMapImage && imageSrc) {
-            if (emptyNotice) emptyNotice.style.display = "none";
-            
-            bgMapImage.src = imageSrc;
-            bgMapImage.style.display = "block";
+                bgMapImage.onload = function() {
+                    renderMapAndOverlays(configData);
 
-            bgMapImage.onload = function () {
-                // 이미지 로드 후 크기 재계산 및 오버레이 렌더링
+                    // 💡 [추가] 이미지와 지도 그리기 완료 후 사이드바 요원 목록 갱신!
+                    if (typeof renderAdminAgentList === 'function') {
+                        renderAdminAgentList();
+                    }
+                };
+            } else {
+                // 이미지가 없더라도 구역 및 사이드바 정보는 표시되도록 처리
                 renderMapAndOverlays(configData);
-            };
-        } else {
-            console.warn("도면 이미지 경로를 찾지 못했습니다.");
-        }
-    })
-    .catch(function(error) {
-        console.error("메인 지도 데이터 로드 실패:", error);
-    });
+                if (typeof renderAdminAgentList === 'function') {
+                    renderAdminAgentList();
+                }
+            }
+        })
+        .catch(function(error) {
+            console.error("메인 지도 데이터 로드 실패:", error);
+        });
 }
 
-// 비율 유지(contain) 대응 통합 렌더링 함수
+// ==================================================
+// 3. 통합 렌더링 함수
+// ==================================================
 function renderMapAndOverlays(configData) {
     var bgMapImage = document.getElementById("bgMapImage");
-    var mapContainer = document.getElementById("admin-map");
+    var mapContainer = document.getElementById("mapWrapper") || document.getElementById("admin-map");
     if (!bgMapImage || !mapContainer) return;
 
-    // 1. 원본 및 컨테이너 크기
-    var naturalWidth = bgMapImage.naturalWidth || 1;
-    var naturalHeight = bgMapImage.naturalHeight || 1;
-    var containerWidth = mapContainer.clientWidth || naturalWidth;
-    var containerHeight = mapContainer.clientHeight || naturalHeight;
+    var containerWidth = mapContainer.clientWidth || bgMapImage.naturalWidth;
+    var containerHeight = mapContainer.clientHeight || bgMapImage.naturalHeight;
 
-    // 2. object-fit: contain 시 적용되는 단일 스케일 및 실제 이미지 표시 영역 계산
-    var scale = Math.min(containerWidth / naturalWidth, containerHeight / naturalHeight);
-    var renderedWidth = naturalWidth * scale;
-    var renderedHeight = naturalHeight * scale;
-
-    // 3. 중앙 정렬로 발생하는 여백(Offset) 계산
-    var offsetX = (containerWidth - renderedWidth) / 2;
-    var offsetY = (containerHeight - renderedHeight) / 2;
-
-    // 캔버스 및 시설물 레이어 크기를 전체 컨테이너에 맞춤
     initMainCanvasSize(containerWidth, containerHeight);
+
+    const { renderScaleX, renderScaleY } = getScaleRatios();
 
     var zonesData = configData.zones || configData.savedZones || [];
     var facilitiesData = configData.facilities || configData.savedFacilities || [];
 
-    // 스케일 및 오프셋 적용 렌더링
     if (zonesData.length > 0) {
         window.adminMainZones = zonesData;
-        drawMainZones(zonesData, scale, offsetX, offsetY);
+        drawMainZones(zonesData, renderScaleX, renderScaleY);
     }
 
     if (facilitiesData.length > 0) {
         window.adminMainFacilities = facilitiesData;
-        renderMainFacilities(facilitiesData, scale, offsetX, offsetY);
+        renderMainFacilities(facilitiesData, renderScaleX, renderScaleY);
     }
+
+    if (typeof window.applyMapTransform === "function") {
+        window.applyMapTransform();
+    }
+
 }
 
-// 캔버스 및 시설물 레이어 크기 설정
 function initMainCanvasSize(width, height) {
     var canvas = document.getElementById("zoneCanvas");
     var facilityLayer = document.getElementById("facilityLayer");
-    
+
     if (canvas) {
         canvas.width = width;
         canvas.height = height;
@@ -134,8 +262,7 @@ function initMainCanvasSize(width, height) {
     }
 }
 
-// 비율(scale) 및 여백(offset) 반영 구역 렌더링
-function drawMainZones(zones, scale, offsetX, offsetY) {
+function drawMainZones(zones, renderScaleX, renderScaleY) {
     var canvas = document.getElementById("zoneCanvas");
     if (!canvas) return;
     var ctx = canvas.getContext("2d");
@@ -151,26 +278,22 @@ function drawMainZones(zones, scale, offsetX, offsetY) {
         if (!points || points.length < 3) return;
 
         ctx.beginPath();
-        // 원본 좌표 * 스케일 + 여백
-        ctx.moveTo(points[0].x * scale + offsetX, points[0].y * scale + offsetY);
+        ctx.moveTo(points[0].x * renderScaleX, points[0].y * renderScaleY);
 
-        for (var i = 1; i < points.length; i++) {
-            ctx.lineTo(points[i].x * scale + offsetX, points[i].y * scale + offsetY);
+        for (var i = 1;i < points.length;i++) {
+            ctx.lineTo(points[i].x * renderScaleX, points[i].y * renderScaleY);
         }
 
         ctx.closePath();
-
         ctx.fillStyle = zone.fillColor || "rgba(56, 189, 248, 0.3)";
         ctx.fill();
-
         ctx.strokeStyle = zone.strokeColor || "#38bdf8";
         ctx.lineWidth = 2;
         ctx.stroke();
     });
 }
 
-// 비율(scale) 및 여백(offset) 반영 시설물 마커 렌더링
-function renderMainFacilities(facilities, scale, offsetX, offsetY) {
+function renderMainFacilities(facilities, renderScaleX, renderScaleY) {
     var facilityLayer = document.getElementById("facilityLayer");
     if (!facilityLayer) return;
 
@@ -189,9 +312,8 @@ function renderMainFacilities(facilities, scale, offsetX, offsetY) {
         var iconClass = facilityIconMap[fac.type] || "fa-location-dot";
         var marker = document.createElement("div");
 
-        // 원본 좌표 * 스케일 + 여백
-        var posX = fac.x * scale + offsetX;
-        var posY = fac.y * scale + offsetY;
+        var posX = fac.x * renderScaleX;
+        var posY = fac.y * renderScaleY;
 
         marker.className = "facility-marker";
         marker.id = "main_fac_" + (fac.id || Math.random().toString(36).substr(2, 9));
@@ -202,8 +324,62 @@ function renderMainFacilities(facilities, scale, offsetX, offsetY) {
         marker.style.cursor = "pointer";
         marker.style.zIndex = "25";
 
-        marker.innerHTML = '<i class="fa-solid ' + iconClass + '" style="font-size: 14px; color: #38bdf8; background: rgba(15, 23, 42, 0.85); padding: 5px; border-radius: 50%; border: 1px solid #38bdf8; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;"></i>';
+        marker.innerHTML = `<i class="fa-solid ${iconClass}" style="font-size: 14px; color: #38bdf8; background: rgba(15, 23, 42, 0.8); padding: 5px; border-radius: 50%; border: 1px solid #38bdf8;"></i>`;
 
         facilityLayer.appendChild(marker);
     });
 }
+
+
+
+// ==================================================
+// 4. SSE 실시간 지도 변경 수신 연결 함수
+// ==================================================
+window.initAdminMainSse = function() {
+    if (window.adminMapSseSource) {
+        window.adminMapSseSource.close();
+        window.adminMapSseSource = null;
+    }
+
+    var contextPath = window.contextPath || '';
+    window.adminMapSseSource = new EventSource(contextPath + '/api/sse/subscribe');
+
+	window.adminMapSseSource.addEventListener("MAP_UPDATED", function(e) {
+	    console.log("⚡ [SSE] 실시간 지도/구역 변경 신호 수신!");
+
+	    try {
+	        var rawData = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+	        
+	        // 1. SSE로 들어온 최신 구역/DTO 데이터 세팅
+	        var newConfigData = rawData;
+	        if (rawData.configJson) {
+	            newConfigData = typeof rawData.configJson === 'string' 
+	                          ? JSON.parse(rawData.configJson) 
+	                          : rawData.configJson;
+	        }
+
+	        // 전역 변수 갱신
+	        window.adminMainConfigData = newConfigData;
+
+	        // 2. 메인 지도 UI 갱신 (지도가 있는 페이지일 경우)
+	        if (typeof renderMapAndOverlays === 'function') {
+	            renderMapAndOverlays(newConfigData);
+	        }
+
+	        // 3. 💡 [핵심] 사이드바 요원 목록 실시간 재렌더링
+	        // renderAdminAgentList가 있으면 즉시 다시 그리고, 없으면 전체 로드 함수 호출
+	        if (typeof renderAdminAgentList === 'function') {
+	            renderAdminAgentList();
+	        } else if (typeof loadAdminAgentList === 'function') {
+	            loadAdminAgentList();
+	        }
+
+	    } catch (err) {
+	        console.error("SSE 데이터 처리 중 오류 발생:", err);
+	    }
+	});
+
+    window.adminMapSseSource.onerror = function() {
+        console.warn("SSE 연결 해제됨 또는 오류 발생");
+    };
+};

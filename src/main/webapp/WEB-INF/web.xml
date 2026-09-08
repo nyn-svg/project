@@ -1,56 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jakartaee" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd" version="6.0">
-  
-	<!-- The definition of the Root Spring Container shared by all Servlets 
-		and Filters -->
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath:com/spring/context/root-context.xml</param-value>
-	</context-param>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xmlns="https://jakarta.ee/xml/ns/jakartaee" 
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd" 
+         version="6.0">
 
-	<!-- Creates the Spring Container shared by all Servlets and Filters -->
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
-	
-		<!-- Processes application requests -->
-	<servlet>
-		<servlet-name>appServlet</servlet-name>
-		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-		<init-param>
-			<param-name>contextConfigLocation</param-name>
-			<param-value>classpath:com/spring/context/servlet-context.xml</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-		
+    <!-- Root Spring Container 설정 -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:com/spring/context/root-context.xml</param-value>
+    </context-param>
 
-		<!-- 💡 비동기(SSE) 지원 옵션 추가 -->
-		<async-supported>true</async-supported>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
-		<multipart-config>
-			<max-file-size>52428800</max-file-size> <!-- 50MB -->
-			<max-request-size>104857600</max-request-size> <!-- 100MB -->
-			<file-size-threshold>0</file-size-threshold>
-		</multipart-config>
-	</servlet>
+    <!-- 1. 한글 인코딩 필터 (UTF-8 및 비동기 지원) -->
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <!-- 💡 async-supported는 init-param보다 상단에 위치해야 에러가 나지 않습니다. -->
+        <async-supported>true</async-supported>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
 
-	<servlet-mapping>
-		<servlet-name>appServlet</servlet-name>
-		<url-pattern>/</url-pattern>
-	</servlet-mapping>
-	
-	<filter>
-	    <filter-name>springSecurityFilterChain</filter-name>
-	    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-	    <async-supported>true</async-supported>
-	</filter>
-	
-	<filter-mapping>
-	    <filter-name>springSecurityFilterChain</filter-name>
-	    <url-pattern>/*</url-pattern>
-	    <dispatcher>REQUEST</dispatcher>
-    <dispatcher>ASYNC</dispatcher>
-	</filter-mapping>
-	
-	
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ASYNC</dispatcher>
+    </filter-mapping>
+
+    <!-- 2. Spring Security 필터 (비동기 지원) -->
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ASYNC</dispatcher>
+    </filter-mapping>
+
+    <!-- 3. DispatcherServlet (appServlet) 설정 (비동기 지원) -->
+    <servlet>
+        <servlet-name>appServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:com/spring/context/servlet-context.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+
+        <multipart-config>
+            <max-file-size>52428800</max-file-size> <!-- 50MB -->
+            <max-request-size>104857600</max-request-size> <!-- 100MB -->
+            <file-size-threshold>0</file-size-threshold>
+        </multipart-config>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>appServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
 </web-app>

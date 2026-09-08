@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.dto.AreaSaveRequestDTO;
 import com.spring.mapper.AreaMapper;
+import com.spring.service.SseService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -26,20 +27,35 @@ public class AdminAreaController {
 
     @Autowired
     private AreaMapper areaMapper;
+    @Autowired
+    private SseService sseService;
 
-    @PostMapping("/save")
+    @PostMapping(value = "/save", produces = "application/json;charset=UTF-8", consumes = "application/json;charset=UTF-8")
     public ResponseEntity<Map<String, Object>> saveAreaConfig(@RequestBody AreaSaveRequestDTO requestDTO) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 1. DTO 객체를 오라클 CLOB에 저장할 JSON 문자열로 변환
+            // 1. DTO 객체를 JSON 문자열로 변환
             ObjectMapper objectMapper = new ObjectMapper();
             String configJson = objectMapper.writeValueAsString(requestDTO);
 
-            // 2. MyBatis Mapper 호출하여 DB에 MERGE (기본도면 이름: '메인도면')
-            int result = areaMapper.saveAreaConfig("메인도면", configJson);
+            // 2. 기존 도면 데이터가 존재하는지 먼저 조회
+            String mapName = "메인도면";
+            String existingConfig = areaMapper.selectAreaConfig(mapName);
+
+            int result = 0;
+
+            // 3. 존재 여부에 따라 UPDATE 또는 INSERT 분기 수행
+            if (existingConfig != null) {
+                result = areaMapper.updateAreaConfig(mapName, configJson);
+            } else {
+                result = areaMapper.insertAreaConfig(mapName, configJson);
+            }
 
             if (result > 0) {
+            	
+            	sseService.sendEvent("MAP_UPDATED", requestDTO);
+            	
                 response.put("success", true);
                 response.put("message", "행사장 배치 데이터가 오라클 DB에 성공적으로 저장되었습니다.");
                 return ResponseEntity.ok(response);

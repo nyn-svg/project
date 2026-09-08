@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.mapper.ChecklistMapper">
+
+    <!-- 1. 대상별(AGENT / CONTROL) 문항 전체 목록 조회 (관리자용) -->
+    <select id="selectItemsByTarget" parameterType="string" resultType="com.spring.dto.ChecklistItemDTO">
+        SELECT 
+            ITEM_ID     AS itemId,
+            TARGET_TYPE AS targetType,
+            CATEGORY    AS category,
+            ITEM_TITLE  AS itemTitle,
+            QUESTION    AS question,
+            SORT_ORDER  AS sortOrder,
+            IS_USE      AS isUse,
+            REG_DATE    AS regDate
+        FROM CHECKLIST_ITEM
+        WHERE TARGET_TYPE = #{targetType}
+        ORDER BY SORT_ORDER ASC, ITEM_ID ASC
+    </select>
+
+    <!-- 2. 신규 체크리스트 문항 등록 -->
+    <insert id="insertChecklistItem" parameterType="com.spring.dto.ChecklistItemDTO">
+        INSERT INTO CHECKLIST_ITEM (
+            ITEM_ID,
+            TARGET_TYPE,
+            CATEGORY,
+            ITEM_TITLE,
+            QUESTION,
+            SORT_ORDER,
+            IS_USE,
+            REG_DATE
+        ) VALUES (
+            SEQ_CHECKLIST_ITEM_ID.NEXTVAL,
+            #{targetType},
+            #{category},
+            #{itemTitle},
+            #{question},
+            #{sortOrder},
+            #{isUse},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 3. 체크리스트 문항 수정 -->
+    <update id="updateChecklistItem" parameterType="com.spring.dto.ChecklistItemDTO">
+        UPDATE CHECKLIST_ITEM
+        SET 
+            CATEGORY   = #{category},
+            ITEM_TITLE = #{itemTitle},
+            QUESTION   = #{question},
+            SORT_ORDER = #{sortOrder},
+            IS_USE     = #{isUse}
+        WHERE ITEM_ID  = #{itemId}
+    </update>
+
+    <!-- 4. 체크리스트 문항 삭제 -->
+    <delete id="deleteChecklistItem" parameterType="long">
+        DELETE FROM CHECKLIST_ITEM
+        WHERE ITEM_ID = #{itemId}
+    </delete>
+    
+<!-- 5. 사이드바용 제출 이력 요약 목록 조회 -->
+<select id="selectChecklistHistoryList" resultType="com.spring.dto.ChecklistHistoryDTO">
+    SELECT 
+        R.USER_ID                                            AS userId,
+        MIN(I.TARGET_TYPE)                                   AS targetType,  <!-- MAX -> MIN 으로 변경 -->
+        MAX(R.CHECK_DATE)                                    AS checkDate,
+        TO_CHAR(MAX(R.CHECK_DATE), 'YYYY-MM-DD HH24:MI:SS')  AS checkDateStr,
+        COUNT(R.RESULT_ID)                                   AS totalCount,
+        COUNT(CASE WHEN R.CHECK_STATUS = '정상' THEN 1 END)   AS normalCount,
+        COUNT(CASE WHEN R.CHECK_STATUS = '주의' THEN 1 END)   AS cautionCount,
+        COUNT(CASE WHEN R.CHECK_STATUS = '위험' THEN 1 END)   AS dangerCount
+    FROM CHECKLIST_RESULT R
+    JOIN CHECKLIST_ITEM I ON R.ITEM_ID = I.ITEM_ID
+    GROUP BY R.USER_ID, TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS')
+    ORDER BY MAX(R.CHECK_DATE) DESC
+</select>
+
+    <!-- 6. 모달용 상세 제출 결과 조회 -->
+    <select id="selectChecklistHistoryDetail" parameterType="map" resultType="com.spring.dto.ChecklistHistoryDTO">
+        SELECT 
+            R.RESULT_ID    AS resultId,
+            R.USER_ID      AS userId,
+            I.TARGET_TYPE  AS targetType,
+            I.CATEGORY     AS category,
+            I.ITEM_TITLE   AS itemTitle,
+            I.QUESTION     AS question,
+            R.CHECK_STATUS AS checkStatus,
+            R.REMARK       AS remark,
+            TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS') AS checkDateStr
+        FROM CHECKLIST_RESULT R
+        JOIN CHECKLIST_ITEM I ON R.ITEM_ID = I.ITEM_ID
+        WHERE R.USER_ID = #{userId}
+          AND TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS') = #{checkDateStr}
+        ORDER BY I.SORT_ORDER ASC, I.ITEM_ID ASC
+    </select>
+
+</mapper>

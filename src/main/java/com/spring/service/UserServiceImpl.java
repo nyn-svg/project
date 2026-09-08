@@ -49,4 +49,12 @@ public class UserServiceImpl implements UserService {
         }
         return userMapper.updateUser(user) > 0;
     }
+    
+    @Override
+    public boolean updateWorkArea(String userId, String workArea) {
+        UserDTO user = new UserDTO();
+        user.setUserId(userId);
+        user.setWorkArea(workArea);
+        return userMapper.updateUser(user) > 0;
+    }
 }
