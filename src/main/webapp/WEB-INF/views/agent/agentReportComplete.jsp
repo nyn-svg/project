@@ -5,9 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>보고 등록 완료</title>
-    <!-- FontAwesome 아이콘 -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 커스텀 CSS -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/agent/agentReportComplete.css">
 </head>
 <body>
@@ -24,13 +23,12 @@
 
         <!-- 메인 콘텐츠 -->
         <main class="mobile-content">
-            <!-- 완료 체크 아이콘 및 안내 문구 -->
             <div class="complete-status">
                 <div class="check-icon-circle">
                     <i class="fa-solid fa-check"></i>
                 </div>
                 <h2 class="complete-title">보고가 등록되었습니다.</h2>
-                <p class="complete-sub">상황실로 전송되었습니다.</p>
+                <p class="complete-sub">관제실로 전송되었습니다.</p>
             </div>
 
             <!-- 보고 정보 요약 카드 -->
@@ -62,36 +60,9 @@
         </main>
     </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. URL 파라미터 읽기
-    var urlParams = new URLSearchParams(window.location.search);
-    var type = urlParams.get('type') || '인파 밀집';
-    var area = urlParams.get('area') || 'A구역';
-
-    // 2. 현재 시간 생성 (YYYY-MM-DD HH:mm)
-    var now = new Date();
-    var year = now.getFullYear();
-    var month = String(now.getMonth() + 1).padStart(2, '0');
-    var day = String(now.getDate()).padStart(2, '0');
-    var hours = String(now.getHours()).padStart(2, '0');
-    var minutes = String(now.getMinutes()).padStart(2, '0');
-    var formattedTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
-
-    // 3. 랜덤 보고 번호 생성 (예: RPT-20260520-1234)
-    var randomNum = Math.floor(1000 + Math.random() * 9000);
-    var reportNo = 'RPT-' + year + month + day + '-' + randomNum;
-
-    // 4. 화면 요소에 값 채워넣기
-    var infoValues = document.querySelectorAll('.info-card .info-value');
-    if (infoValues.length >= 4) {
-        infoValues[0].innerText = type;        // 보고 유형
-        infoValues[1].innerText = area;        // 발생 구역
-        infoValues[2].innerText = formattedTime; // 등록 시간
-        infoValues[3].innerText = reportNo;      // 보고 번호
-    }
-});
-</script>
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="${pageContext.request.contextPath}/resources/js/agent/agentReportComplete.js"></script>
 
 </body>
 </html>

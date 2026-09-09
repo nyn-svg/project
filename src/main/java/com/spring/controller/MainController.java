@@ -1,13 +1,21 @@
 package com.spring.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.spring.dto.DroneDTO;
+import com.spring.service.DroneService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 public class MainController {
+	
+	@Autowired
+	private DroneService droneService;
 
     // 1. 메인 첫 진입 ("/")
     @GetMapping("/")
@@ -15,14 +23,26 @@ public class MainController {
         model.addAttribute("contentPage", "/WEB-INF/views/mainContent.jsp");
         return "main";
     }
+    
+    // 실시간 감지 페이지 이동
+    @GetMapping("/drone/realtime")
+    public String realtimePage(Model model) {
+    	
+    	model.addAttribute("contentPage", "/WEB-INF/views/drone/realtime.jsp");
+    	model.addAttribute("currentMenu", "realtime");
+        return "main"; 
+    }
 
- // 2. 드론 관제 화면 (/drone/stream)
+    // 2. 드론 관제 화면 (/drone/stream)
     @GetMapping("/drone/stream")
     public String droneStream(@RequestParam(value = "id", required = false) String droneId,
     						  @RequestParam(value = "zone", required = false) String zoneName, HttpServletRequest request, Model model) {
 
         model.addAttribute("droneId", droneId);
         model.addAttribute("zoneName", zoneName);
+        
+        DroneDTO drone = droneService.getDroneById(droneId);
+    	model.addAttribute("drone", drone);
 
         String viewPath = "/WEB-INF/views/drone/stream.jsp";
 
@@ -49,15 +69,6 @@ public class MainController {
         model.addAttribute("currentMenu", "detection");
 
         // 메인 레이아웃 JSP 파일명을 리턴 (예: main, index, layout 등 프로젝트 설정명에 맞게 지정)
-        return "main"; 
-    }
-    
- // 실시간 감지 임시 페이지 이동 매핑
-    @GetMapping("/drone/realtime")
-    public String realtimePage(Model model) {
-    	
-    	model.addAttribute("contentPage", "/WEB-INF/views/drone/realtime.jsp");
-    	model.addAttribute("currentMenu", "realtime");
         return "main"; 
     }
     

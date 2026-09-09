@@ -1,34 +1,58 @@
-/* 스트리밍 화면 레이아웃 컨테이너 */
-.stream-container {
-    width: 100%;
-    height: calc(100vh - 70px); /* 헤더/푸터 제외한 전체 높이 기준 */
-    box-sizing: border-box;
-    padding-right: 380px; /* 사이드바 가림 영역 미리 확보 (사이드바 너비에 맞춰 조절) */
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
+/* ==========================================
+   1. 전체 화면 및 스트리밍 메인 레이아웃
+   ========================================== */
+.drone-stream-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
 }
 
-/* 스트리밍 비디오 박스 (가로 2/3, 세로 4/3) */
+/* 상단 비디오 + 우측 관제 패널 분할 */
+.stream-top-content {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+}
+
+/* 좌측 비디오 영역 */
+.stream-main-area {
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
+    flex-basis: 0% !important;
+    width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+/* 스트리밍 비디오 박스 */
 .stream-video-box {
-    width: 66.66%;              /* 가로 3분의 2 */
-    height: 75%;                /* 세로 4분의 3 */
-    background-color: #0b0f19;  /* 비디오 들어올 어두운 배경 */
-    border: 1px solid #1e293b;
-    border-radius: 12px;
-    position: relative;
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #090d16;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    position: relative;
 }
 
-/* 비디오 화면 상단 정보 라벨 (LIVE, 드론 ID 등) */
 .stream-header-info {
     position: absolute;
-    top: 16px;
-    left: 20px;
+    top: 12px;
+    left: 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     z-index: 10;
 }
 
@@ -37,7 +61,7 @@
     color: #ffffff;
     font-size: 12px;
     font-weight: bold;
-    padding: 4px 8px;
+    padding: 3px 6px;
     border-radius: 4px;
     letter-spacing: 0.5px;
 }
@@ -48,103 +72,289 @@
     font-weight: 600;
 }
 
-/* 플레이어 중앙 대기 화면 (실제 스트리밍 연결 전 영역) */
+/* 스트리밍 비디오 컨테이너 */
 .stream-placeholder {
-    flex: 1 !important;
-    height: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000;
+    overflow: hidden;
 }
 
-.stream-placeholder .icon {
-    font-size: 48px;
-    margin-bottom: 12px;
+#stream-video, #video-stream {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
+/* 비디오 기본 컨트롤바 숨김 */
+#stream-video::-webkit-media-controls-play-button,
+#stream-video::-webkit-media-controls-timeline,
+#stream-video::-webkit-media-controls-current-time-display,
+#stream-video::-webkit-media-controls-time-remaining-display,
+#stream-video::-webkit-media-controls-mute-button,
+#stream-video::-webkit-media-controls-volume-slider,
+#video-stream::-webkit-media-controls-play-button,
+#video-stream::-webkit-media-controls-timeline,
+#video-stream::-webkit-media-controls-current-time-display,
+#video-stream::-webkit-media-controls-time-remaining-display,
+#video-stream::-webkit-media-controls-mute-button,
+#video-stream::-webkit-media-controls-volume-slider {
+    display: none !important;
+}
 
+#stream-video::-webkit-media-controls-fullscreen-button,
+#video-stream::-webkit-media-controls-fullscreen-button {
+    display: block !important;
+}
 
-/* 우측 관제 패널 컨테이너 */
-.control-panel-right {
-    width: 320px;
+/* 전체화면 플로팅 버튼 */
+.btn-fullscreen {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 30;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(51, 65, 85, 0.7);
+    color: #cbd5e1;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.btn-fullscreen:hover {
+    background: rgba(14, 165, 233, 0.3);
+    color: #38bdf8;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.35);
+}
+
+/* 브라우저 전체화면 상태일 때의 보정 */
+.stream-placeholder:fullscreen #stream-video,
+.stream-placeholder:fullscreen #video-stream,
+.stream-placeholder:-webkit-full-screen #stream-video,
+.stream-placeholder:-webkit-full-screen #video-stream {
+    object-fit: contain;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* ==========================================
+   2. 토스트 알림 메시지
+   ========================================== */
+#toast-container {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 90%;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    align-items: center;
+}
+
+.toast-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 6px;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: 90%;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid transparent;
+    opacity: 0;
+    transform: translateY(-12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-message.error {
+    background-color: rgba(239, 68, 68, 0.9);
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+.toast-message.warning {
+    background-color: rgba(245, 158, 11, 0.9);
+    border-color: rgba(251, 191, 36, 0.4);
+}
+
+.toast-message.info {
+    background-color: rgba(14, 165, 233, 0.9);
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* ==========================================
+   3. 스위치 토글
+   ========================================== */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px !important;
+    height: 18px !important;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #334155;
+    transition: .25s ease;
+    border-radius: 18px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    transition: .25s ease;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #0ea5e9;
+}
+
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+/* ==========================================
+   4. 우측 관제 패널
+   ========================================== */
+.control-panel-right {
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    flex: 0 0 320px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    height: 100% !important;
+    overflow: hidden !important;
 }
 
 /* 관제 카드 공통 스타일 */
 .control-card {
     background: rgba(15, 23, 42, 0.75);
-    border: 1px solid rgba(51, 65, 85, 0.7);
-    border-radius: 10px;
-    padding: 14px;
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: 8px;
+    padding: 10px 12px !important;
     color: #f8fafc;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
 }
 
-/* 1. 드론 기본 정보 카드 */
+/* 관제 카드 공통 헤더 및 타이틀 그룹화 */
+.control-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    height: 24px;
+}
+
+.control-card .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin: 0;
+    line-height: 1;
+}
+
+/* 순회 관제 모드 카드 */
+.auto-switch-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+/* 1. 드론 정보 카드 */
 .drone-info-card .card-title {
     font-size: 18px;
-    font-weight: 700;
     color: #38bdf8;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .info-row {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
+    font-size: 14px;
     color: #94a3b8;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
 .info-value {
-    color: #e2e8f0;
+    color: #f1f5f9;
     font-weight: 600;
 }
 
 /* 2. 밀집도 카드 */
-.density-card .card-header {
+.density-value-box {
+    font-size: 22px;
+    font-weight: 800;
+    color: #38bdf8;
+    line-height: 1;
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 2px;
 }
 
-.density-card .card-title {
-    font-size: 15px;
+/* 통합 토글 상자 */
+.toggle-group-box {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.toggle-row-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 8px;
+    font-size: 14px;
     font-weight: 600;
     color: #cbd5e1;
 }
 
-.density-value-box {
-    font-size: 24px;
-    font-weight: 800;
-    color: #38bdf8;
-}
-
-.control-btn-group {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 10px;
-}
-
-.control-btn {
-    flex: 1;
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #94a3b8;
-    font-size: 11px;
-    padding: 6px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.control-btn:hover, .control-btn.active {
-    background: #0284c7;
-    color: #ffffff;
-    border-color: #38bdf8;
+.toggle-row-item + .toggle-row-item {
+    border-top: 1px solid rgba(51, 65, 85, 0.4);
 }
 
 /* 민감도 설정 패널 */
@@ -152,13 +362,13 @@
     background: rgba(15, 23, 42, 0.5);
     border: 1px solid #1e293b;
     border-radius: 6px;
-    padding: 8px;
+    padding: 5px 6px;
 }
 
 .sensitivity-label {
-    font-size: 11px;
+    font-size: 12px;
     color: #64748b;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
 }
 
 .sensitivity-grid {
@@ -171,202 +381,235 @@
     background: #0f172a;
     border: 1px solid #334155;
     color: #cbd5e1;
-    font-size: 10px;
-    padding: 4px;
-    border-radius: 3px;
+    font-size: 12px;
+    padding: 4px 2px;
+    border-radius: 4px;
     text-align: center;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .sens-btn.active {
-    border-color: #38bdf8;
-    color: #38bdf8;
-    font-weight: bold;
-}
-
-.drone-stream-wrapper {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    width: 100% !important;
-    height: 100% !important;
-    box-sizing: border-box !important;
-}
-
-/* 상단 영역 (새로 추가한 클래스): 비디오 + 우측 정보 패널을 가로로 정렬 */
-.stream-top-content {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: flex-start !important; /* space-between 방지 */
-    gap: 16px !important;
-    width: 100% !important;
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-}
-
-/* 좌측 메인 영역 레이아웃 조정 */
-.stream-main-area {
-    flex-grow: 1 !important;
-    flex-shrink: 1 !important;
-    flex-basis: 0% !important; /* flex-basis를 0으로 주어 남은 너비 100% 흡수 */
-    width: 0 !important;        /* flex 레이아웃에서 100% 확장을 유도 */
-    max-width: none !important; /* 혹시 걸려있을지 모를 최대 너비 제한 해제 */
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100% !important;
-}
-
-/* 스트리밍 비디오 박스: 높이를 전체의 약 62% 수준으로 조절 */
-.stream-video-box {
-    width: 100% !important;
-    height: 100% !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background: #090d16;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-/* 하단 감지 이력 및 범례 영역 (남은 높이 차지) */
-.detection-history-section {
-    width: 100% !important;        /* 상단 전체 너비와 동일하게 확장 */
-    flex: 0 0 auto !important;     /* 높이가 불필요하게 커지지 않도록 고정 */
-    box-sizing: border-box !important;
-    background: rgba(15, 23, 42, 0.65) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 10px !important;
-    padding: 8px 12px !important;   /* 내부 여백 슬림화 */
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-}
-
-/* 우측 관제 패널 영역 */
-.control-panel-right {
-    width: 320px !important;
-    min-width: 320px !important;
-    max-width: 320px !important;
-    flex: 0 0 320px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
+    background-color: rgba(14, 165, 233, 0.2) !important;
+    color: #38bdf8 !important;
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.3);
+    font-weight: 600;
 }
 
 /* 3. 야생동물 감지 카드 */
-.wildlife-card .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
 .danger-badge {
     background: rgba(239, 68, 68, 0.2);
     color: #ef4444;
     border: 1px solid rgba(239, 68, 68, 0.5);
     font-size: 12px;
     font-weight: 700;
-    padding: 2px 8px;
+    padding: 2px 7px;
     border-radius: 4px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
 }
 
 .wildlife-body {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
+    margin-top: 10px;
 }
 
 .detection-info {
-    font-size: 13px;
+    font-size: 14px;
     color: #cbd5e1;
-    line-height: 1.6;
+    line-height: 1.35;
 }
 
+/* 오감지 버튼 */
 .misdetect-btn {
-    background: #1e293b;
-    border: 1px solid #475569;
-    color: #94a3b8;
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 6px;
+    background-color: rgba(14, 165, 233, 0.15);
+    border: 1px solid #0ea5e9;
+    color: #38bdf8;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    margin: 0;
+    line-height: 1;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.25);
 }
 
 .misdetect-btn:hover {
-    background: #334155;
-    color: #f8fafc;
+    background-color: rgba(14, 165, 233, 0.3);
+    color: #ffffff;
+    border-color: #38bdf8;
+}
+
+.misdetect-btn:disabled {
+    background: #0f172a !important;
+    color: #64748b !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
 }
 
 /* 4. 자동 신고 카드 */
-.report-card .card-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #cbd5e1;
-    margin-bottom: 8px;
+.report-card {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 110px !important;
+    overflow: hidden !important;
 }
 
+.report-card .card-header {
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    flex-shrink: 0;
+}
+
+/* 이력 스크롤 영역 */
+.report-list-wrapper {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.empty-report-msg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* 스크롤바 디자인 */
+.report-list-wrapper::-webkit-scrollbar {
+    width: 4px;
+}
+.report-list-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.4);
+    border-radius: 4px;
+}
+.report-list-wrapper::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+}
+
+/* 개별 신고 아이템 박스 */
 .report-status-box {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: 6px;
+    position: relative;
+    padding: 10px 32px 10px 12px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.report-status-box:hover {
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.report-box-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid #1e293b;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 12px;
 }
 
 .status-text {
     color: #38bdf8;
+    font-size: 13px;
     font-weight: 600;
 }
 
 .status-time {
     color: #64748b;
     font-size: 11px;
+    margin-left: auto;
+    margin-right: 6px;
 }
 
+.btn-report-close {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
 
+.btn-report-close:hover {
+    color: #ef4444;
+    opacity: 1;
+}
+
+.report-box-msg {
+    color: #cbd5e1;
+    font-size: 12px;
+    line-height: 1.3;
+    word-break: keep-all;
+}
 
 /* ==========================================
-   하단 감지 이력 섹션
+   5. 하단 감지 이력 섹션
    ========================================== */
 .detection-history-section {
-    width: 100%;
-    box-sizing: border-box;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 10px 14px;            /* 패딩 축소 (기존 16px -> 10px 14px) */
-    display: flex;
-    flex-direction: column;
-    gap: 8px;                     /* 간격 축소 (기존 12px -> 8px) */
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    box-sizing: border-box !important;
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* 1. 상단 헤더 & 버튼 */
-.history-header {
+.history-header,
+.header-title-box,
+.legend-items,
+.legend-item {
     display: flex;
     align-items: center;
+}
+
+.history-header {
     justify-content: space-between;
 }
 
 .header-title-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .title-icon {
     color: #38bdf8;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .title-text {
@@ -380,9 +623,9 @@
     background: rgba(56, 189, 248, 0.15);
     color: #38bdf8;
     border: 1px solid rgba(56, 189, 248, 0.3);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
-    padding: 2px 8px;
+    padding: 2px 6px;
     border-radius: 10px;
 }
 
@@ -390,26 +633,23 @@
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff;
     border: none;
-    border-radius: 8px;
-    padding: 6px 14px;
+    border-radius: 6px;
+    padding: 5px 12px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .btn-manual-register:hover {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    transform: translateY(-1px);
 }
 
-/* 2. 테이블 스크롤 및 레이아웃 */
 .history-table-wrapper {
-    max-height: 110px !important;  /* 높이 강제 축소 */
+    max-height: 100px !important;
     overflow-y: auto !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 6px !important;
@@ -422,35 +662,33 @@
     font-size: 12px;
 }
 
-.history-table th {
+.history-table th,
+.history-table td {
     padding: 4px 6px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
+}
+
+.history-table th {
+    background: rgba(30, 41, 59, 0.8);
+    color: #94a3b8;
 }
 
 .history-table td {
-    padding: 4px 6px !important;
-    font-size: 11px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.history-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.04);
-}
-
-/* 상태 및 위험 등급 배지 공통 */
 .badge {
     display: inline-block;
-    padding: 3px 8px;
-    border-radius: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
 }
 
-/* 위험 등급 색상 */
 .danger-high { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 .danger-mid  { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
 .danger-low  { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
 
-/* 처리 상태 색상 */
 .status-unconfirmed { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
 .status-in-progress { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
 .status-completed   { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
@@ -461,7 +699,7 @@
     border: none;
     color: #64748b;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
     transition: all 0.2s;
 }
@@ -471,9 +709,8 @@
     background: rgba(56, 189, 248, 0.1);
 }
 
-/* 3. 하단 범례 */
 .history-footer-legend {
-    font-size: 10px;
+    font-size: 11px;
     padding-top: 2px;
 }
 
@@ -483,17 +720,9 @@
 }
 
 .legend-items {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    gap: 14px;
 }
 
 .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
-
-
-
-

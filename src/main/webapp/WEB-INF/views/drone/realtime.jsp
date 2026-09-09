@@ -88,12 +88,33 @@
     background-color: #000;
 }
 
+.video-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 영역에 여백 없이 꽉 채우기 (비율을 맞추려면 contain 사용) */
+    display: block;
+}
 .video-wrapper video {
     width: 100%;
     height: 100%;
     object-fit: cover; /* 영역에 여백 없이 꽉 채우기 (비율을 맞추려면 contain 사용) */
     display: block;
 }
+
+/* 안내 문구 공통 레이아웃 */
+.drone-notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.drone-notice.error { color: #f87171; }
+.drone-notice.warning { color: #fcd34d; }
+.drone-notice.ready { color: #38bdf8; }
 </style>
 
 <div class="realtime-container">
@@ -111,126 +132,129 @@
 </div>
 
 <script>
-//이 페이지가 브라우저에 호출되어 눈에 보이기만 하면 이 괄호 안의 전체 코드가 무조건 처음부터 다시 자동 실행됩니다.
 $(document).ready(function() {
-	var ctx = window.contextPath || '';
-	
-    function renderDroneGrid(drones) {
-        const gridContainer = document.getElementById('droneGrid');
-        const countElement = document.getElementById('droneCount');
+    var ctx = window.contextPath || '';
+
+ 	// 1. [공통] 상태별 안내 HTML 생성 함수 ('warning' 명칭으로 통일)
+    function getNoticeHtml(status) {
+        if (status === '고장' || status === 'error') {
+            // [빨간색] DB상의 기체 고장 상태
+            return `
+	            <div class="drone-notice error">
+		            <i class="fa-solid fa-triangle-exclamation" style="font-size: 28px; filter: drop-shadow(0 0 8px #ef4444);"></i>
+		            <span>기체 고장 (점검중)</span>
+		        </div>
+            `;
+        }
         
+        if (status === 'warning' || status === '응답없음') {
+            // [노란색] 비행 중이지만 스트리밍 영상 신호가 끊긴 상태
+            return `
+	            <div class="drone-notice warning">
+		            <i class="fa-solid fa-plug-circle-xmark" style="font-size: 26px; filter: drop-shadow(0 0 8px #f59e0b);"></i>
+		            <span>응답 없음 (점검 필요)</span>
+		        </div>
+            `;
+        }
+
+        // [푸른색] 기본 드론 대기 상태
+        return `
+	        <div class="drone-notice ready">
+		        <i class="fa-solid fa-hourglass-half" style="font-size: 24px; filter: drop-shadow(0 0 8px #0ea5e9);"></i>
+		        <span>드론 대기 중 (미비행)</span>
+		    </div>
+        `;
+    }
+
+    // 2. [오류 처리] 스트리밍 이미지 끊김/응답 없음 처리
+    function handleStreamError(imgElement) {
+        imgElement.onerror = null; // 무한 반복 차단
+        var parent = imgElement.parentElement;
+        if (!parent) return;
+
+        imgElement.style.display = 'none';
+
+        if (!parent.querySelector('.drone-notice')) {
+            parent.insertAdjacentHTML('beforeend', getNoticeHtml('warning'));
+        }
+    }
+
+    // 3. [메인 렌더링] 드론 그리드 생성 함수
+    function renderDroneGrid(drones) {
+        var gridContainer = document.getElementById('droneGrid');
+        var countElement = document.getElementById('droneCount');
         if (!gridContainer) return;
 
         gridContainer.innerHTML = '';
         if (countElement) countElement.textContent = drones.length;
-		 
-        // '비행' 상태인 드론을 맨 앞으로, 그다음 '대기', '고장' 순으로 정렬합니다.
-        const stateOrder = { '비행': 1, '대기': 2, '고장': 3 };
-        drones.sort((a, b) => {
-            const orderA = stateOrder[a.droneStatus] || 99;
-            const orderB = stateOrder[b.droneStatus] || 99;
-            return orderA - orderB;
+
+        // 정렬: 비행(1) -> 대기(2) -> 고장(3)
+        var stateOrder = { '비행': 1, '대기': 2, '고장': 3 };
+        drones.sort(function(a, b) {
+            return (stateOrder[a.droneStatus] || 99) - (stateOrder[b.droneStatus] || 99);
         });
-        
-        drones.forEach(drone => {
-            // 1. 카드 껍데기 요소 생성
-            const cardElement = document.createElement('div');
+
+        drones.forEach(function(drone) {
+            var isFlying = drone.droneStatus === '비행';
+
+            // 카드 껍데기 생성
+            var cardElement = document.createElement('div');
             cardElement.className = 'drone-card';
             cardElement.id = 'card-' + drone.droneId;
-            
-         	// 카드 자체에 마우스 커서를 손가락 모양으로 바꾸고, 클릭 시 링크 이동 이벤트를 심습니다.
-            if (drone.droneStatus === '비행') {
-			    cardElement.style.cursor = 'pointer';
-			} else {
-			    cardElement.style.cursor = 'not-allowed';
-			}
+            cardElement.style.cursor = isFlying ? 'pointer' : 'not-allowed';
+
             cardElement.onclick = function() {
-            	if (drone.droneStatus !== '비행') {
+                if (!isFlying) {
                     alert('현재 비행 중인 드론이 아니므로 접근할 수 없는 페이지입니다.');
-                    return; // 함수를 즉시 종료하여 아래 location.href가 실행되지 않게 막음
+                    return;
                 }
-            	
-                location.href = `\${ctx}/drone/stream?id=\${drone.droneId}&zone=\${encodeURIComponent(drone.zoneName)}`;
+                location.href = ctx + '/drone/stream?id=' + drone.droneId + '&zone=' + encodeURIComponent(drone.zoneName);
             };
-			
-        	// 상태 클래스 매핑
-            const statusClassMap = { '비행': 'flying', '대기': 'ready', '고장': 'error' };
-            const currentStatusClass = statusClassMap[drone.droneStatus] || 'ready'; // 기본값
-            
-            // 2. 헤더 생성
-            const headerElement = document.createElement('div');
+
+            // 헤더 생성
+            var statusClassMap = { '비행': 'flying', '대기': 'ready', '고장': 'error' };
+            var currentStatusClass = statusClassMap[drone.droneStatus] || 'ready';
+
+            var headerElement = document.createElement('div');
             headerElement.className = 'drone-card-header';
             headerElement.innerHTML = `
-            	<span class="drone-name">\${drone.droneId}(\${drone.zoneName})</span>
+                <span class="drone-name">\${drone.droneId}(\${drone.zoneName})</span>
                 <span class="drone-status \${currentStatusClass}">\${drone.droneStatus}</span>
             `;
-            cardElement.appendChild(headerElement);
 
-            // 3. 비디오 wrapper 및 video 객체 직접 생성
-            const wrapperElement = document.createElement('div');
+            // 비디오/안내 영역 생성
+            var wrapperElement = document.createElement('div');
             wrapperElement.className = 'video-wrapper';
-            
-			// '비행' 상태일 때만 실제 비디오 객체를 생성하여 재생합니다.
-            if (drone.droneStatus === '비행') {
+
+            if (isFlying) {
+                var videoElement = document.createElement('img');
+                videoElement.src = drone.url;
                 
-	            const videoElement = document.createElement('video');
-	            videoElement.src = ctx + drone.url;
-	            videoElement.autoplay = true;
-	            videoElement.loop = true;
-	            videoElement.muted = true; // 브라우저 자동재생 필수 조건
-	            videoElement.playsInline = true;
-	            videoElement.preload = 'metadata';
-	
-	            // 조립
-	            wrapperElement.appendChild(videoElement);
-	            cardElement.appendChild(headerElement);
-	            cardElement.appendChild(wrapperElement);
-	            gridContainer.appendChild(cardElement);
-	
-	            // DOM 추가 후 명시적 미디어 로드 및 재생
-	            videoElement.load();
-	            const playPromise = videoElement.play();
-	            if (playPromise !== undefined) {
-	                playPromise.catch(error => {
-	                    console.log("재생 예외 처리:", error);
-	                });
-	            }
-	            
+                // 🌟 [핵심] 동적 img 생성 시 onerror 핸들러 바인딩
+                videoElement.onerror = function() {
+                    handleStreamError(this);
+                };
+                
+                wrapperElement.appendChild(videoElement);
             } else {
-            	// '대기' 또는 '고장' 상태일 때는 비디오 대신 멋진 안내 문구를 띄웁니다.
-                let noticeHtml = '';
-                
-                if (drone.droneStatus === '고장') {
-                    noticeHtml = `
-                        <div class="drone-notice error" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #f87171; gap: 8px;">
-                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 28px; filter: drop-shadow(0 0 8px #ef4444);"></i>
-                            <span style="font-size: 13px; font-weight: 600;">기체 고장 (점검중)</span>
-                        </div>
-                    `;
-                } else {
-                    noticeHtml = `
-                        <div class="drone-notice ready" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #64748b; gap: 8px;">
-                            <i class="fa-solid fa-hourglass-half" style="font-size: 24px; color: #38bdf8; filter: drop-shadow(0 0 8px #0ea5e9);"></i>
-                            <span style="font-size: 13px; font-weight: 600; color: #94a3b8;">드론 대기 중 (미비행)</span>
-                        </div>
-                    `;
-                }
-                
-                wrapperElement.innerHTML = noticeHtml;
-                cardElement.appendChild(wrapperElement);
-                gridContainer.appendChild(cardElement);
+                wrapperElement.innerHTML = getNoticeHtml(drone.droneStatus);
             }
+
+            // 카드 조립 (중복 appendChild 제거)
+            cardElement.appendChild(headerElement);
+            cardElement.appendChild(wrapperElement);
+            gridContainer.appendChild(cardElement);
         });
     }
-    
-	// 서버에서 데이터를 가져오는 Ajax 함수
-	$.ajax({
-		url: ctx + '/drone/api/list',
-		type: 'GET',
-		dataType: 'json',
-		success: function(drones) {
-			renderDroneGrid(drones);
-		}
-	});
+
+    // 서버 API 호출
+    $.ajax({
+        url: ctx + '/drone/api/list',
+        type: 'GET',
+        dataType: 'json',
+        success: function(drones) {
+            renderDroneGrid(drones);
+        }
+    });
 });
 </script>

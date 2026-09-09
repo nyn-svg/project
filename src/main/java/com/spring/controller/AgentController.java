@@ -161,25 +161,18 @@ public class AgentController {
     }
     
     
- // 내 정보 페이지 이동 (GET)
-    @GetMapping("/info")
+ // 안전순찰 페이지
+    @GetMapping("/patrol")
     public String agentInfoPage(HttpSession session, Model model) {
-        // 1. 세션에서 로그인한 유저 ID 가져오기
         String loginUserId = (String) session.getAttribute("userId");
 
-        // 로그인 구현 전이거나 세션이 비어있을 경우 테스트용 기본 ID 세팅
         if (loginUserId == null) {
             loginUserId = "agent01"; 
         }
 
-        // 2. DB에서 유저 기본 정보 + 안전요원 상세 정보 조회
         UserDTO user = agentTaskService.findByUserId(loginUserId);
-
-        // 3. JSP로 전달
         model.addAttribute("user", user);
-
-        // WEB-INF/views/agent/agentInfo.jsp 호출
-        return "agent/agentInfo"; 
+        return "agent/agentPatrol"; 
     }
     
 }
