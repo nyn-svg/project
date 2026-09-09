@@ -12,6 +12,7 @@ public class UserDTO {
     private String email;      // EMAIL (이메일)
     private int enabled;       // ENABLED (계정 활성화 여부)
     private Date regDate;      // REG_DATE (가입일)
+    private String roleName; // 💡 권한 정보 추가 (ROLE_AGENT 또는 ROLE_CONTROL)
     
     private String workStatus; // 근무 상태 (예: 근무중)
     private String workArea;   // 근무 담당 구역 (예: A구역)

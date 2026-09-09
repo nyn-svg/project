@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional // 👈 2. 두 작업 중 하나라도 실패하면 자동 Rollback
+    @Transactional
     public boolean registerAgent(UserDTO user) {
         // 비밀번호 암호화
         user.setUserPw(passwordEncoder.encode(user.getUserPw()));
@@ -34,8 +34,15 @@ public class UserServiceImpl implements UserService {
         // 1) USERS 테이블에 유저 정보 저장
         int userResult = userMapper.insertUser(user);
         
-        // 2) USER_ROLES 테이블에 ROLE_AGENT 권한 추가 (👈 3. 추가)
-        int roleResult = userMapper.insertUserRole(user.getUserId());
+        // 💡 만약 화면에서 전달받은 roleName이 없거나 비어있을 경우를 대비해 기본값 설정
+        String roleName = user.getRoleName();
+        if (roleName == null || roleName.trim().isEmpty()) {
+            roleName = "ROLE_AGENT";
+        }
+        
+        // 2) USER_ROLES 테이블에 동적 권한(ROLE_AGENT 또는 ROLE_CONTROL) 추가
+        // 💡 파라미터 2개(userId, roleName)를 넘겨주도록 수정하여 에러 해결!
+        int roleResult = userMapper.insertUserRole(user.getUserId(), roleName);
         
         // 둘 다 성공(>0) 해야 true 반환
         return userResult > 0 && roleResult > 0;

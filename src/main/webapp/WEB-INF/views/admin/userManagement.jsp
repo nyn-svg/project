@@ -11,13 +11,28 @@
             </button>
         </div>
 
-        <!-- 검색 영역 -->
-        <div class="search-box">
-            <div class="search-input-wrapper">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="search-keyword" class="form-input" placeholder="이름 또는 ID 검색..." />
-            </div>
-        </div>
+        <!-- 검색 및 필터 영역 -->
+		<div class="search-box" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+		    <!-- 기존 검색창 (너비 조정) -->
+		    <div class="search-input-wrapper" style="flex: 1; min-width: 140px;">
+		        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+		        <input type="text" id="search-keyword" class="form-input" placeholder="이름 또는 ID..." />
+		    </div>
+		
+		    <!-- 💡 권한 필터 -->
+		    <select id="filter-role" class="form-input" style="width: auto; padding: 6px 10px; font-size: 13px;">
+		        <option value="ALL">전체 권한</option>
+		        <option value="ROLE_AGENT">안전요원</option>
+		        <option value="ROLE_CONTROL">관제사</option>
+		    </select>
+		
+		    <!-- 💡 상태 필터 -->
+		    <select id="filter-status" class="form-input" style="width: auto; padding: 6px 10px; font-size: 13px;">
+		        <option value="ALL">전체 상태</option>
+		        <option value="ACTIVE">활성</option>
+		        <option value="INACTIVE">비활성</option>
+		    </select>
+		</div>
 
         <!-- 사용자 리스트 스크롤 구역 -->
         <div class="agent-list" id="agent-list-container">
@@ -84,6 +99,16 @@
 		
 		        <!-- 계정 설정 & 스위치 섹션 -->
 		        <div class="form-section-title">계정 권한 및 상태</div>
+		        
+		        <!-- 💡 [신규 추가] 권한 선택 (안전요원 / 관제사) -->
+		        <div class="form-group" style="margin-bottom: 15px;">
+		            <label class="form-label"><i class="fa-solid fa-user-shield"></i> 사용자 권한</label>
+		            <select id="roleName" name="roleName" class="form-input">
+		                <option value="ROLE_AGENT">안전요원</option>
+		                <option value="ROLE_CONTROL">관제사</option>
+		            </select>
+		        </div>
+
 		        <div class="form-group row-group">
 		            <div class="switch-label-group">
 		                <span class="switch-title">계정 활성화</span>
@@ -127,7 +152,7 @@ $(document).ready(function() {
         });
     }
 
-    // 2. 목록 렌더링 (원래 가지고 계시던 안전한 문자열 조합 방식 유지)
+ // 2. 목록 렌더링
     function renderAgentList(list) {
         const $container = $('#agent-list-container').empty();
 
@@ -144,11 +169,19 @@ $(document).ready(function() {
             const phoneText = agent.phone ? agent.phone : '-';
             const emailText = agent.email ? agent.email : '-';
 
-            // 백틱 대신 기존 원래 방식인 + 연산자로 조합하여 JSP EL 충돌 원천 차단
+            // 💡 권한명 한글 표시 로직
+            let roleText = '안전요원';
+            if (agent.roleName === 'ROLE_CONTROL' || (agent.userId && agent.userId.includes('control'))) {
+                roleText = '관제사';
+            } else if (agent.roleName === 'ROLE_AGENT' || (agent.userId && agent.userId.includes('agent'))) {
+                roleText = '안전요원';
+            }
+
             let html = '';
             html += '<div class="agent-item" data-id="' + agent.userId + '">';
             html += '   <div class="agent-item-header">';
-            html += '       <span class="agent-name">' + agent.userName + ' <small>(' + agent.userId + ')</small></span>';
+            // 💡 agent.userId 대신 roleText 변수 사용!
+            html += '       <span class="agent-name">' + agent.userName + ' <small>(' + roleText + ')</small></span>';
             html += '       <span class="badge ' + badgeClass + '">' + badgeText + '</span>';
             html += '   </div>';
             html += '   <div class="agent-item-info">';
@@ -169,7 +202,7 @@ $(document).ready(function() {
         });
     }
 
- // 3. 요원 선택 시 (폼 영역 보이기)
+    // 3. 요원 선택 시 (폼 영역 보이기)
     function selectAgent(agent) {
         $('#form-mode').val('update');
         $('#form-title').html('<i class="fa-solid fa-user-pen"></i> 요원 정보 수정');
@@ -178,6 +211,10 @@ $(document).ready(function() {
         $('#userName').val(agent.userName);
         $('#phone').val(agent.phone);
         $('#email').val(agent.email);
+        
+        // 권한 정보 세팅 (기본값 ROLE_AGENT)
+        $('#roleName').val(agent.roleName || 'ROLE_AGENT');
+        
         $('#enabled').prop('checked', agent.enabled === 1 || agent.enabled === true || agent.enabled === 'Y');
         
         // 헤더 프로필 정보 업데이트
@@ -200,6 +237,9 @@ $(document).ready(function() {
         $('#form-title').html('<i class="fa-solid fa-user-plus"></i> 신규 요원 등록');
         $('#userId').val('').prop('readonly', false);
         $('#agent-form')[0].reset();
+        
+        // 신규 등록 시 기본 권한을 ROLE_AGENT로 설정
+        $('#roleName').val('ROLE_AGENT');
         $('#enabled').prop('checked', true);
 
         // 헤더 텍스트 변경
@@ -212,7 +252,7 @@ $(document).ready(function() {
         $('#status-badge').attr('class', 'badge badge-active').text('신규 작성');
     });
 
- // 5. 폼 제출 (등록/수정 AJAX)
+    // 5. 폼 제출 (등록/수정 AJAX)
     $('#agent-form').on('submit', function(e) {
         e.preventDefault();
 
@@ -225,6 +265,7 @@ $(document).ready(function() {
             userName: $('#userName').val(),
             phone: $('#phone').val(),
             email: $('#email').val(),
+            roleName: $('#roleName').val(), // 💡 권한 정보 추가 전송!
             enabled: $('#enabled').is(':checked') ? 1 : 0
         };
 
@@ -235,25 +276,19 @@ $(document).ready(function() {
             data: JSON.stringify(payload),
             success: function(res) {
                 if (res.success) {
-                    alert(mode === 'create' ? '신규 요원이 등록되었습니다.' : '요원 정보가 수정되었습니다.');
+                    alert(mode === 'create' ? '신규 사용자가 등록되었습니다.' : '사용자 정보가 수정되었습니다.');
                     
-                    // 1) 좌측 목록 다시 로드 (메인 화면 요원 관리 패널)
                     loadAgentList();
 
-                    // 💡 [핵심 추가] 저장 성공 시 우측 사이드바의 요원 목록도 즉시 새로고침!
                     if (typeof loadAdminAgentList === 'function') {
                         loadAdminAgentList();
                     }
 
                     if(mode === 'create') {
-                        // 신규 등록 시 폼 초기화
                         $('#btn-reset-form').click();
                     } else {
-                        // 2) 수정 시 [우측 상단 프로필 카드] 즉시 반영
                         $('#preview-name').text(payload.userName);
                         $('#preview-id-text').text('ID: ' + payload.userId + ' | ' + (payload.email ? payload.email : '이메일 미등록'));
-                        
-                        // 3) 비밀번호 입력란 비우기
                         $('#userPw').val('');
                     }
                 } else {
@@ -266,15 +301,47 @@ $(document).ready(function() {
         });
     });
 
-    // 6. 검색 필터링
-    $('#search-keyword').on('keyup', function() {
-        const kw = $(this).val().toLowerCase();
+ // 통합 필터링 처리 함수
+    function filterAgentList() {
+        const kw = $('#search-keyword').val().toLowerCase().trim();
+        const selectedRole = $('#filter-role').val();
+        const selectedStatus = $('#filter-status').val();
+
         const filtered = agentCache.filter(function(a) {
+            // 1. 이름 또는 ID 검색조건
             const nameMatch = a.userName ? a.userName.toLowerCase().includes(kw) : false;
             const idMatch = a.userId ? a.userId.toLowerCase().includes(kw) : false;
-            return nameMatch || idMatch;
+            const keywordMatch = kw === '' || nameMatch || idMatch;
+
+            // 2. 권한 필터조건
+            let roleMatch = true;
+            if (selectedRole !== 'ALL') {
+                if (selectedRole === 'ROLE_CONTROL') {
+                    roleMatch = a.roleName === 'ROLE_CONTROL' || (a.userId && a.userId.includes('control'));
+                } else if (selectedRole === 'ROLE_AGENT') {
+                    roleMatch = a.roleName === 'ROLE_AGENT' || (a.userId && a.userId.includes('agent'));
+                }
+            }
+
+            // 3. 상태 필터조건
+            let statusMatch = true;
+            const isEnabled = a.enabled === 1 || a.enabled === true || a.enabled === 'Y' || a.enabled === '1';
+            if (selectedStatus === 'ACTIVE') {
+                statusMatch = isEnabled;
+            } else if (selectedStatus === 'INACTIVE') {
+                statusMatch = !isEnabled;
+            }
+
+            // 3가지 조건 모두 만족해야 목록에 표시
+            return keywordMatch && roleMatch && statusMatch;
         });
+
         renderAgentList(filtered);
-    });
+    }
+
+    // 이벤트 리스너 등록 (검색어 입력, 권한 변경, 상태 변경 시 자동 필터링)
+    $('#search-keyword').on('keyup', filterAgentList);
+    $('#filter-role').on('change', filterAgentList);
+    $('#filter-status').on('change', filterAgentList);
 });
 </script>

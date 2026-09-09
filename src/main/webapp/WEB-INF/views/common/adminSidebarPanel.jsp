@@ -249,8 +249,12 @@ function loadAdminAgentList() {
                                        : configRes.configJson;
         }
 
-        // 요원 목록 필터링
-        currentAgentList = agents.filter(agent => agent.userId && agent.userId.includes("agent"));
+        // 요원 목록 필터링 (활성화된 agent 계정만 남김)
+        currentAgentList = agents.filter(agent => {
+            const isAgent = agent.userId && agent.userId.includes("agent");
+            const isEnabled = agent.enabled === 1 || agent.enabled === true || agent.enabled === 'Y' || agent.enabled === '1';
+            return isAgent && isEnabled;
+        });
 
         // 화면 출력
         renderAdminAgentList();
@@ -299,38 +303,65 @@ function renderAdminAgentList() {
     container.innerHTML = html;
 }
 
-
-
-//2. 모달 열기 함수
+// 3. 모달 열기 함수
 function openAgentModal(index) {
- const agent = currentAgentList[index];
- if (!agent) return;
+    const agent = currentAgentList[index];
+    if (!agent) return;
 
- document.getElementById("modalAgentName").textContent = agent.userName || "미등록";
- document.getElementById("modalAgentId").textContent = agent.userId || "-";
- document.getElementById("modalAgentPhone").textContent = agent.phone || "미등록";
- document.getElementById("modalAgentEmail").textContent = agent.email || "미등록";
+    document.getElementById("modalAgentName").textContent = agent.userName || "미등록";
+    document.getElementById("modalAgentId").textContent = agent.userId || "-";
+    document.getElementById("modalAgentPhone").textContent = agent.phone || "미등록";
+    document.getElementById("modalAgentEmail").textContent = agent.email || "미등록";
  
- const statusElem = document.getElementById("modalAgentStatus");
- if (agent.enabled === 1 || agent.enabled === "1") {
-     statusElem.textContent = "근무 가능 (활성)";
-     statusElem.style.color = "#4ade80";
- } else {
-     statusElem.textContent = "비활성";
-     statusElem.style.color = "#f87171";
- }
+    const statusElem = document.getElementById("modalAgentStatus");
+    if (agent.enabled === 1 || agent.enabled === "1" || agent.enabled === true || agent.enabled === 'Y') {
+        statusElem.textContent = "근무 가능 (활성)";
+        statusElem.style.color = "#4ade80";
+    } else {
+        statusElem.textContent = "비활성";
+        statusElem.style.color = "#f87171";
+    }
 
- const modal = document.getElementById("agentDetailModal");
- modal.style.display = "flex";
+    const modal = document.getElementById("agentDetailModal");
+    modal.style.display = "flex";
 }
 
-//3. 모달 닫기 함수
+// 4. 모달 닫기 함수
 function closeAgentModal() {
- const modal = document.getElementById("agentDetailModal");
- modal.style.display = "none";
+    const modal = document.getElementById("agentDetailModal");
+    modal.style.display = "none";
 }
 
-//이벤트 리스너 등록 및 초기화
+// 5. SSE (Server-Sent Events) 실시간 수신 연결
+function initAgentSseSubscriber() {
+    if (window.agentEventSource) return;
+
+    const sseUrl = window.contextPath + '/api/sse/subscribe';
+    const eventSource = new EventSource(sseUrl);
+    window.agentEventSource = eventSource;
+
+    eventSource.addEventListener('connect', function(e) {
+        console.log('[SSE] 사이드바 요원 모니터링 연결 완료');
+    });
+
+    // 서버에서 AGENT_STATUS_CHANGE 이벤트 감지 시 실행
+    eventSource.addEventListener('AGENT_STATUS_CHANGE', function(e) {
+        try {
+            console.log('[SSE] 요원 계정 상태 변경 감지, 목록 동기화 진행');
+            // 계정 활성/비활성화 시 최신 DB 기준으로 사이드바 목록 즉시 갱신
+            loadAdminAgentList();
+        } catch (err) {
+            console.error('[SSE] 처리 중 오류:', err);
+            loadAdminAgentList();
+        }
+    });
+
+    eventSource.onerror = function(err) {
+        console.warn('[SSE] 연결 재시도 중...');
+    };
+}
+
+// 이벤트 리스너 등록 및 초기화
 document.addEventListener("DOMContentLoaded", function () {
     const agentBtn = document.querySelector('.quick-nav-item[data-target="panel-admin-agents"]');
 
@@ -341,8 +372,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 2. 페이지 초기화/새로고침 시 요원 데이터 자동 로드 (빈 화면 방지)
+    // 2. 페이지 초기화/새로고침 시 요원 데이터 자동 로드
     loadAdminAgentList();
+
+    // 3. 실시간 SSE 구독 개시
+    initAgentSseSubscriber();
 });
 </script>
 

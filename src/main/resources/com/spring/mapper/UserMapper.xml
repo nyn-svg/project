@@ -72,17 +72,17 @@
         WHERE USER_ID = #{userId}
     </update>
     
-    <!-- 6. 신규 사용자 기본 권한(ROLE_AGENT) 등록 -->
-    <insert id="insertUserRole" parameterType="string">
-        INSERT INTO USER_ROLES (
-            ROLE_ID,
-            USER_ID,
-            ROLE_NAME
-        ) VALUES (
-            (SELECT NVL(MAX(ROLE_ID), 0) + 1 FROM USER_ROLES),
-            #{userId},
-            'ROLE_AGENT'
-        )
-    </insert>
+    <!-- 6. 신규 사용자 권한 동적 등록 -->
+	<insert id="insertUserRole">
+	    INSERT INTO USER_ROLES (
+	        ROLE_ID,
+	        USER_ID,
+	        ROLE_NAME
+	    ) VALUES (
+	        (SELECT NVL(MAX(ROLE_ID), 0) + 1 FROM USER_ROLES),
+	        #{userId},
+	        #{roleName}
+	    )
+	</insert>
 
 </mapper>

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.dto.UserDTO; // 프로젝트 DTO 경로에 맞게 수정
 import com.spring.service.AdminService; // 관리자 전용 Service (또는 AgentTaskService)
+import com.spring.service.SseService;
 import com.spring.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -30,6 +31,9 @@ public class AdminController {
 
 	@Autowired
 	private UserService userService; // 사용자/안전요원 관리 서비스 DI
+	
+	@Autowired
+	private SseService sseService;
 
 	/**
 	 * 관리자 메인 대시보드 페이지 이동 RequestMapping: GET /admin/main
@@ -116,10 +120,16 @@ public class AdminController {
 	@PutMapping("/api/agents")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateAgent(@RequestBody UserDTO userDto) {
-		Map<String, Object> response = new HashMap<>();
-		boolean result = userService.modifyAgent(userDto);
-		response.put("success", result);
-		return ResponseEntity.ok(response);
+	    Map<String, Object> response = new HashMap<>();
+	    boolean result = userService.modifyAgent(userDto);
+	    
+	    if (result) {
+	        // 수정 및 비활성화 성공 시 SSE 실시간 이벤트 전송
+	        sseService.sendEvent("AGENT_STATUS_CHANGE", userDto);
+	    }
+	    
+	    response.put("success", result);
+	    return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/checklist")
