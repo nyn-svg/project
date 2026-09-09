@@ -334,20 +334,45 @@
 /* ------------------------------------------
    3. 우측 세부 정보 패널 (Right Panel - 스크롤 적용)
    ------------------------------------------ */
+/* 1. 우측 전체 패널의 너비 제약 해제 및 내부 패딩 최소화 */
 .detail-panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden; /* 외각은 잘라내어 내부에만 스크롤 지정 */
+    width: 100% !important;
+    max-width: none !important;
 }
 
-/* 핵심: 우측 패널 내부 실제 스크롤 발생 구역 */
 .detail-panel .panel-body {
     flex: 1;
     overflow-y: auto !important;
     min-height: 0;
-    padding-right: 4px;
+    padding: 12px 8px !important; /* 바깥쪽 좌우 여백을 줄여 전체 폭 확보 */
+}
+/* 2. 폼을 감싸는 카드/상자의 양옆 margin, padding 제거 및 100% 확장 */
+.detail-panel .element-detail-card,
+.detail-panel #elementDetailForm {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 4px !important; /* 내부 패딩 최소화 */
+    margin: 0 !important;
+}
+
+/* 입력항목 세로 간격 및 라벨 여백 개선 */
+.detail-panel .form-group {
+    margin-bottom: 20px !important; /* 다닥다닥 붙지 않게 아래 여백 확대 */
+}
+
+.detail-panel .form-label {
+    display: block;
+    margin-bottom: 8px !important; /* 라벨과 입력창 사이 여백 */
+    font-size: 13px;
+}
+
+/* 3. 입력창들이 부모 너비 끝까지 차도록 설정 */
+.detail-panel .form-input,
+.detail-panel .form-select,
+.detail-panel textarea.form-input,
+.detail-panel .form-color-picker {
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .empty-detail-msg {

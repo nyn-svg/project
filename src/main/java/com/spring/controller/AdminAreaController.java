@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.dto.AreaSaveRequestDTO;
@@ -53,9 +54,15 @@ public class AdminAreaController {
             }
 
             if (result > 0) {
-            	
-            	sseService.sendEvent("MAP_UPDATED", requestDTO);
-            	
+
+                // 💡 [핵심 수정] SSE 알림 전송 중 소켓 에러가 터져도 DB 저장 응답에 영향을 주지 않도록 격리
+                try {
+                    sseService.sendEvent("MAP_UPDATED", requestDTO);
+                } catch (Exception sseEx) {
+                    // 끊긴 클라이언트 연결로 인한 에러 로그 출력 방지 및 격리 처리
+                    System.err.println("SSE 브로드캐스트 전송 제외 (클라이언트 연결 끊김): " + sseEx.getMessage());
+                }
+
                 response.put("success", true);
                 response.put("message", "행사장 배치 데이터가 오라클 DB에 성공적으로 저장되었습니다.");
                 return ResponseEntity.ok(response);
@@ -154,6 +161,11 @@ public class AdminAreaController {
             response.put("message", "파일 업로드 실패: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
+    }
+    
+    @GetMapping(value = "/sse", produces = "text/event-stream")
+    public SseEmitter subscribeSse() {
+        return sseService.subscribe();
     }
     
     

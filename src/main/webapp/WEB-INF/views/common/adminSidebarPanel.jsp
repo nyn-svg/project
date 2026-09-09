@@ -332,11 +332,20 @@ function closeAgentModal() {
     modal.style.display = "none";
 }
 
-// 5. SSE (Server-Sent Events) 실시간 수신 연결
+//5. SSE (Server-Sent Events) 실시간 수신 연결
 function initAgentSseSubscriber() {
-    if (window.agentEventSource) return;
+    // 💡 이미 연결이 진행 중이거나 열려 있다면 중복 생성 차단
+    if (window.agentEventSource && window.agentEventSource.readyState !== EventSource.CLOSED) {
+        return;
+    }
 
-    const sseUrl = window.contextPath + '/api/sse/subscribe';
+    // 기존 연결이 완전히 닫힌 경우만 정리 후 재연결
+    if (window.agentEventSource) {
+        window.agentEventSource.close();
+        window.agentEventSource = null;
+    }
+
+    const sseUrl = (window.contextPath || '') + '/api/sse/subscribe';
     const eventSource = new EventSource(sseUrl);
     window.agentEventSource = eventSource;
 
@@ -346,18 +355,25 @@ function initAgentSseSubscriber() {
 
     // 서버에서 AGENT_STATUS_CHANGE 이벤트 감지 시 실행
     eventSource.addEventListener('AGENT_STATUS_CHANGE', function(e) {
-        try {
-            console.log('[SSE] 요원 계정 상태 변경 감지, 목록 동기화 진행');
-            // 계정 활성/비활성화 시 최신 DB 기준으로 사이드바 목록 즉시 갱신
-            loadAdminAgentList();
-        } catch (err) {
-            console.error('[SSE] 처리 중 오류:', err);
-            loadAdminAgentList();
-        }
-    });
+    console.log('[SSE 수신 성공] 데이터:', e.data);
+    
+    // loadAdminAgentList 함수가 정상적으로 존재하는지 확인
+    if (typeof loadAdminAgentList === 'function') {
+        loadAdminAgentList();
+    } else {
+        console.error('[오류] loadAdminAgentList 함수가 정의되지 않았거나 전역 스코프가 아닙니다!');
+    }
+});
+
+    // 💡 [추가] 이벤트 이름 없이 서버에서 일반 send()로 보냈을 경우를 대비한 기본 message 수신
+    eventSource.onmessage = function(e) {
+        console.log('[SSE] 일반 수신 메시지:', e.data);
+        loadAdminAgentList();
+    };
 
     eventSource.onerror = function(err) {
-        console.warn('[SSE] 연결 재시도 중...');
+        // SSE 소켓 문제 발생 시 기존 객체 정리
+        console.warn('[SSE] 연결 disconnected 또는 재시도 중...');
     };
 }
 
@@ -375,8 +391,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // 2. 페이지 초기화/새로고침 시 요원 데이터 자동 로드
     loadAdminAgentList();
 
-    // 3. 실시간 SSE 구독 개시
-    initAgentSseSubscriber();
 });
 </script>
 

@@ -43,15 +43,27 @@ public class SseService {
     public void sendEvent(String eventName, Object data) {
         List<SseEmitter> deadEmitters = new ArrayList<>();
 
-        for (SseEmitter emitter : emitters) {
+        for (SseEmitter emitter : this.emitters) {
             try {
                 emitter.send(SseEmitter.event()
                         .name(eventName)
                         .data(data));
-            } catch (Exception e) {
+            } catch (Throwable t) {
+                // 💡 Exception보다 넓은 Throwable(ClientAbortException 등 포함)을 캐치하고
+                // 이미 끊긴 연결은 즉시 리스트에서 제거 대상으로 등록
                 deadEmitters.add(emitter);
+                try {
+                    // 이미 죽은 Emitter를 스프링 내부 관리 목록에서 안전하게 종료
+                    emitter.completeWithError(t);
+                } catch (Throwable ignored) {
+                    // 이미 닫힌 소켓에 대한 추가 예외는 완전 무시
+                }
             }
         }
-        this.emitters.removeAll(deadEmitters);
+
+        // 끊어진 Emitter들을 한꺼번에 정리
+        if (!deadEmitters.isEmpty()) {
+            this.emitters.removeAll(deadEmitters);
+        }
     }
 }

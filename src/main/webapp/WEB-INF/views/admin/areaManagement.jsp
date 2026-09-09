@@ -62,9 +62,9 @@
 
             <!-- 하단 시설물 아이콘 툴바 (드래그앤드롭 배치용) -->
             <div class="facility-drag-bar">
-                <span class="bar-title">시설물 배치 (도면으로 클릭/드래그):</span>
-                <div class="facility-chip" data-type="CCTV" draggable="true"><i class="fa-solid fa-video"></i> CCTV</div>
-                <div class="facility-chip" data-type="EMERGENCY" draggable="true"><i class="fa-solid fa-bell"></i> 비상구</div>
+                <span class="bar-title"></span>
+                <div class="facility-chip" data-type="CCTV" draggable="true"><i class="fa-solid fa-video"></i> 드론</div>
+                <div class="facility-chip" data-type="EMERGENCY" draggable="true"><i class="fa-solid fa-user-shield"></i> 안전요원</div>
                 <div class="facility-chip" data-type="FIRE_EXT" draggable="true"><i class="fa-solid fa-fire-extinguisher"></i> 소화기</div>
                 <div class="facility-chip" data-type="INFO" draggable="true"><i class="fa-solid fa-circle-info"></i> 안내소</div>
                 <div class="facility-chip" data-type="MEDICAL" draggable="true"><i class="fa-solid fa-kit-medical"></i> 의무실</div>
@@ -83,7 +83,7 @@
                 <!-- 선택 요소가 없을 때 -->
                 <div class="empty-detail-msg" id="emptyDetailMsg">
                     <i class="fa-solid fa-mouse-pointer"></i>
-                    <p>도면 상의 구역이나 시설물 아이콘을 클릭하면 세부 정보를 수정할 수 있습니다.</p>
+                    <p>도면 상의 구역 을 클릭하면 세부 정보를 수정할 수 있습니다.</p>
                 </div>
 
                 <!-- 선택 시 나타나는 속성 폼 (기본 숨김 -> 테스트 시 style="" 로 풀어서 확인 가능) -->
@@ -106,28 +106,24 @@
                         <textarea id="elemDesc" class="form-textarea" rows="3" placeholder="구역 또는 아이콘에 대한 상세 정보 입력"></textarea>
                     </div>
 
-                    <!-- 구역(Zone) 전용 설정 필드 -->
-                    <div class="zone-only-fields" style="display: none;">
-                        <div class="form-group">
-                            <label class="form-label">구역 채우기 색상</label>
-                            <input type="color" id="elemColor" class="form-color-picker" value="#38bdf8" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">담당 안전요원 배치</label>
-                            <select id="elemAgent" class="form-select">
-                                <option value="">-- 요원 선택 --</option>
-                                <!-- AJAX로 요원 목록 동적 로드 -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- 시설물(CCTV 등) 전용 설정 필드 -->
-                    <div class="facility-only-fields" style="display: none;">
-                        <div class="form-group">
-                            <label class="form-label">스트리밍 IP / RTSP URL</label>
-                            <input type="text" id="elemStreamUrl" class="form-input" placeholder="rtsp://192.168.0.100:554/stream" />
-                        </div>
-                    </div>
+                    <!-- 구역(Zone) 클릭 시 표시할 전체 영역 -->
+					<div class="zone-only-fields" style="display: none;">
+					    <div class="form-group">
+					        <label class="form-label">구역 채우기 색상</label>
+					        <input type="color" id="elemColor" class="form-color-picker" value="#38bdf8" />
+					    </div>
+					    <div class="form-group">
+					        <label class="form-label">담당 안전요원 배치</label>
+					        <select id="elemAgent" class="form-select">
+					            <option value="">-- 요원 선택 --</option>
+					            <!-- AJAX로 요원 목록 동적 로드 -->
+					        </select>
+					    </div>
+					    <div class="form-group">
+					        <label class="form-label">스트리밍 IP / RTSP URL</label>
+					        <input type="text" id="elemStreamUrl" class="form-input" placeholder="rtsp://192.168.0.100:554/stream" />
+					    </div>
+					</div>
 
                     <div class="form-actions">
                         <button type="button" class="btn-primary" id="btnApplyElement" onclick="applyElementInfo()"><i class="fa-solid fa-check"></i> 정보 적용</button>

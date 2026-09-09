@@ -286,17 +286,23 @@ function initAreaManagement() {
 			    if (elemTypeDisplay) elemTypeDisplay.value = "구역 (Zone)";
 			    if (elemName) elemName.value = zone.name || "";
 
-			    // 추가된 공통 필드: 상세 설명
 			    const elemDesc = document.getElementById("elemDesc");
 			    if (elemDesc) elemDesc.value = zone.description || "";
 
-			    // 구역 전용 필드 바인딩 (색상, 안전요원)
+			    // 구역 색상
 			    if (elemColor) elemColor.value = rgbaToHex(zone.color) || "#38bdf8";
-			    
+
+			    // [추가] 드롭다운 옵션을 활성화된 요원 목록으로 먼저 갱신
+			    populateAgentSelectOptions();
+
+			    // 안전요원 선택값 바인딩
 			    const elemAgent = document.getElementById("elemAgent");
 			    if (elemAgent) elemAgent.value = zone.agentId || "";
 
-			    // 구역 전용 필드 표시
+			    // 스트리밍 URL
+			    const elemStreamUrl = document.getElementById("elemStreamUrl");
+			    if (elemStreamUrl) elemStreamUrl.value = zone.streamUrl || "";
+
 			    if (zoneOnlyFields) zoneOnlyFields.style.display = "block";
 			    if (facilityOnlyFields) facilityOnlyFields.style.display = "none";
 			}
@@ -330,7 +336,7 @@ function initAreaManagement() {
 			    // 시설물 마커 아이콘 클래스 매핑
 			    const facilityIconMap = {
 			        CCTV: "fa-video",
-			        EMERGENCY: "fa-bell",
+			        EMERGENCY: "fa-user-shield",
 			        FIRE_EXT: "fa-fire-extinguisher",
 			        INFO: "fa-circle-info",
 			        MEDICAL: "fa-kit-medical",
@@ -412,8 +418,8 @@ function initAreaManagement() {
 			        // 시설물 마커 클릭 시 우측 폼 연동
 			        marker.onclick = function (e) {
 			            e.stopPropagation();
-			            selectedFacility = facData;
-			            selectedZone = null; // 구역 선택 해제
+						window.selectedFacility = facData; // 💡 selectedFacility -> window.selectedFacility로 수정!
+						window.selectedZone = null;
 			            openFacilityDetailForm(facData);
 			        };
 
@@ -422,27 +428,10 @@ function initAreaManagement() {
 			        }
 			    }
 
-				// 우측 폼에 시설물 정보 채우기
-				function openFacilityDetailForm(fac) {
-				    if (emptyDetailMsg) emptyDetailMsg.style.display = "none";
-				    if (elementDetailForm) elementDetailForm.style.display = "block";
-
-				    // 공통 입력창 데이터 바인딩
-				    if (selectedElementId) selectedElementId.value = fac.id;
-				    if (selectedElementType) selectedElementType.value = "FACILITY";
-				    if (elemTypeDisplay) elemTypeDisplay.value = `시설물 (${fac.type})`;
-				    if (elemName) elemName.value = fac.name || "";
-
-				    // 추가된 공통 필드: 상세 설명
-				    const elemDesc = document.getElementById("elemDesc");
-				    if (elemDesc) elemDesc.value = fac.description || "";
-
-				    // 시설물 전용 필드 바인딩 (RTSP URL)
-				    const elemStreamUrl = document.getElementById("elemStreamUrl");
-				    if (elemStreamUrl) elemStreamUrl.value = fac.streamUrl || "";
-
-				    if (zoneOnlyFields) zoneOnlyFields.style.display = "none";
-				    if (facilityOnlyFields) facilityOnlyFields.style.display = "block";
+				// 함수 이름은 유지하고, 내부만 비우거나 폼을 숨기도록 수정
+				function openFacilityDetailForm(facility) {
+				    if (elementDetailForm) elementDetailForm.style.display = "none";
+				    if (emptyDetailMsg) emptyDetailMsg.style.display = "block";
 				}
 
 			
@@ -453,38 +442,43 @@ function initAreaManagement() {
 				    const btnDeleteSelected = document.getElementById("btnDeleteSelected");
 				    const btnExportJson = document.getElementById("btnExportJson");
 
-				    // 1. [선택 삭제] 버튼 클릭 이벤트
-				    if (btnDeleteSelected) {
-				        btnDeleteSelected.onclick = function () {
-				            const currentType = selectedElementType ? selectedElementType.value : "";
+					// 1. [선택 삭제] 버튼 클릭 이벤트
+					if (btnDeleteSelected) {
+					    btnDeleteSelected.onclick = function () {
+					        const currentType = selectedElementType ? selectedElementType.value : "";
 
-				            if (currentType === "ZONE" && selectedZone) {
-				                if (confirm(`'${selectedZone.name}' 구역을 삭제하시겠습니까?`)) {
-				                    // 저장된 구역 배열에서 제거
-				                    window.savedPolygons = window.savedPolygons.filter(p => p.id !== selectedZone.id);
-				                    selectedZone = null;
-				                    closeDetailForm();
-				                    redrawCanvas(); // 캔버스 재그리기
-				                    alert("구역이 삭제되었습니다.");
-				                }
-				            } else if (currentType === "FACILITY" && selectedFacility) {
-				                if (confirm(`'${selectedFacility.name}' 시설물을 삭제하시겠습니까?`)) {
-				                    // 저장된 시설물 배열에서 제거
-				                    window.savedFacilities = window.savedFacilities.filter(f => f.id !== selectedFacility.id);
-				                    
-				                    // DOM에서 마커 태그 제거
-				                    const markerElem = document.getElementById(selectedFacility.id);
-				                    if (markerElem) markerElem.remove();
+					        // 1) 구역 삭제
+					        if (currentType === "ZONE" && window.selectedZone) {
+					            if (confirm(`'${window.selectedZone.name}' 구역을 삭제하시겠습니까?`)) {
+					                window.savedPolygons = window.savedPolygons.filter(p => p.id !== window.selectedZone.id);
+					                window.selectedZone = null;
+					                selectedZone = null;
+					                closeDetailForm();
+					                redrawCanvas();
+					                alert("구역이 삭제되었습니다.");
+					            }
+					        } 
+					        // 2) 시설물 삭제
+					        else if (currentType === "FACILITY" && window.selectedFacility) {
+					            if (confirm(`'${window.selectedFacility.name}' 시설물을 삭제하시겠습니까?`)) {
+					                // 배열에서 제거
+					                window.savedFacilities = window.savedFacilities.filter(f => f.id !== window.selectedFacility.id);
+					                
+					                // DOM 마커 제거
+					                const markerElem = document.getElementById(window.selectedFacility.id);
+					                if (markerElem) markerElem.remove();
 
-				                    selectedFacility = null;
-				                    closeDetailForm();
-				                    alert("시설물이 삭제되었습니다.");
-				                }
-				            } else {
-				                alert("삭제할 구역이나 시설물을 도면에서 먼저 선택해 주세요.");
-				            }
-				        };
-				    }
+					                // 선택 상태 초기화
+					                window.selectedFacility = null;
+					                selectedFacility = null;
+					                closeDetailForm();
+					                alert("시설물이 삭제되었습니다.");
+					            }
+					        } else {
+					            alert("삭제할 구역이나 시설물을 도면에서 먼저 선택해 주세요.");
+					        }
+					    };
+					}
 
 					// 2. [최종 데이터 저장] 버튼 클릭 이벤트 (오라클 DB 저장 연동)
 					if (btnExportJson) {
@@ -820,6 +814,9 @@ function initAreaManagement() {
 							    const elemName = document.getElementById("elemName");
 							    const elemDesc = document.getElementById("elemDesc");
 
+							    console.log("현재 currentType:", typeof currentType !== 'undefined' ? currentType : '없음');
+							    console.log("현재 selectedFacility:", window.selectedFacility);
+
 							    // 1. 구역(ZONE) 정보 업데이트
 							    if (currentType === "ZONE" && window.selectedZone) {
 							        window.selectedZone.name = elemName ? elemName.value : "";
@@ -842,12 +839,24 @@ function initAreaManagement() {
 							    } 
 							    // 2. 시설물(FACILITY) 정보 업데이트
 							    else if (currentType === "FACILITY" && window.selectedFacility) {
-							        window.selectedFacility.name = elemName ? elemName.value : "";
-							        window.selectedFacility.description = elemDesc ? elemDesc.value : "";
-
+							        const newName = elemName ? elemName.value : "";
+							        const newDesc = elemDesc ? elemDesc.value : "";
 							        const elemStreamUrl = document.getElementById("elemStreamUrl");
-							        if (elemStreamUrl) {
-							            window.selectedFacility.streamUrl = elemStreamUrl.value;
+							        const newStreamUrl = elemStreamUrl ? elemStreamUrl.value : "";
+
+							        // 선택 객체 변경
+							        window.selectedFacility.name = newName;
+							        window.selectedFacility.description = newDesc;
+							        window.selectedFacility.streamUrl = newStreamUrl;
+
+							        // DB로 전송될 savedFacilities 배열 내부 원본 데이터 동기화
+							        if (window.savedFacilities) {
+							            const target = window.savedFacilities.find(f => f.id === window.selectedFacility.id);
+							            if (target) {
+							                target.name = newName;
+							                target.description = newDesc;
+							                target.streamUrl = newStreamUrl;
+							            }
 							        }
 
 							        alert("시설물 정보가 적용되었습니다.");
@@ -885,15 +894,43 @@ function initAreaManagement() {
 							        .catch(err => console.error("요원 목록 로드 실패:", err));
 							}
 
+							
+							// 구역 상세 폼의 '담당 안전요원 배치' 드롭다운 옵션 갱신
+							function populateAgentSelectOptions() {
+							    const elemAgent = document.getElementById("elemAgent");
+							    if (!elemAgent) return;
+
+							    // 현재 선택되어 있던 값(기존 agentId) 기억
+							    const currentSelectedValue = elemAgent.value;
+
+							    // 기본 옵션만 남기고 초기화
+							    elemAgent.innerHTML = '<option value="">-- 요원 선택 --</option>';
+
+							    // currentAgentList(활성화된 요원 목록)가 존재하면 옵션 생성
+							    if (Array.isArray(window.currentAgentList) || Array.isArray(currentAgentList)) {
+							        const list = window.currentAgentList || currentAgentList;
+							        
+							        list.forEach(agent => {
+							            const option = document.createElement("option");
+							            option.value = agent.id || agent.userId; // DB에 저장되는 ID 필드명에 맞춰 설정
+							            option.textContent = `${agent.userName || agent.name || agent.userId} (${agent.userId})`;
+							            elemAgent.appendChild(option);
+							        });
+							    }
+
+							    // 기존에 선택되어 있던 값이 있다면 다시 복구
+							    if (currentSelectedValue) {
+							        elemAgent.value = currentSelectedValue;
+							    }
+							}
+							
+							
+							
+							
+							
 							// 스크립트 실행
 							loadAgentList();
-							
-							
-							
-							
-							
-							
-
+									
 							// 4. 페이지 로드 시 저장된 데이터 불러오기
 							loadSavedAreaConfig();
 			
