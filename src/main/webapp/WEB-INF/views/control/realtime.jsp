@@ -93,6 +93,10 @@ $(document).ready(function() {
                     alert('현재 비행 중인 드론이 아니므로 접근할 수 없는 페이지입니다.');
                     return;
                 }
+                
+             	// 💡 관제 화면(Grid)에서 드론 선택 시 자동 전환 모드를 항상 ON으로 설정
+                localStorage.setItem('droneAutoSwitch', 'true');
+             
                 location.href = ctx + '/control/stream?id=' + drone.droneId + '&zone=' + encodeURIComponent(drone.zoneName);
             };
 

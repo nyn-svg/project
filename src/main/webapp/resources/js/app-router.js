@@ -65,7 +65,11 @@ $(document).ready(function() {
                 if (typeof initDetectionPage === 'function') {
                     initDetectionPage();
                 }
-                
+				
+				// 💡 비동기 이동 완료 후 stream 페이지의 로드 함수가 존재하면 강제 실행
+				if (typeof window.initStreamPage === 'function') {
+					window.initStreamPage();
+				}
               
             },
             error: function(xhr, status, error) {

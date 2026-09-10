@@ -59,6 +59,8 @@
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:com/spring/context/servlet-context.xml</param-value>
         </init-param>
+        
+        <!-- 💡 비동기(SSE) 처리를 위해 이 태그가 필수입니다 -->
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
 

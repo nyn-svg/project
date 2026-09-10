@@ -27,6 +27,8 @@
 	<script src="https://kit.fontawesome.com/232b0508f2.js" crossorigin="anonymous"></script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 외부 스크립트에 contextPath 전달 및 JS 파일 로드 -->
+	<script>window.contextPath = '${pageContext.request.contextPath}';</script>
 </head>
 <body>
 
@@ -128,7 +130,7 @@
     });
 </script>
 
-    <!-- 💡 비동기 화면 전환 스크립트 추가 -->
-    <script src="${pageContext.request.contextPath}/resources/js/app-router.js"></script>
+<!-- 💡 비동기 화면 전환 스크립트 추가 -->
+<script src="${pageContext.request.contextPath}/resources/js/app-router.js"></script>
 </body>
 </html>

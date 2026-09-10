@@ -186,43 +186,24 @@
 	        <table class="history-table">
 	            <thead>
 	                <tr>
-	                    <th style="width: 50px;">NO</th>
+	                    <th>NO</th>
 	                    <th>감지 유형</th>
-	                    <th style="width: 140px;">감지 일시</th>
-	                    <th style="width: 90px;">위험 단계</th>
+	                    <th>감지 일시</th>
+	                    <th>위험 단계</th>
 	                    <th>위험 유형</th>
-	                    <th style="width: 100px;">구역명</th>
-	                    <th style="width: 100px;">조치 상태</th>
-	                    <th style="width: 80px;">상세</th>
+	                    <th>구역명</th>
+	                    <th>조치 상태</th>
+	                    <th>상세</th>
 	                </tr>
 	            </thead>
 	            <tbody id="detectionHistoryBody">
-	                <tr>
-	                    <td>1</td>
-	                    <td>예시</td>
-	                    <td>2026-08-30 14:22:10</td>
-	                    <td><span class="badge danger-attention">주의</span></td>
-	                    <td> 인구 밀집 </td>
-	                    <td>광장</td>
-	                    <td><span class="badge status-pending">대기</span></td>
-	                    <td><button class="btn-detail"><i class="fa-solid fa-magnifying-glass"></i></button></td>
-	                </tr>
-	                <tr>
-	                    <td>2</td>
-	                    <td>예시</td>
-	                    <td>2026-08-30 14:18:05</td>
-	                    <td><span class="badge danger-attention">주의</span></td>
-	                    <td> 야생 동물 출현 </td>
-	                    <td>광장</td>
-	                    <td><span class="badge status-in-progress">조치중</span></td>
-	                    <td><button class="btn-detail"><i class="fa-solid fa-magnifying-glass"></i></button></td>
-	                </tr>
+	                <!-- JavaScript로 목록이 렌더링됩니다 -->
 	            </tbody>
 	        </table>
 	    </div>
 
 	    <div class="history-footer-legend">
-	        <span class="legend-title"><i class="fa-solid fa-circle-info"></i> 처리 상태 범례:</span>
+	        <span class="legend-title"><i class="fa-solid fa-circle-info"></i> 조치 상태 범례:</span>
 	        <div class="legend-items">
 	            <span class="legend-item"><span class="badge status-pending">대기</span> 신규 감지 이벤트 (확인 필요)</span>
 	            <span class="legend-item"><span class="badge status-confirmed">확인</span> 현장 확인</span>
@@ -309,6 +290,46 @@ function initSSE() {
     };
 }
 
+//밀리초 타임스탬프를 'YYYY-MM-DD HH:mm:ss' 포맷으로 변환하는 함수
+function formatDate(timestamp) {
+    if (!timestamp) return '-';
+    
+    // ISO 문자열이나 숫자가 들어와도 Date 객체로 변환 가능하도록 처리
+    var date = new Date(Number(timestamp) || timestamp);
+    if (isNaN(date.getTime())) return timestamp; // 변환 실패 시 원본 그대로 출력
+
+    var pad = function(num) { return num < 10 ? '0' + num : num; };
+
+    var year = date.getFullYear();
+    var month = pad(date.getMonth() + 1);
+    var day = pad(date.getDate());
+    var hours = pad(date.getHours());
+    var minutes = pad(date.getMinutes());
+    var seconds = pad(date.getSeconds());
+
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+}
+
+//상세보기 팝업 함수
+function openDetailPop(situNo) {
+    var url = ctx + '/detection/detail?no=' + situNo;
+    
+    // 💡 팝업창 이름을 고정하면 기존 팝업창에서 내용만 전환되고, 
+    // situNo를 붙이면(예: 'Detail_' + situNo) 이벤트별로 각각 팝업창이 새로 떠서 비교가 가능해집니다.
+    // var windowName = 'DetectionDetailPop';
+    var windowName = 'Detail_' + situNo;
+    
+    // 팝업창 옵션 (크기, 스크롤, 리사이즈 설정)
+    var windowOption = 'width=630, height=720, top=100, left=200, scrollbars=yes, resizable=yes';
+    
+    var detailPop = window.open(url, windowName, windowOption);
+    
+    // 이미 팝업이 밑으로 내려가(최소화) 있는 경우 앞으로 끌어올림
+    if (detailPop) {
+        detailPop.focus();
+    }
+}
+
 // 5. 실시간 감지 목록 불러오기
 function getSituationList() {
     $.ajax({
@@ -350,12 +371,12 @@ function getSituationList() {
                 var html = '<tr>'
                          + '<td>' + situation.situNo + '</td>'
                          + '<td>' + situation.situType + '</td>'
-                         + '<td>' + situation.situDate + '</td>'
+                         + '<td>' + formatDate(situation.situDate) + '</td>'
                          + '<td><span class="badge ' + currentLevelClass + '">' + situation.dngrLevel + '</span></td>'
                          + '<td>' + situation.dngrType + '</td>'
                          + '<td>' + situation.zoneName + '</td>'
                          + '<td><span class="badge ' + currentStatusClass + '">' + situation.situStatus + '</span></td>'
-                         + '<td><button type="button" class="btn-detail" onclick="location.href=\'' + ctx + '/detection/detail?no=' + situation.situNo + '\'"><i class="fa-solid fa-magnifying-glass"></i></button></td>'
+                         + '<td><button type="button" class="btn-detail" onclick="openDetailPop(\'' + situation.situNo + '\')"><i class="fa-solid fa-magnifying-glass"></i></button></td>'
                          + '</tr>';
 
                 $tbody.append(html);
@@ -374,11 +395,20 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
+// 페이지 진입/복원/SPA 전환 공통 초기화 함수
+window.initStreamPage = function() {
+    getSituationList(); // 실시간 감지 목록 불러오기
+    initSSE();          // SSE 연결
+};
+
 // 7. 메인 컨트롤 및 초기화
 $(document).ready(function() {
     const currentDroneId = '${droneId}';
     const switchIntervalTime = 20000;
     let autoSwitchTimer = null;
+    
+ 	// 💡 최초 진입 시 데이터 로딩 및 SSE 연결 (1회만 호출)
+    window.initStreamPage();
 
     function handleAutoSwitch(isOn) {
         if (autoSwitchTimer) {
@@ -482,10 +512,21 @@ $(document).ready(function() {
             }
         }, 1000);
     });
+});
 
-    // 💡 화면 진입 시 데이터 로딩 및 SSE 연결
-    getSituationList();
-    initSSE();
+// 뒤로가기/앞으로가기(BFCache) 및 사이드바 이동 복원 대응
+window.addEventListener('pageshow', function(event) {
+    // event.persisted가 true이면 브라우저가 캐시된 페이지를 복원한 상태
+    if (event.persisted) {
+    	window.initStreamPage();
+    }
+});
+
+// 다른 탭에 갔다 돌아왔을 때 자동 갱신
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+    	window.initStreamPage();
+    }
 });
 
 // 8. 전체화면 토글 이벤트 핸들러

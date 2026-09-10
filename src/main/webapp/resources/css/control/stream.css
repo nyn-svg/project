@@ -655,17 +655,35 @@ input:checked + .slider:before {
     border-radius: 6px !important;
 }
 
+/* ==========================================
+   하단 감지 이력 테이블
+   ========================================== */
 .history-table {
     width: 100%;
+    table-layout: fixed !important;
     border-collapse: collapse;
     text-align: center;
     font-size: 12px;
 }
 
+/* 열별 너비 */
+.history-table th:nth-child(1) { width: 14%; } /* NO */
+.history-table th:nth-child(2) { width: 10%;  } /* 감지 유형 */
+.history-table th:nth-child(3) { width: 17%; } /* 감지 일시 */
+.history-table th:nth-child(4) { width: 10%;  } /* 위험 단계 */
+.history-table th:nth-child(5) { width: 21%; } /* 위험 유형 */
+.history-table th:nth-child(6) { width: 10%;  } /* 구역명 */
+.history-table th:nth-child(7) { width: 12%; } /* 조치 상태 */
+.history-table th:nth-child(8) { width: 6%;  } /* 상세 */
+
 .history-table th,
 .history-table td {
     padding: 4px 6px !important;
     font-size: 12px !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .history-table th {
@@ -716,7 +734,6 @@ input:checked + .slider:before {
   border: 1px solid rgba(156, 163, 175, 0.4);
 }
 
-
 /* 1. 대기 (하늘색 - 신규 이벤트 알림) */
 .status-pending {
   background: rgba(56, 189, 248, 0.2);
@@ -766,23 +783,39 @@ input:checked + .slider:before {
 
 .btn-detail:hover {
     color: #38bdf8;
-    background: rgba(56, 189, 248, 0.1);
 }
 
+/* 범례 레이아웃 (1줄 가로 정렬 + 간격 보정) */
 .history-footer-legend {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important; /* 제목과 아이템 사이 간격 */
     font-size: 11px;
+    margin-top: 4px !important; /* 테이블과의 간격 확보 */
     padding-top: 2px;
 }
 
 .legend-title {
     font-weight: 600;
     color: #94a3b8;
+    white-space: nowrap !important; /* 줄바꿈 방지 */
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .legend-items {
-    gap: 14px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important; /* 범례 항목 간 간격 */
+    flex-wrap: nowrap !important; /* 1줄로만 유지 */
+    overflow-x: auto; /* 화면 폭이 매우 좁을 때 스크롤 처리 */
 }
 
 .legend-item {
+    display: flex;
+    align-items: center;
     gap: 4px;
+    white-space: nowrap !important;
+    color: #cbd5e1;
 }

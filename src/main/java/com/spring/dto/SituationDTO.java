@@ -20,4 +20,6 @@ public class SituationDTO {
     private String zoneName;    // 구역명
     private String userId;      // 작성자 아이디
     private String situImage;   // 첨부 사진 파일명
+    
+    // 투입인원?
 }
