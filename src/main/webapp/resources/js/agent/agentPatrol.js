@@ -4,8 +4,7 @@ $(document).ready(function() {
     // 사전 점검
     $("#btnPreCheck").on("click", function() {
         console.log("사전 점검 페이지 이동 요청");
-        // 추후 연결할 사전점검 상세 폼 뷰 URL 개발 시 연결
-        // location.href = "precheck"; 
+        location.href = "safetyCheck"; 
     });
 
     // 긴급 처리보고

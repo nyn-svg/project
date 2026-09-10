@@ -30,7 +30,7 @@
                         <i class="fa-solid fa-clipboard-list"></i>
                     </div>
                     <div class="card-text-group">
-                        <div class="card-title">사전 점검 체크 리스트</div>
+                        <div class="card-title">사전 점검</div>
                     </div>
                     <i class="fa-solid fa-chevron-right card-arrow"></i>
                 </button>

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.spring.dto.ChecklistHistoryDTO;
 import com.spring.dto.ChecklistItemDTO;
+import com.spring.dto.SafetyCheckMasterDTO;
 
 public interface ChecklistService {
 
@@ -19,9 +20,12 @@ public interface ChecklistService {
     // 4. 체크리스트 문항 삭제
     boolean removeChecklistItem(Long itemId);
     
- // 5. 사이드바용 제출 이력 요약 목록 조회
+    // 5. 사이드바용 제출 이력 요약 목록 조회
     List<ChecklistHistoryDTO> getChecklistHistoryList();
 
     // 6. 모달용 상세 제출 결과 조회
     List<ChecklistHistoryDTO> getChecklistHistoryDetail(String userId, String checkDateStr);
+    
+    // 7. 사전 점검 제출 결과 DB 저장
+    boolean insertSafetyCheck(SafetyCheckMasterDTO masterDTO);
 }

@@ -91,22 +91,23 @@
 
         </main>
 
-        <!-- 하단 탭 바 -->
-        <nav class="bottom-nav">
-            <a href="${pageContext.request.contextPath}/agent/main" class="nav-item">
-                <i class="fa-solid fa-house"></i>
-                <span>홈</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/agent/history" class="nav-item active">
-                <i class="fa-solid fa-clipboard-list"></i>
-                <span>업무</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/agent/info" class="nav-item">
-                <i class="fa-solid fa-user"></i>
-                <span>정보</span>
-            </a>
-        </nav>
-    </div>
+        <!-- 하단 메뉴바 -->
+
+		<nav class="bottom-nav">
+			<button type="button" class="nav-item nav-patrol" id="navPatrol">
+				<i class="fa-solid fa-shield-halved"></i> <span> 안전순찰 </span>
+			</button>
+
+
+			<button type="button" class="nav-item nav-home" id="navHome">
+				<i class="fa-solid fa-house"></i> <span> 홈 </span>
+			</button>
+
+			<button type="button" class="nav-item active nav-report" id="navReport">
+				<i class="fa-solid fa-file-pen"></i> <span> 조치보고 </span>
+			</button>
+		</nav>
+	</div>
 
 </body>
 

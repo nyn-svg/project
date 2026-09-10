@@ -291,36 +291,51 @@ body {
     font-weight: 700;
 }
 
-/* 하단 탭 바 (네비게이션) */
+/* ==================================================
+   7. 고정 하단 탭 메뉴바 (BOTTOM NAVIGATION)
+================================================== */
 .bottom-nav {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
-    background-color: #ffffff;
+    height: 72px;
+    background-color: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px); /* 투명 유리 효과 */
     border-top: 1px solid #e2e8f0;
     display: flex;
-    align-items: center;
     justify-content: space-around;
-    z-index: 100;
+    align-items: center;
+    padding-bottom: 8px; /* 아래쪽 여백 확보 */
+    z-index: 10;
 }
 
 .nav-item {
+    background: none;
+    border: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
     color: #94a3b8;
-    text-decoration: none;
-    font-size: 0.75rem;
+    cursor: pointer;
+    width: 60px;
 }
 
 .nav-item i {
-    font-size: 1.2rem;
+    font-size: 20px;
 }
 
+.nav-item span {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* 활성화 상태 (Home) 폰트 색상 및 가 강조 */
 .nav-item.active {
-    color: #1d4ed8;
+    color: #1a1f2c;
+}
+
+.nav-item.active span {
     font-weight: 700;
 }
