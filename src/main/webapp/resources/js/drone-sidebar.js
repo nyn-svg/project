@@ -42,7 +42,7 @@ $(document).ready(function() {
 					var currentClass = statusClassMap[drone.droneStatus] || 'ready';
 					
 					var html = '<div class="drone-item-wrapper" data-id="' + drone.droneId + '" data-zone="' + drone.zoneName + '" data-url="' + drone.url + '" data-active="' + drone.activeStatus + '">'
-					         + '<a href="' + ctx + '/drone/stream?id=' + drone.droneId + '&zone=' + encodeURIComponent(drone.zoneName) + '" class="drone-btn sidebar-link">'
+					         + '<a href="' + ctx + '/control/stream?id=' + drone.droneId + '&zone=' + encodeURIComponent(drone.zoneName) + '" class="drone-btn sidebar-link">'
 					         + '<div class="drone-info-box">'
 					         +   '<div class="drone-top-row">'
 					         +     '<div class="drone-name-wrapper">'

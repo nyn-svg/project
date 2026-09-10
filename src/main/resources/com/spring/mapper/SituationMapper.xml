@@ -1,8 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.spring.mapper.SituationMapper">
-
-    <!-- 신규 상황 보고 등록 -->
+	
+	<!-- 이력 번호로 감지조치이력 조회 -->
+	<select id="findBySituNo" parameterType="string" resultType="com.spring.dto.SituationDTO">
+		SELECT
+			SITU_NO 		AS situNo,
+			SITU_TYPE 		AS situType,
+			DNGR_TYPE	 	AS dngrType,
+			DNGR_LEVEL	 	AS dngrLevel,
+			SITU_STATUS 	AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_LAT		AS situLat,
+			SITU_LON		AS situLon,
+			SITU_DATE		AS situDate,
+			WORK_CONTENT 	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			ZONE_NAME		AS zoneName,
+			USER_ID			AS userId,
+			SITU_IMAGE		AS situImage
+		FROM SITUATIONS
+		WHERE SITU_NO = #{situNo}
+	</select>
+	
+	<!-- 전체 감지조치이력 목록 조회 -->
+	<select id="findAllSituations" resultType="com.spring.dto.SituationDTO">
+		SELECT
+			SITU_NO 		AS situNo,
+			SITU_TYPE 		AS situType,
+			DNGR_TYPE	 	AS dngrType,
+			DNGR_LEVEL	 	AS dngrLevel,
+			SITU_STATUS 	AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_LAT		AS situLat,
+			SITU_LON		AS situLon,
+			SITU_DATE		AS situDate,
+			WORK_CONTENT 	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			ZONE_NAME		AS zoneName,
+			USER_ID			AS userId,
+			SITU_IMAGE		AS situImage
+		FROM SITUATIONS
+		ORDER BY SITU_NO DESC
+	</select>
+	
+	<!-- 감지 이력 목록 조회 -->
+	<select id="findSituations" resultType="com.spring.dto.SituationDTO">
+		SELECT
+			SITU_NO 		AS situNo,
+			SITU_TYPE 		AS situType,
+			DNGR_TYPE	 	AS dngrType,
+			DNGR_LEVEL	 	AS dngrLevel,
+			SITU_STATUS 	AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_LAT		AS situLat,
+			SITU_LON		AS situLon,
+			SITU_DATE		AS situDate,
+			WORK_CONTENT 	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			ZONE_NAME		AS zoneName,
+			USER_ID			AS userId,
+			SITU_IMAGE		AS situImage
+		FROM SITUATIONS
+		WHERE SITU_STATUS = '대기'
+		ORDER BY SITU_DATE DESC
+	</select>
+	
+	<!-- 조치 이력 목록 조회 -->
+	<select id="findStartSituations" resultType="com.spring.dto.SituationDTO">
+		SELECT
+			SITU_NO 		AS situNo,
+			SITU_TYPE 		AS situType,
+			DNGR_TYPE	 	AS dngrType,
+			DNGR_LEVEL	 	AS dngrLevel,
+			SITU_STATUS 	AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_LAT		AS situLat,
+			SITU_LON		AS situLon,
+			SITU_DATE		AS situDate,
+			WORK_CONTENT 	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			ZONE_NAME		AS zoneName,
+			USER_ID			AS userId,
+			SITU_IMAGE		AS situImage
+		FROM SITUATIONS
+		WHERE START_DATE IS NOT NULL
+		AND END_DATE IS NULL
+		ORDER BY START_DATE DESC
+	</select>
+	
+	<!-- 종료 이력 목록 조회 -->
+	<select id="findEndSituations" resultType="com.spring.dto.SituationDTO">
+		SELECT
+			SITU_NO			AS situNo,
+			SITU_TYPE		AS situType,
+			DNGR_TYPE		AS dngrType,
+			DNGR_LEVEL		AS dngrLevel,
+			SITU_STATUS		AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_LAT		AS situLat,
+			SITU_LON		AS situLon,
+			SITU_DATE		AS situDate,
+			WORK_CONTENT	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			ZONE_NAME		AS zoneName,
+			USER_ID			AS userId,
+			SITU_IMAGE		AS situImage
+		FROM SITUATIONS
+		WHERE END_DATE IS NOT NULL
+		ORDER BY END_DATE DESC
+	</select>
+	
+    <!-- 감지 이력 등록 -->
     <insert id="insertSituation" parameterType="com.spring.dto.SituationDTO">
         <selectKey keyProperty="situNo" resultType="string" order="BEFORE">
             SELECT 'SITU_' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '_' || LPAD(SITU_SEQ.NEXTVAL, 4, '0')
@@ -11,27 +125,72 @@
         
         INSERT INTO SITUATIONS (
             SITU_NO,
+            SITU_TYPE,
             DNGR_TYPE,
-            SITU_STATUS,
+            DNGR_LEVEL,
             SITU_CONTENT,
             SITU_LAT,
             SITU_LON,
-            SITU_DATE,
+            WORK_CONTENT,
             ZONE_NAME,
             USER_ID,
             SITU_IMAGE
         ) VALUES (
             #{situNo},
+            #{situType},
             #{dngrType},
-            '대기',
+            #{dngrLevel},
             #{situContent, jdbcType=VARCHAR},
             #{situLat, jdbcType=DOUBLE},
             #{situLon, jdbcType=DOUBLE},
-            SYSDATE,
+            #{workContent, jdbcType=VARCHAR},
             #{zoneName, jdbcType=VARCHAR},
             #{userId},
             #{situImage, jdbcType=VARCHAR}
         )
     </insert>
-
+	
+	<!-- 감지 이력 수정 또는 조치 내용 입력 -->
+	<update id="updateSituation" parameterType="com.spring.dto.SituationDTO">
+		UPDATE SITUATIONS
+        SET 
+            DNGR_TYPE		= #{dngrType},
+            DNGR_LEVEL		= #{dngrLevel},
+            SITU_STATUS		= #{situStatus},
+            SITU_CONTENT	= #{situContent, jdbcType=VARCHAR},
+            WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
+            START_DATE		= #{startDate, jdbcType=DATE},
+            END_DATE		= #{endDate, jdbcType=DATE},
+            ZONE_NAME		= #{zoneName, jdbcType=VARCHAR},
+            SITU_IMAGE		= #{situImage, jdbcType=VARCHAR}
+        WHERE SITU_NO = #{situNo}
+	</update>
+	
+	<!-- 전체 감지조치이력 수 -->
+    <select id="getTotalSituationCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM SITUATIONS
+    </select>
+    
+    <!-- 감지 이력 수 -->
+    <select id="getSituationCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE SITU_STATUS = '대기'
+    </select>
+    
+    <!-- 조치 이력 수 -->
+    <select id="getStartSituationCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE START_DATE IS NOT NULL
+		AND END_DATE IS NULL
+    </select>
+    
+    <!-- 종료 이력 수 -->
+    <select id="getEndSituationCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE END_DATE IS NOT NULL
+    </select>
 </mapper>

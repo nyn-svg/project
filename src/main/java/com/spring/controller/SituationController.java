@@ -2,16 +2,18 @@ package com.spring.controller;
 
 import java.io.File;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,28 +21,76 @@ import org.springframework.web.multipart.MultipartFile;
 import com.spring.dto.SituationDTO;
 import com.spring.service.SituationService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
-@RequestMapping("/agent")
 public class SituationController {
 
     @Autowired
     private SituationService situationService;
-
-    // 상황 보고 AJAX 비동기 등록 API (파일 업로드 지원)
-    @PostMapping("/api/report")
+    
+    // 공유 감지조치이력 목록
+ 	private static final List<SituationDTO> situationList = Collections.synchronizedList(new ArrayList<>());
+    
+    // 전체 감지조치이력 목록 조회
+    @GetMapping("/total/api/list")
     @ResponseBody
-    public ResponseEntity<String> registerReport(
-            SituationDTO situation,
-            @RequestParam(value = "photo", required = false) MultipartFile photo,
-            HttpServletRequest request,
-            Principal principal) {
-        
+    public List<SituationDTO> getTotalSituationList() {
+		// 리스트가 비어있을 때만 (최초 1회만) DB에서 조회해서 채움
+		if (situationList.isEmpty()) {
+			// 여러 요청이 동시에 들어와도 안전하게 딱 한 번만 채우도록 동기화 잠금
+			synchronized (situationList) {
+				// 더블 체크
+				if (situationList.isEmpty()) {
+					List<SituationDTO> list = situationService.getTotalSituationList();
+					situationList.addAll(list);
+				}
+			}
+		}
+		
+		return situationList;
+	}
+    
+	/*
+	 * // 감지조치이력 목록 조회 (검색조건 포함)
+	 * 
+	 * @GetMapping("/detect/list")
+	 * 
+	 * @ResponseBody public List<SituationDTO> getSituationList() {
+	 * 
+	 * }
+	 * 
+	 * // (수동) 위험 감지 이력 등록
+	 * 
+	 * @PostMapping("/detect/regist")
+	 * 
+	 * @ResponseBody public Map<String, Object> registSituation() {
+	 * 
+	 * }
+	 * 
+	 * // (자동) 위험 감지 이력 AJAX 비동기 등록 API (파일 업로드 지원)
+	 * 
+	 * @PostMapping("/detect/api/insert")
+	 * 
+	 * @ResponseBody public Map<String, Object> insertSituation() {
+	 * 
+	 * }
+	 */
+    
+    // 상황 보고(긴급 보고) AJAX 비동기 등록 API (파일 업로드 지원)
+    @PostMapping("/agent/api/report")
+    @ResponseBody
+    public ResponseEntity<String> registerReport(SituationDTO situation,
+    											 @RequestParam(value = "photo", required = false) MultipartFile photo,
+      											 HttpServletRequest request,
+      											 Principal principal) {
+    	
         try {
             // 1. 사용자 아이디 설정
             if (principal != null) {
                 situation.setUserId(principal.getName());
             } else {
-                situation.setUserId("agent01"); // 테스트용
+                // 리다이렉트?
             }
 
             // 2. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
@@ -78,4 +128,14 @@ public class SituationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
         }
     }
+    
+	/*
+	 * // 감지 이력 수정 또는 조치 이력 입력
+	 * 
+	 * @PostMapping("/detect/modify")
+	 * 
+	 * @ResponseBody public Map<String, Object> modifySituation() {
+	 * 
+	 * }
+	 */
 }

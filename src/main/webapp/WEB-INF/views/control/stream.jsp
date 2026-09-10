@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-stream.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/stream.css">
 
 <!-- 전체 화면 분할 컨테이너 -->
 <div class="drone-stream-wrapper">
@@ -172,7 +172,7 @@
 	    <div class="history-header">
 	        <div class="header-title-box">
 	            <i class="fa-solid fa-list-check title-icon"></i>
-	            <h3 class="title-text">실시간 객체 감지 이력</h3>
+	            <h3 class="title-text">실시간 감지 이력</h3>
 	            <span class="count-badge" id="totalHistoryCount">총 0건</span>
 	        </div>
 	        <div class="header-action-box">
@@ -189,29 +189,29 @@
 	                    <th style="width: 50px;">NO</th>
 	                    <th>감지 유형</th>
 	                    <th style="width: 140px;">감지 일시</th>
-	                    <th style="width: 90px;">위험 등급</th>
+	                    <th style="width: 90px;">위험 단계</th>
 	                    <th>위험 유형</th>
 	                    <th style="width: 100px;">구역명</th>
-	                    <th style="width: 100px;">처리 상태</th>
+	                    <th style="width: 100px;">조치 상태</th>
 	                    <th style="width: 80px;">상세</th>
 	                </tr>
 	            </thead>
 	            <tbody id="detectionHistoryBody">
 	                <tr>
 	                    <td>1</td>
-	                    <td>자동</td>
+	                    <td>예시</td>
 	                    <td>2026-08-30 14:22:10</td>
-	                    <td><span class="badge danger-high">심각</span></td>
+	                    <td><span class="badge danger-attention">주의</span></td>
 	                    <td> 인구 밀집 </td>
 	                    <td>광장</td>
-	                    <td><span class="badge status-unconfirmed">미확인</span></td>
+	                    <td><span class="badge status-pending">대기</span></td>
 	                    <td><button class="btn-detail"><i class="fa-solid fa-magnifying-glass"></i></button></td>
 	                </tr>
 	                <tr>
 	                    <td>2</td>
-	                    <td>수동</td>
+	                    <td>예시</td>
 	                    <td>2026-08-30 14:18:05</td>
-	                    <td><span class="badge danger-mid">경계</span></td>
+	                    <td><span class="badge danger-attention">주의</span></td>
 	                    <td> 야생 동물 출현 </td>
 	                    <td>광장</td>
 	                    <td><span class="badge status-in-progress">조치중</span></td>
@@ -224,10 +224,12 @@
 	    <div class="history-footer-legend">
 	        <span class="legend-title"><i class="fa-solid fa-circle-info"></i> 처리 상태 범례:</span>
 	        <div class="legend-items">
-	            <span class="legend-item"><span class="badge status-unconfirmed">미확인</span> 신규 감지 (확인 필요)</span>
-	            <span class="legend-item"><span class="badge status-in-progress">조치중</span> 관제원 현장 확인/조치 중</span>
-	            <span class="legend-item"><span class="badge status-completed">완료</span> 상황 종료 및 조치 완료</span>
-	            <span class="legend-item"><span class="badge status-false-alarm">오탐</span> 잘못된 감지 이벤트</span>
+	            <span class="legend-item"><span class="badge status-pending">대기</span> 신규 감지 이벤트 (확인 필요)</span>
+	            <span class="legend-item"><span class="badge status-confirmed">확인</span> 현장 확인</span>
+	            <span class="legend-item"><span class="badge status-in-progress">조치</span> 조치 중</span>
+	            <span class="legend-item"><span class="badge status-completed">완료</span> 조치 완료</span>
+	            <span class="legend-item"><span class="badge status-failed">미해결</span> 조치 실패</span>
+	            <span class="legend-item"><span class="badge status-canceled">취소</span> 잘못된 감지 이벤트 또는 조치 완료 전 종료된 감지 이벤트</span>
 	        </div>
 	    </div>
 	</div>
@@ -235,6 +237,9 @@
 </div>
 
 <script>
+const ctx = window.contextPath || '';
+let eventSource = null; // SSE 객체 전역 관리
+
 // 1. 범용 토스트 메시지 출력 함수
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -283,9 +288,94 @@ function deleteReportItem(btn) {
     }
 }
 
-// 4. 메인 컨트롤 및 스위치 바인딩
+// 4. SSE 연결 및 해제 관리
+function initSSE() {
+    if (eventSource) {
+        eventSource.close();
+    }
+
+    eventSource = new EventSource(ctx + '/api/sse/subscribe');
+
+    // 'drone_change' 이벤트를 수신하면 목록 자동 갱신
+    eventSource.addEventListener('drone_change', function(e) {
+        getSituationList();
+    });
+
+    eventSource.onerror = function() {
+        if (eventSource) {
+            eventSource.close();
+        }
+        setTimeout(initSSE, 3000); // 3초 후 재연결
+    };
+}
+
+// 5. 실시간 감지 목록 불러오기
+function getSituationList() {
+    $.ajax({
+        url: ctx + '/total/api/list',
+        type: 'GET',
+        dataType: 'json',
+        success: function(situations) {
+            var $tbody = $('#detectionHistoryBody');
+            $tbody.empty();
+            
+            // 총 건수 배지 업데이트
+            $('#totalHistoryCount').text('총 ' + (situations ? situations.length : 0) + '건');
+            
+            if (!situations || situations.length === 0) {
+                $tbody.append('<tr><td colspan="8" style="text-align:center;">감지 이력이 없습니다.</td></tr>');
+                return;
+            }
+             
+            var levelClassMap = {
+                '관심': 'danger-interest',
+                '주의': 'danger-attention',
+                '경계': 'danger-caution',
+                '심각': 'danger-severe',
+                '판단불가': 'danger-unknown'
+            };
+            var statusClassMap = {
+                '대기': 'status-pending',
+                '확인': 'status-confirmed',
+                '조치': 'status-in-progress',
+                '완료': 'status-completed',
+                '미해결': 'status-failed',
+                '취소': 'status-canceled'
+            };
+
+            situations.forEach(function(situation) {
+                var currentLevelClass = levelClassMap[situation.dngrLevel] || 'danger-unknown';
+                var currentStatusClass = statusClassMap[situation.situStatus] || 'status-pending';
+                
+                var html = '<tr>'
+                         + '<td>' + situation.situNo + '</td>'
+                         + '<td>' + situation.situType + '</td>'
+                         + '<td>' + situation.situDate + '</td>'
+                         + '<td><span class="badge ' + currentLevelClass + '">' + situation.dngrLevel + '</span></td>'
+                         + '<td>' + situation.dngrType + '</td>'
+                         + '<td>' + situation.zoneName + '</td>'
+                         + '<td><span class="badge ' + currentStatusClass + '">' + situation.situStatus + '</span></td>'
+                         + '<td><button type="button" class="btn-detail" onclick="location.href=\'' + ctx + '/detection/detail?no=' + situation.situNo + '\'"><i class="fa-solid fa-magnifying-glass"></i></button></td>'
+                         + '</tr>';
+
+                $tbody.append(html);
+            });
+        },
+        error: function(err) {
+            console.error('감지 목록 조회 실패:', err);
+        }
+    });
+}
+
+// 6. 페이지 이동/이탈 시 SSE 세션 정상 종료 (서버 메모리 보호)
+window.addEventListener('beforeunload', function() {
+    if (eventSource) {
+        eventSource.close();
+    }
+});
+
+// 7. 메인 컨트롤 및 초기화
 $(document).ready(function() {
-    const ctx = window.contextPath || '';
     const currentDroneId = '${droneId}';
     const switchIntervalTime = 20000;
     let autoSwitchTimer = null;
@@ -318,7 +408,7 @@ $(document).ready(function() {
                 const nextIndex = (currentIndex + 1) % flyingDrones.length;
                 const nextDrone = flyingDrones[nextIndex];
 
-                location.href = ctx + '/drone/stream?id=' + nextDrone.droneId + '&zone=' + encodeURIComponent(nextDrone.zoneName);
+                location.href = ctx + '/control/stream?id=' + nextDrone.droneId + '&zone=' + encodeURIComponent(nextDrone.zoneName);
             }
         });
     }
@@ -342,7 +432,7 @@ $(document).ready(function() {
         }
     });
 
-    // 단순 스위치 알림 바인딩 (중복 제거)
+    // 단순 스위치 알림 바인딩
     function bindToggleToast(selector, label) {
         $(selector).on('change', function(e) {
             if (!e.originalEvent) return;
@@ -392,9 +482,13 @@ $(document).ready(function() {
             }
         }, 1000);
     });
+
+    // 💡 화면 진입 시 데이터 로딩 및 SSE 연결
+    getSituationList();
+    initSSE();
 });
 
-// 5. 전체화면 토글 이벤트 핸들러
+// 8. 전체화면 토글 이벤트 핸들러
 $(document).on('click', '#btnFullscreen', function() {
     const $placeholder = $(this).closest('.stream-placeholder');
     const placeholderEl = $placeholder[0];

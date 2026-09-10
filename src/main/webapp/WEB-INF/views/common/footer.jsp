@@ -5,7 +5,7 @@
     <div class="footer-inner">
         <div>
          
-            <p style="margin-top: 12px; color: #475569;">© 2026 SmartCrowd Team. All rights reserved.</p>
+            <p style="margin-top: 12px; color: #475569;">© 2026 2Team. All rights reserved.</p>
         </div>
 
     </div>

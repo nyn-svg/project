@@ -1,5 +1,7 @@
 package com.spring.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +17,32 @@ public class SituationServiceImpl implements SituationService {
 
     @Autowired
     private SseService sseService; // 공유해주신 SseService 주입
+    
+    @Override
+	public SituationDTO getSituationBySituNo(String situNo) {
+		return situationMapper.findBySituNo(situNo);
+	}
 
+	@Override
+	public List<SituationDTO> getTotalSituationList() {
+		return situationMapper.findAllSituations();
+	}
+
+	@Override
+	public List<SituationDTO> getSituationList() {
+		return situationMapper.findSituations();
+	}
+
+	@Override
+	public List<SituationDTO> getStartSituationList() {
+		return situationMapper.findStartSituations();
+	}
+
+	@Override
+	public List<SituationDTO> getEndSituationList() {
+		return situationMapper.findEndSituations();
+	}
+    
     @Override
     @Transactional
     public boolean registerSituation(SituationDTO situation) {
@@ -30,4 +57,29 @@ public class SituationServiceImpl implements SituationService {
         
         return result > 0;
     }
+
+	@Override
+	public boolean modifySituation(SituationDTO situation) {
+		return situationMapper.updateSituation(situation) > 0;
+	}
+
+	@Override
+	public int getTotalSituationCount() {
+		return situationMapper.getTotalSituationCount();
+	}
+
+	@Override
+	public int getSituationCount() {
+		return situationMapper.getSituationCount();
+	}
+
+	@Override
+	public int getStartSituationCount() {
+		return situationMapper.getStartSituationCount();
+	}
+
+	@Override
+	public int getEndSituationCount() {
+		return situationMapper.getEndSituationCount();
+	}
 }

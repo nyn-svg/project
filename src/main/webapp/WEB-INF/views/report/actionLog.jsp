@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!-- CSS 로드 (프로젝트 정적 리소스 경로 규칙 준수) -->
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/actionLog.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/actionLog.css">
 
 <div class="action-log-container">
     

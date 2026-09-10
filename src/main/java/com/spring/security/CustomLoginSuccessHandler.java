@@ -34,13 +34,13 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             response.sendRedirect(request.getContextPath() + "/admin/main");
         } else if (roles.contains("ROLE_CONTROL")) {
             // 관제사 -> / (관제사 메인)
-            response.sendRedirect(request.getContextPath() + "/");
+            response.sendRedirect(request.getContextPath() + "/control/main");
         } else if (roles.contains("ROLE_AGENT")) {
             // 안전요원 -> /agent/main
             response.sendRedirect(request.getContextPath() + "/agent/main");
         } else {
-            // 기타 기본값 -> /guide/main
-            response.sendRedirect(request.getContextPath() + "/guide/main");
+            // 기타 기본값 -> 구: /guide/main
+            response.sendRedirect(request.getContextPath() + "/");
         }
     }
 }

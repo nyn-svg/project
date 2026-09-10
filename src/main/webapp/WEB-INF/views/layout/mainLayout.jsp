@@ -5,28 +5,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartCrowd GIS 관제 시스템</title>
+    <title>AI 기반 행사장 안전관제 시스템</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/global.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/guideMain.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/layout.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-stream.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
-
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">
+    
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/detection-status.css">	
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/actionLog.css">
+
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/adminMainContent.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/areaManagement.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/controlMaincontent.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/actionLog.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/guideMain.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/userManagement.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/safetyCheck.css">
+    
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/controlMainContent.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/stream.css">
+    
     <!-- Font Awesome 최신 버전 CDN 링크 추가 -->
 	<script src="https://kit.fontawesome.com/232b0508f2.js" crossorigin="anonymous"></script>
 
-    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	
-
 </head>
 <body>
 

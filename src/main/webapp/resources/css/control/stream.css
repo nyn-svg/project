@@ -685,14 +685,74 @@ input:checked + .slider:before {
     font-weight: 600;
 }
 
-.danger-high { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
-.danger-mid  { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-.danger-low  { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+/* 1단계: 관심 (파랑) */
+.danger-interest {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+/* 2단계: 주의 (노랑) */
+.danger-attention {
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+/* 3단계: 경계 (주황) */
+.danger-caution {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+}
+/* 4단계: 심각 (빨강) */
+.danger-severe {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+/* 5단계: 판단불가 (회색) */
+.danger-unknown {
+  background: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+  border: 1px solid rgba(156, 163, 175, 0.4);
+}
 
-.status-unconfirmed { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
-.status-in-progress { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-.status-completed   { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-.status-false-alarm  { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.4); }
+
+/* 1. 대기 (하늘색 - 신규 이벤트 알림) */
+.status-pending {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+/* 2. 확인 (파란색 - 작업 시작 전 인지 단계) */
+.status-confirmed {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+/* 3. 조치 (주황색 - 진행 중인 역동적인 상태) */
+.status-in-progress {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+}
+/* 4. 완료 (초록색 - 성공적으로 마침) */
+.status-completed {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+/* 5. 미해결 / 조치 실패 (독자적인 보라색 - 주의 필요 상태) */
+.status-failed {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+/* 6. 취소 / 오감지 (회색 - 비활성화 및 무시 가능 상태) */
+.status-canceled {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
 
 .btn-detail {
     background: transparent;
