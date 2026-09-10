@@ -225,44 +225,10 @@ body {
 }
 
 /* ==================================================
-   5. 주요 알림 섹션 (화이트 카드 팩)
+   안전 수칙 섹션 - 원형 파스텔 아이콘 스타일 개편
 ================================================== */
-/* ==================================================
-   5. 안전 수칙 섹션 (네이버페이 미니멀 화이트 팩 개편)
-================================================== */
-.notice-section {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 4px;
-}
-
-.section-header h2 {
-    font-size: 15px;
-    font-weight: 700;
-    color: #111111;
-    letter-spacing: -0.3px;
-}
-
-.more-btn {
-    background: none;
-    border: none;
-    color: #888888; /* 톤다운 그레이 마감 */
-    font-size: 13px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    cursor: pointer;
-}
-
-/* 네이버페이 고유의 플랫 화이트 카드 컨테이너 */
+/* 1. 화이트 카드 컨테이너 유지 및 내부 여백 정돈 */
 .notice-list {
     background-color: #ffffff;
     border: 1px solid #eef2f5;
@@ -273,7 +239,7 @@ body {
     flex-direction: column;
 }
 
-/* 개별 리스트 아이템 버튼 */
+/* 2. 리스트 아이템 기본 투명 배경 및 패딩 */
 .notice-item {
     width: 100%;
     background: none;
@@ -287,79 +253,54 @@ body {
     transition: all 0.2s ease;
 }
 
-/* 정밀한 구분선 마감 */
+/* 아이템 사이 경계선 */
 .notice-item:not(:last-child) {
     border-bottom: 1px solid #f4f6f8;
 }
 
-/* 🚨 [핵심 변경] 알록달록한 원색 배경을 완전히 걷어내고 컴팩트하게 정돈 */
+/* 3. 🚨 아이콘 박스를 완벽한 원형(Circle) 파스텔톤으로 변경 */
 .notice-icon {
-    width: 24px;
-    height: 24px;
-    background-color: transparent !important; /* 배경 투명화 */
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;     
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 15px;
+    font-size: 14px;         
     flex-shrink: 0;
 }
 
-/* 네이버페이 무드의 단정하고 정갈한 아이콘 그레이 톤 통일 */
-.notice-item.danger .notice-icon i,
-.notice-item.warning .notice-icon i,
-.notice-item.info .notice-icon i {
-    color: #9aa5b5; 
+
+.notice-item.info .notice-icon {
+    background-color:#FFF1F2;
+    color:#F04444;
 }
 
-.notice-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-}
-
-/* 🚨 안전 수칙 글씨가 가장 먼저 눈에 띄도록 블랙 앤 볼드업 스킨 */
+/* 5. 텍스트 및 화살표 스타일 */
 .notice-title {
     font-size: 14px;
     font-weight: 700;
-    color: #111111; /* 선명한 리얼 다크 블랙 */
+    color: #111111;
     letter-spacing: -0.3px;
 }
 
 .notice-text {
     font-size: 12px;
-    color: #777777; /* 서브 텍스트 명확한 채도 다운 */
+    color: #777777;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 2px;
 }
 
-.notice-time {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    font-size: 11px;
+.notice-time i {
     color: #b2becd;
-    flex-shrink: 0;
+    font-size: 11px;
 }
 
-/* --------------------------------------------------
-   [터치 효과] 클릭 커서 진입 시 네이버페이 시그니처 그린 포인트 인젝션
--------------------------------------------------- */
+/* 클릭 시 부드러운 반응 */
 .notice-item:active {
-    background-color: #f9fbf9; /* 은은한 그린 무드 배경 */
-}
-
-/* 클릭/활성화 시 아이콘과 글자 앵글 화살표 색상이 네이버 그린으로 동시 전환 */
-.notice-item:active .notice-title {
-    color: #00c73c !important; /* 네이버페이 메인 그린 */
-}
-.notice-item:active .notice-icon i {
-    color: #00c73c !important;
-}
-.notice-item:active .notice-time i {
-    color: #00c73c !important;
+    background-color: #fafbfc;
 }
 
 

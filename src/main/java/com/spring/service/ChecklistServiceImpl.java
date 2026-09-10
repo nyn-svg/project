@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.dto.ChecklistHistoryDTO;
 import com.spring.dto.ChecklistItemDTO;
+import com.spring.dto.SafetyCheckDetailDTO;
+import com.spring.dto.SafetyCheckMasterDTO;
 import com.spring.mapper.ChecklistMapper;
 
 @Service
@@ -51,5 +54,24 @@ public class ChecklistServiceImpl implements ChecklistService {
     @Override
     public List<ChecklistHistoryDTO> getChecklistHistoryDetail(String userId, String checkDateStr) {
         return checklistMapper.selectChecklistHistoryDetail(userId, checkDateStr);
+    }
+    
+ // 사전점검 제출 데이터 저장 구현 (추가)
+    @Override
+    @Transactional
+    public boolean insertSafetyCheck(SafetyCheckMasterDTO masterDTO) {
+        if (masterDTO == null || masterDTO.getDetailList() == null) {
+            return false;
+        }
+
+        int insertedRows = 0;
+        String inspector = masterDTO.getInspector();
+
+        for (SafetyCheckDetailDTO detail : masterDTO.getDetailList()) {
+            // ChecklistMapper에 개별/다중 저장 쿼리 매핑 필요
+            insertedRows += checklistMapper.insertSafetyCheckDetail(inspector, detail);
+        }
+
+        return insertedRows > 0;
     }
 }

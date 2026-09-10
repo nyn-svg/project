@@ -59,22 +59,22 @@
         WHERE ITEM_ID = #{itemId}
     </delete>
     
-<!-- 5. 사이드바용 제출 이력 요약 목록 조회 -->
-<select id="selectChecklistHistoryList" resultType="com.spring.dto.ChecklistHistoryDTO">
-    SELECT 
-        R.USER_ID                                            AS userId,
-        MIN(I.TARGET_TYPE)                                   AS targetType,  <!-- MAX -> MIN 으로 변경 -->
-        MAX(R.CHECK_DATE)                                    AS checkDate,
-        TO_CHAR(MAX(R.CHECK_DATE), 'YYYY-MM-DD HH24:MI:SS')  AS checkDateStr,
-        COUNT(R.RESULT_ID)                                   AS totalCount,
-        COUNT(CASE WHEN R.CHECK_STATUS = '정상' THEN 1 END)   AS normalCount,
-        COUNT(CASE WHEN R.CHECK_STATUS = '주의' THEN 1 END)   AS cautionCount,
-        COUNT(CASE WHEN R.CHECK_STATUS = '위험' THEN 1 END)   AS dangerCount
-    FROM CHECKLIST_RESULT R
-    JOIN CHECKLIST_ITEM I ON R.ITEM_ID = I.ITEM_ID
-    GROUP BY R.USER_ID, TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS')
-    ORDER BY MAX(R.CHECK_DATE) DESC
-</select>
+	<!-- 5. 사이드바용 제출 이력 요약 목록 조회 -->
+	<select id="selectChecklistHistoryList" resultType="com.spring.dto.ChecklistHistoryDTO">
+	    SELECT 
+	        R.USER_ID                                            AS userId,
+	        MIN(I.TARGET_TYPE)                                   AS targetType,  <!-- MAX -> MIN 으로 변경 -->
+	        MAX(R.CHECK_DATE)                                    AS checkDate,
+	        TO_CHAR(MAX(R.CHECK_DATE), 'YYYY-MM-DD HH24:MI:SS')  AS checkDateStr,
+	        COUNT(R.RESULT_ID)                                   AS totalCount,
+	        COUNT(CASE WHEN R.CHECK_STATUS = '정상' THEN 1 END)   AS normalCount,
+	        COUNT(CASE WHEN R.CHECK_STATUS = '주의' THEN 1 END)   AS cautionCount,
+	        COUNT(CASE WHEN R.CHECK_STATUS = '위험' THEN 1 END)   AS dangerCount
+	    FROM CHECKLIST_RESULT R
+	    JOIN CHECKLIST_ITEM I ON R.ITEM_ID = I.ITEM_ID
+	    GROUP BY R.USER_ID, TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS')
+	    ORDER BY MAX(R.CHECK_DATE) DESC
+	</select>
 
     <!-- 6. 모달용 상세 제출 결과 조회 -->
     <select id="selectChecklistHistoryDetail" parameterType="map" resultType="com.spring.dto.ChecklistHistoryDTO">
@@ -94,5 +94,19 @@
           AND TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS') = #{checkDateStr}
         ORDER BY I.SORT_ORDER ASC, I.ITEM_ID ASC
     </select>
+    
+     <!-- 7. 사전 점검 제출 결과 DB 저장 -->
+    <insert id="insertSafetyCheckDetail">
+	   INSERT INTO CHECKLIST_RESULT (
+	        RESULT_ID, ITEM_ID, USER_ID, CHECK_STATUS, REMARK, CHECK_DATE
+	    ) VALUES (
+	        (SELECT NVL(MAX(RESULT_ID), 0) + 1 FROM CHECKLIST_RESULT),
+	        #{detail.itemNo},
+	        #{inspector},
+	        #{detail.statusCode},
+	        #{detail.remark, jdbcType=VARCHAR},
+	        SYSDATE
+	    )
+	</insert>
 
 </mapper>
