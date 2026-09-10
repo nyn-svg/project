@@ -120,9 +120,12 @@
 					        </select>
 					    </div>
 					    <div class="form-group">
-					        <label class="form-label">스트리밍 IP / RTSP URL</label>
-					        <input type="text" id="elemStreamUrl" class="form-input" placeholder="rtsp://192.168.0.100:554/stream" />
-					    </div>
+						    <label class="form-label">연동할 드론 선택</label>
+						    <select id="elemStreamUrl" class="form-input">
+						        <option value="">-- 드론을 선택하세요 --</option>
+						        <!-- 자바스크립트로 DB의 드론 목록이 여기에 동적으로 들어옵니다 -->
+						    </select>
+						</div>
 					</div>
 
                     <div class="form-actions">

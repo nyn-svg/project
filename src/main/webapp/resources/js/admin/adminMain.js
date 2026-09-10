@@ -301,7 +301,7 @@ function renderMainFacilities(facilities, renderScaleX, renderScaleY) {
 
     var facilityIconMap = {
         CCTV: "fa-video",
-        EMERGENCY: "fa-bell",
+        EMERGENCY: "fa-user-shield",
         FIRE_EXT: "fa-fire-extinguisher",
         INFO: "fa-circle-info",
         MEDICAL: "fa-kit-medical",
@@ -383,3 +383,176 @@ window.initAdminMainSse = function() {
         console.warn("SSE 연결 해제됨 또는 오류 발생");
     };
 };
+
+
+// ==========================================
+// 1. 드론 비디오 모달 관련 함수 (전역)
+// ==========================================
+window.closeDroneModal = function() {
+    const modal = document.getElementById("droneVideoModal");
+    const imgEl = document.getElementById("modalStreamImg");
+    const videoEl = document.getElementById("modalStreamVideo");
+    
+    if (imgEl) imgEl.src = "";
+    if (videoEl) { videoEl.pause(); videoEl.src = ""; }
+    if (modal) modal.style.display = "none";
+};
+
+function openDroneModal(zone) {
+    const modal = document.getElementById("droneVideoModal");
+    const titleEl = document.getElementById("modalDroneTitle");
+    const imgEl = document.getElementById("modalStreamImg");
+    const videoEl = document.getElementById("modalStreamVideo");
+    const noStreamEl = document.getElementById("modalNoStream");
+
+    // DB 필드명(zoneName)을 우선 참조하도록 수정
+    const zoneTitle = zone.zoneName || zone.name || "구역";
+    const droneId = zone.droneId || zone.drone_id || "미지정";
+    const streamUrl = zone.streamUrl || zone.stream_url || "";
+
+    titleEl.textContent = `[${zoneTitle}] - 드론 관제 (${droneId})`;
+
+    imgEl.style.display = "none";
+    videoEl.style.display = "none";
+    noStreamEl.style.display = "none";
+
+    if (!streamUrl) {
+        noStreamEl.style.display = "block";
+    } else if (streamUrl.endsWith(".mp4") || streamUrl.includes("video")) {
+        videoEl.src = streamUrl;
+        videoEl.style.display = "block";
+        videoEl.play();
+    } else {
+        imgEl.src = streamUrl;
+        imgEl.style.display = "block";
+    }
+
+    modal.style.display = "flex";
+}
+
+// ==========================================
+// 2. 좌표 클릭 다각형 판별 함수 (Ray-casting)
+// ==========================================
+function isPointInPolygon(point, vs) {
+    var x = point.x, y = point.y;
+    var inside = false;
+    for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        var xi = vs[i].x, yi = vs[i].y;
+        var xj = vs[j].xj || vs[j].x, yi_test = vs[i].y, yj = vs[j].y; // 점 형태 유연 대응
+        
+        var xi = vs[i].x !== undefined ? vs[i].x : vs[i][0];
+        var yi = vs[i].y !== undefined ? vs[i].y : vs[i][1];
+        var xj = vs[j].x !== undefined ? vs[j].x : vs[j][0];
+        var yj = vs[j].y !== undefined ? vs[j].y : vs[j][1];
+
+        var intersect = ((yi > y) !== (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+    return inside;
+}
+
+// ==========================================
+// 3. DB 지도 데이터 로드 후 전역변수 저장 함수
+// ==========================================
+function loadMainMapData() {
+    var ctx = window.contextPath || '';
+    
+    // DB에서 구역 및 시설물 불러오는 API 호출
+    $.ajax({
+        url: ctx + '/admin/area/load', // 서버의 구역 데이터 조회 API 주소
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (response && response.zones) {
+                // 💡 [핵심] 클릭 이벤트가 참조할 수 있도록 전역변수에 DB 구역 데이터 전달
+                window.savedZones = response.zones;
+                
+                // Canvas에 배경 이미지 및 구역 다시 그리기 실행
+                if (typeof drawMainMap === 'function') {
+                    drawMainMap(response);
+                }
+            }
+        },
+        error: function(err) {
+            console.error("메인 지도 데이터 로드 실패:", err);
+        }
+    });
+}
+
+// ==========================================
+// 4. 지도 캔버스 클릭 이벤트 및 마우스 커서 설정
+// ==========================================
+$(document).ready(function() {
+    const mapCanvas = document.getElementById("zoneCanvas"); 
+    
+    if (mapCanvas) {
+        
+        // 💡 [핵심] 공통 좌표 역산 함수 (화면 마우스 위치 -> DB 원본 좌표 복원)
+        function getNaturalCoordinates(e) {
+            const mapWrapper = document.getElementById("mapWrapper") || document.getElementById("admin-map");
+            if (!mapWrapper) return null;
+
+            // 1. Transform 변형이 없는 부모 컨테이너(mapWrapper)를 기준으로 클릭 위치 잡기 (이중 계산 방지)
+            const rect = mapWrapper.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // 2. CSS Transform(줌/팬)을 역산하여 캔버스 내부 좌표로 되돌리기
+            const scale = window.currentScale || 1;
+            const panX = window.panOffsetX || 0;
+            const panY = window.panOffsetY || 0;
+
+            const canvasX = (mouseX - panX) / scale;
+            const canvasY = (mouseY - panY) / scale;
+
+            // 3. 캔버스 내부 좌표를 DB에 저장된 '원본 이미지 비율(Natural)' 좌표계로 뻥튀기(또는 축소)
+            const { scaleX, scaleY } = getScaleRatios(); 
+            
+            return {
+                x: canvasX * scaleX,
+                y: canvasY * scaleY
+            };
+        }
+
+        // 🎯 1. 마우스 이동 시 커서 변경 (Hover 판별)
+        mapCanvas.addEventListener("mousemove", function(e) {
+            const clickPos = getNaturalCoordinates(e);
+            if (!clickPos) return;
+
+            const zoneList = window.adminMainZones || []; 
+            
+            const isHover = zoneList.some(zone => {
+                let points = zone.points || zone.polygonPoints;
+                if (typeof points === "string") {
+                    try { points = JSON.parse(points); } catch(err) { points = []; }
+                }
+                // DB 원본 좌표(points)와 완벽히 복원된 마우스 좌표(clickPos)를 직접 비교!
+                return points && isPointInPolygon(clickPos, points);
+            });
+
+            mapCanvas.style.cursor = isHover ? "pointer" : "default";
+        });
+
+        // 🎯 2. 캔버스 클릭 시 모달 오픈
+        mapCanvas.addEventListener("click", function (e) {
+            const clickPos = getNaturalCoordinates(e);
+            if (!clickPos) return;
+
+            const zoneList = window.adminMainZones || [];
+
+            // 최신 구역(상위 레이어) 우선 탐색 (역순)
+            const clickedZone = [...zoneList].reverse().find(zone => {
+                let points = zone.points || zone.polygonPoints;
+                if (typeof points === "string") {
+                    try { points = JSON.parse(points); } catch (err) { points = []; }
+                }
+                return points && isPointInPolygon(clickPos, points);
+            });
+
+            if (clickedZone) {
+                openDroneModal(clickedZone);
+            }
+        });
+    }
+});

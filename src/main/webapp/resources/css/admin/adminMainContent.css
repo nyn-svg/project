@@ -4,12 +4,25 @@
    관리자 대시보드 (관제사 테마 통일 버전)
    ========================================== */
 
+/* 0. 바깥 레이아웃 스크롤 강제 허용 */
+html, body, 
+main, 
+.main-content, 
+.wrapper, 
+.content-wrapper {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+}
+
 /* 1. 최상위 컨테이너 (관제사와 동일한 투명 배경 처리) */
 .admin-dashboard-container {
     padding: 16px;
-    background-color: transparent; /* 메인 레이아웃의 바탕이 비치도록 설정 */
+    background-color: transparent;
     color: #ffffff;
     min-height: 100vh;
+    height: auto;          /* 👈 고정 높이를 해제하여 내용물에 맞게 세로로 늘어납니다 */
+    overflow: visible !important;       /* 👈 내용이 화면 넘어가면 세로 스크롤바 생성 */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -107,15 +120,16 @@
     gap: 16px;
 }
 
+/* 중단 영역 지도 상자 높이 확대 */
 .map-card {
-    min-height: 380px;
+    min-height: 520px; /* 👈 기존 380px -> 520px 정도로 확대 */
 }
 
 .map-body {
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: 320px;
+    min-height: 480px; /* 👈 기존 320px -> 480px 정도로 확대 */
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
@@ -342,7 +356,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* 👈 fill 대신 contain 적용 (찌그러짐 방지) */
+    object-fit: contain; /* 👈 잘림 없이 전체 지도가 다 나오도록 설정 */
     pointer-events: none;
 }
 
@@ -366,9 +380,10 @@
     transform-origin: 0 0;
 }
 
-/* 시설물 아이콘 개별 클릭 허용 */
+/* 시설물 아이콘 개별 클릭 허용 및 커서 변경 */
 #admin-map .facility-dom-layer .facility-marker {
     pointer-events: auto;
+    cursor: default !important; /* 마우스 올려도 기본 화살표 모양 유지 */
 }
 
 /* 안내 메시지 중앙 정렬 */
@@ -380,4 +395,23 @@
     text-align: center;
     color: #94a3b8;
     z-index: 5;
+}
+
+
+
+/* ==========================================
+   전체 스크롤바 숨김 처리 (기능은 유지)
+   ========================================== */
+
+/* 1. Chrome, Safari, Edge 등 WebKit 기반 브라우저 스크롤바 숨김 */
+*::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* 2. Firefox 및 표준 브라우저 스크롤바 숨김 */
+* {
+    -ms-overflow-style: none !important; /* IE, Edge 구버전 */
+    scrollbar-width: none !important;    /* Firefox */
 }

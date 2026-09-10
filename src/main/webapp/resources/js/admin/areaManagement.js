@@ -428,10 +428,42 @@ function initAreaManagement() {
 			        }
 			    }
 
-				// 함수 이름은 유지하고, 내부만 비우거나 폼을 숨기도록 수정
-				function openFacilityDetailForm(facility) {
-				    if (elementDetailForm) elementDetailForm.style.display = "none";
-				    if (emptyDetailMsg) emptyDetailMsg.style.display = "block";
+				// 우측 폼에 시설물 정보 채우기
+				function openFacilityDetailForm(fac) {
+				    if (emptyDetailMsg) emptyDetailMsg.style.display = "none";
+				    if (elementDetailForm) elementDetailForm.style.display = "block";
+
+				    // 1. 공통 및 유형 데이터 바인딩
+				    if (selectedElementId) selectedElementId.value = fac.id;
+				    if (selectedElementType) selectedElementType.value = "FACILITY";
+				    if (elemTypeDisplay) elemTypeDisplay.value = `시설물 (${fac.type})`;
+
+				    // 2. [명칭] 입력창 및 감싸고 있는 부모 영역 숨기기
+				    if (elemName) {
+				        // elemName을 감싸고 있는 form-group 또는 부모 태그 숨김
+				        const elemNameContainer = elemName.closest('.form-group') || elemName.parentElement;
+				        if (elemNameContainer) elemNameContainer.style.display = "none";
+				    }
+
+				    // 3. [상세 설명] 입력창 및 감싸고 있는 부모 영역 숨기기
+				    const elemDesc = document.getElementById("elemDesc");
+				    if (elemDesc) {
+				        const elemDescContainer = elemDesc.closest('.form-group') || elemDesc.parentElement;
+				        if (elemDescContainer) elemDescContainer.style.display = "none";
+				    }
+
+				    // 4. [정보 적용] 버튼 숨기기
+				    // 버튼의 id가 btnApply 혹은 submit-btn 형태인지 확인 후 처리 (선택자 자동 감지)
+				    const applyBtn = document.getElementById("btnApply") 
+				                  || elementDetailForm.querySelector("button[type='button']") 
+				                  || elementDetailForm.querySelector("button[type='submit']");
+				    if (applyBtn) {
+				        applyBtn.style.display = "none";
+				    }
+
+				    // 기타 영역/시설물 전용 필드 숨기기
+				    if (zoneOnlyFields) zoneOnlyFields.style.display = "none";
+				    if (facilityOnlyFields) facilityOnlyFields.style.display = "none";
 				}
 
 			
@@ -819,11 +851,28 @@ function initAreaManagement() {
 
 							    // 1. 구역(ZONE) 정보 업데이트
 							    if (currentType === "ZONE" && window.selectedZone) {
-							        window.selectedZone.name = elemName ? elemName.value : "";
-							        window.selectedZone.description = elemDesc ? elemDesc.value : "";
-
+							        const newName = elemName ? elemName.value : "";
+							        const newDesc = elemDesc ? elemDesc.value : "";
+							        
 							        const elemAgent = document.getElementById("elemAgent");
-							        window.selectedZone.agentId = elemAgent ? elemAgent.value : "";
+							        const newAgentId = elemAgent ? elemAgent.value : "";
+
+							        const elemStreamUrl = document.getElementById("elemStreamUrl");
+							        let newStreamUrl = "";
+							        let newDroneId = "";
+							        
+							        if (elemStreamUrl) {
+							            const selectedOption = elemStreamUrl.options[elemStreamUrl.selectedIndex];
+							            newStreamUrl = elemStreamUrl.value;
+							            newDroneId = selectedOption ? selectedOption.getAttribute("data-drone-id") : "";
+							        }
+
+							        // 1-1. 화면 UI용 선택 객체 업데이트
+							        window.selectedZone.name = newName;
+							        window.selectedZone.description = newDesc;
+							        window.selectedZone.agentId = newAgentId;
+							        window.selectedZone.streamUrl = newStreamUrl;
+							        window.selectedZone.droneId = newDroneId;
 
 							        const elemColor = document.getElementById("elemColor");
 							        if (elemColor) {
@@ -832,6 +881,20 @@ function initAreaManagement() {
 							            const g = parseInt(hexColor.slice(3, 5), 16);
 							            const b = parseInt(hexColor.slice(5, 7), 16);
 							            window.selectedZone.color = `rgba(${r}, ${g}, ${b}, 0.35)`;
+							        }
+
+							        // 💡 1-2. DB 전송용 원본 배열(window.savedPolygons) 동기화 (중복 방지 및 값 업데이트)
+							        if (window.savedPolygons) {
+							            const target = window.savedPolygons.find(z => z.id === window.selectedZone.id || z === window.selectedZone);
+							            if (target) {
+							                target.name = newName;
+							                target.zoneName = newName;
+							                target.description = newDesc;
+							                target.agentId = newAgentId;
+							                target.streamUrl = newStreamUrl;
+							                target.droneId = newDroneId;
+							                if (window.selectedZone.color) target.color = window.selectedZone.color;
+							            }
 							        }
 
 							        if (typeof redrawCanvas === "function") redrawCanvas();
@@ -844,12 +907,10 @@ function initAreaManagement() {
 							        const elemStreamUrl = document.getElementById("elemStreamUrl");
 							        const newStreamUrl = elemStreamUrl ? elemStreamUrl.value : "";
 
-							        // 선택 객체 변경
 							        window.selectedFacility.name = newName;
 							        window.selectedFacility.description = newDesc;
 							        window.selectedFacility.streamUrl = newStreamUrl;
 
-							        // DB로 전송될 savedFacilities 배열 내부 원본 데이터 동기화
 							        if (window.savedFacilities) {
 							            const target = window.savedFacilities.find(f => f.id === window.selectedFacility.id);
 							            if (target) {
@@ -925,8 +986,54 @@ function initAreaManagement() {
 							}
 							
 							
+							// DB에서 드론 목록을 조회하여 <select> 박스에 옵션으로 채우는 함수
+							function loadDroneListSelect() {
+							    var ctx = window.contextPath || '';
+							    
+							    $.ajax({
+							        url: ctx + '/drone/api/list', // 드론 목록을 리턴하는 Controller API 주소
+							        type: 'GET',
+							        dataType: 'json',
+							        success: function(drones) {
+							            var $select = $('#elemStreamUrl');
+							            
+							            // 기존 옵션 초기화 (기본 안내 문구만 남김)
+							            $select.html('<option value="">-- 드론을 선택하세요 --</option>');
+
+							            if (!drones || drones.length === 0) {
+							                return;
+							            }
+
+										// DB에서 가져온 드론 목록을 하나씩 option 태그로 추가
+										drones.forEach(function(drone) {
+										    // 💡 화면에는 드론 아이디만 표시하도록 수정
+										    var optionText = drone.droneId;
+										    
+										    // drone.url 값이 들어갑니다
+										    var $option = $('<option>')
+										        .val(drone.url)
+										        .text(optionText)
+										        .attr('data-drone-id', drone.droneId); // 필요시 드론 ID도 저장
+
+										    $select.append($option);
+										});
+							        },
+							        error: function(xhr, status, error) {
+							            console.error("드론 목록 로드 실패:", error);
+							        }
+							    });
+							}
+
 							
 							
+							
+							
+							
+							
+							// 페이지가 켜질 때 자동 실행
+							$(document).ready(function() {
+							    loadDroneListSelect();
+							});
 							
 							// 스크립트 실행
 							loadAgentList();

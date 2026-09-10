@@ -25,16 +25,16 @@
         <div class="kpi-card">
             <div class="kpi-title">근무중 안전요원</div>
             <div class="kpi-value-group">
-                <span class="kpi-value primary">94</span><span class="kpi-unit">명</span>
+                <span class="kpi-value primary"></span><span class="kpi-unit">명</span>
             </div>
-            <div class="kpi-sub status-ok">정상</div>
+            <div class="kpi-sub status-ok">(!연동됨)</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">비행중 드론</div>
             <div class="kpi-value-group">
-                <span class="kpi-value primary">4</span><span class="kpi-unit">대</span>
+                <span class="kpi-value primary">0</span><span class="kpi-unit">대</span>
             </div>
-            <div class="kpi-sub status-ok">정상</div>
+            <div class="kpi-sub status-ok">(!연동됨)</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">미확인 긴급보고</div>
@@ -183,6 +183,23 @@
             </div>
         </div>
     </section>
+    
+    <!-- 드론 실시간 영상 출력 모달 -->
+<div id="droneVideoModal" class="drone-modal-overlay" style="display: none;">
+    <div class="drone-modal-content">
+        <div class="drone-modal-header">
+            <span class="drone-modal-title" id="modalDroneTitle">드론 실시간 스트리밍</span>
+            <button type="button" class="drone-modal-close" onclick="closeDroneModal()">&times;</button>
+        </div>
+        <div class="drone-modal-body">
+            <!-- MJPEG / MP4 모두 지원 가능하도록 img와 video 태그 준비 -->
+            <img id="modalStreamImg" src="" alt="스트리밍 연결 중..." style="width:100%; height:auto; display:none;" />
+            <video id="modalStreamVideo" src="" controls autoplay style="width:100%; height:auto; display:none;"></video>
+            <div id="modalNoStream" class="no-stream-msg" style="display:none;">연결된 드론 영상이 없습니다.</div>
+        </div>
+    </div>
+</div>
+    
 
 </div>
 <!-- adminMain.js 파일이 들어있는 정확한 경로로 지정 -->
@@ -198,3 +215,34 @@
         }
     }, 50);
 </script>
+<style>
+/* 모달 레이아웃 스타일 */
+.drone-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 9999;
+}
+.drone-modal-content {
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 640px;
+    max-width: 90%;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.drone-modal-header {
+    padding: 14px 20px;
+    background: #0f172a;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #fff; font-weight: bold;
+}
+.drone-modal-close {
+    background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer;
+}
+.drone-modal-close:hover { color: #fff; }
+.drone-modal-body { padding: 16px; background: #000; text-align: center; }
+.no-stream-msg { color: #94a3b8; padding: 40px 0; }
+</style>

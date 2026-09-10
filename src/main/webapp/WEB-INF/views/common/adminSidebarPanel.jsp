@@ -40,16 +40,15 @@
 <div id="sub-drawer" class="sub-drawer">
     
     <!-- 1) 대시보드 요약 패널 -->
-    <div id="panel-admin-dashboard" class="drawer-content active">
-        <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-            <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론</span>
-        </div>
-        <div class="drawer-body">
-            <div style="padding: 10px 0; color: #a0aec0; font-size: 13px;">
-                <p>실시간 모니터링 요약 정보, 클릭시 드론 영상 확인 가능</p>
-            </div>
-        </div>
+<div id="panel-admin-dashboard" class="drawer-content active">
+    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
+        <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 목록</span>
     </div>
+    <div class="drawer-body">
+        <!-- 💡 드론 리스트가 동적으로 생성될 영역 -->
+        <div id="adminDroneListContainer"></div>
+    </div>
+</div>
 
     <!-- 2) 안전요원 관리 패널 -->
 <div id="panel-admin-agents" class="drawer-content">
@@ -205,6 +204,100 @@
 
 <!-- ContextPath 전달 및 안전요원 목록 로드 스크립트 -->
 <script>
+
+//어드민 사이드바 패널에 드론 목록을 뿌려주는 함수
+function renderAdminDroneList() {
+    var ctx = window.contextPath || '';
+    var $container = $('#adminDroneListContainer');
+
+    if (!$container.length) return;
+
+    $.ajax({
+        url: ctx + '/drone/api/list',
+        type: 'GET',
+        dataType: 'json',
+        success: function(drones) {
+        	
+        	// 💡 [추가] KPI 카드의 비행중 드론 수 동적 업데이트
+            var $kpiDroneValue = $('.kpi-card:contains("비행중 드론") .kpi-value.primary');
+            if ($kpiDroneValue.length) {
+                $kpiDroneValue.text(drones ? drones.length : 0);
+            }
+
+            $container.empty();
+
+            if (!drones || drones.length === 0) {
+                $container.html('<div style="color: #a0aec0; font-size: 12px; padding: 10px 0;">등록된 드론이 없습니다.</div>');
+                return;
+            }
+
+            var $ul = $('<ul>').css({
+                'list-style': 'none',
+                'padding': '0',
+                'margin': '0'
+            });
+
+            drones.forEach(function(drone, index) {
+                var droneId = drone.droneId || "드론 ID 없음";
+                var streamUrl = drone.url || "";
+
+                var $li = $('<li>')
+                    .css({
+                        'background': 'rgba(255, 255, 255, 0.05)',
+                        'border': '1px solid rgba(255, 255, 255, 0.1)',
+                        'border-radius': '8px',
+                        'padding': '12px',
+                        'margin-bottom': '8px',
+                        'cursor': 'pointer',
+                        'transition': 'background 0.2s'
+                    })
+                    .attr('data-drone-id', droneId)
+                    .attr('data-stream-url', streamUrl)
+                    .on('mouseover', function() { $(this).css('background', 'rgba(255, 255, 255, 0.1)'); })
+                    .on('mouseout', function() { $(this).css('background', 'rgba(255, 255, 255, 0.05)'); })
+                    .on('click', function() {
+                        // 💡 드론 항목 클릭 시 실행할 동작 (모달 팝업 호출 등)
+                        if (typeof openDroneModalByData === 'function') {
+                            openDroneModalByData(drone);
+                        } else if (typeof openDroneModal === 'function') {
+                            openDroneModal({ droneId: droneId, streamUrl: streamUrl });
+                        }
+                    });
+
+                var html = 
+                    '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                        '<strong style="color: #fff; font-size: 14px;">' + droneId + '</strong>' +
+                        '<span style="font-size: 11px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">' +
+                            (streamUrl ? '연결됨' : '대기중') +
+                        '</span>' +
+                    '</div>' +
+                    '<div style="font-size: 12px; color: #a0aec0; margin-top: 6px;">' +
+                        
+                    '</div>';
+
+                $li.html(html);
+                $ul.append($li);
+            });
+
+            $container.append($ul);
+        },
+        error: function(xhr, status, error) {
+        	console.error("패널 드론 목록 로드 실패 - 상태코드:", xhr.status, "에러내용:", error);
+            $container.html('<div style="color: #f87171; font-size: 12px; padding: 10px 0;">목록을 불러오지 못했습니다.</div>');
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
 window.contextPath = '${pageContext.request.contextPath}';
 
 // 전체 요원 데이터를 보관할 변수
@@ -267,6 +360,11 @@ function loadAdminAgentList() {
 
 // 2. 화면에 요원 목록을 뿌려주는 함수 (SSE 수신 시에도 이 함수가 호출되어 즉시 반영됨)
 function renderAdminAgentList() {
+	// 💡 [추가] KPI 카드의 안전요원 수 동적 업데이트
+    const kpiAgentValue = document.querySelector(".kpi-card .kpi-value.primary");
+    if (kpiAgentValue) {
+        kpiAgentValue.innerText = currentAgentList ? currentAgentList.length : 0;
+    }
     const container = document.getElementById("agentListContainer");
     if (!container) return;
 
@@ -397,6 +495,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 $(document).ready(function() {
+	if (typeof renderAdminDroneList === 'function') {
+        renderAdminDroneList();
+    }
 
     // 패널 열릴 때 or 새로고침 클릭 시 이력 로드
     $('[data-target="panel-admin-reports"]').on('click', function() {
