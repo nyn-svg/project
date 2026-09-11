@@ -134,6 +134,14 @@ public class AdminController {
 	    return "layout/mainLayout";
 	}
 	
+	@GetMapping("/fieldAction")
+	public String fieldActionPage(HttpSession session, Model model) {
+	    // 현장 조치 전용 본문 JSP 경로 지정
+	    model.addAttribute("contentPage", "/WEB-INF/views/admin/fieldAction.jsp");
+	    
+	    return "layout/mainLayout";
+	}
+	
 
 
 }
