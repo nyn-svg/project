@@ -7,7 +7,6 @@
     <resultMap id="agentTaskResultMap" type="com.spring.dto.AgentTaskDTO">
         <id property="taskId" column="TASK_ID" />
         <result property="agentId" column="AGENT_ID" />
-        <result property="taskType" column="TASK_TYPE" />
         <result property="taskArea" column="TASK_AREA" />
         <result property="taskTitle" column="TASK_TITLE" />
         <result property="taskContent" column="TASK_CONTENT" />
@@ -80,7 +79,7 @@
     ORDER BY TASK_ID DESC
 </select>
 
-<!-- 무한 스크롤용 페이징 조회 쿼리 -->
+<!-- 무한 스크롤 페이징 쿼리 수정 -->
 <select id="getTaskListPaged" parameterType="map" resultType="com.spring.dto.AgentTaskDTO">
     SELECT * 
     FROM (
@@ -103,25 +102,18 @@
                 TASK_CONTENT, ACTION_STATUS, START_TIME, END_TIME, TASK_NOTE, REG_DATE
             FROM AGENT_TASK
             <where>
-                <!-- 구역 필터 (ALL이 아닐 때만) -->
-                <if test="taskArea != null and taskArea != '' and taskArea != 'ALL'">
-                    AND TASK_AREA = #{taskArea}
-                </if>
-                
-                <!-- 업무 유형 필터 (ALL이 아닐 때만) -->
-                <if test="taskType != null and taskType != '' and taskType != 'ALL'">
-                    AND TASK_TYPE = #{taskType}
-                </if>
-                
-                <!-- 검색어 필터 (제목 또는 내용) -->
-                <if test="keyword != null and keyword != ''">
-                    AND (TASK_TITLE LIKE '%' || #{keyword} || '%' OR TASK_CONTENT LIKE '%' || #{keyword} || '%')
-                </if>
-                
-                <!-- 기간 필터 (점'.'을 대시'-'로 변환 후 비교) -->
-                <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
-                    AND START_TIME &gt;= REPLACE(#{startDate}, '.', '-')
-                    AND START_TIME &lt;= REPLACE(#{endDate}, '.', '-') || ' 23:59:59'
+                <!-- 탭 메뉴(actionStatus) 파라미터 조건 추가 -->
+                <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
+                    <choose>
+                        <!-- 1. 조치대기 탭: 순수 '조치중' / 'PENDING' 항목만 -->
+                        <when test="actionStatus == 'PENDING'">
+                            AND (ACTION_STATUS IN ('PENDING', '조치중', '조치대기'))
+                        </when>
+                        <!-- 2. 조치완료 탭: '완료'와 '미조치' 항목을 모두 포함 -->
+                        <when test="actionStatus == 'COMPLETED'">
+                            AND (ACTION_STATUS IN ('COMPLETED', '완료', '조치완료', 'PENDING_CLOSED', '미조치 종결', '미조치'))
+                        </when>
+                    </choose>
                 </if>
             </where>
             ORDER BY TASK_ID DESC
@@ -131,30 +123,20 @@
     WHERE RNUM &gt; #{offset}
 </select>
 
-<!-- 검색 조건에 맞는 전체 데이터 개수 조회 -->
+<!-- 개수 조회 쿼리 수정 -->
 <select id="getTaskListCount" parameterType="map" resultType="int">
     SELECT COUNT(*)
     FROM AGENT_TASK
     <where>
-        <!-- 구역 필터 -->
-        <if test="taskArea != null and taskArea != '' and taskArea != 'ALL'">
-            AND TASK_AREA = #{taskArea}
-        </if>
-        
-        <!-- 업무 유형 필터 -->
-        <if test="taskType != null and taskType != '' and taskType != 'ALL'">
-            AND TASK_TYPE = #{taskType}
-        </if>
-        
-        <!-- 검색어 필터 (제목 또는 내용) -->
-        <if test="keyword != null and keyword != ''">
-            AND (TASK_TITLE LIKE '%' || #{keyword} || '%' OR TASK_CONTENT LIKE '%' || #{keyword} || '%')
-        </if>
-        
-        <!-- 기간 필터 -->
-        <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
-            AND START_TIME &gt;= REPLACE(#{startDate}, '.', '-')
-            AND START_TIME &lt;= REPLACE(#{endDate}, '.', '-') || ' 23:59:59'
+        <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
+            <choose>
+                <when test="actionStatus == 'PENDING'">
+                    AND (ACTION_STATUS IN ('PENDING', '조치중', '조치대기'))
+                </when>
+                <when test="actionStatus == 'COMPLETED'">
+                    AND (ACTION_STATUS IN ('COMPLETED', '완료', '조치완료', 'PENDING_CLOSED', '미조치 종결', '미조치'))
+                </when>
+            </choose>
         </if>
     </where>
 </select>

@@ -24,15 +24,21 @@ $(document).ready(function() {
     });
 	
 	/* 하단 메뉴 */
-	// 홈 이동
-	$("#navHome").on("click", function() {
-	    console.log("하단 메뉴 : 홈 이동");
-	    location.href = "main";
-	});
+	 // 안전순찰
+	    $("#navPatrol").on("click", function() {
+	        console.log("하단 메뉴 : 안전순찰");
+	        location.href = "patrol";
+	    });
 
-	// 조치보고 이동
-	$("#navReport").on("click", function() {
-	    console.log("하단 메뉴 : 조치보고 이동");
-	    location.href = "history";
+	    // 홈
+	    $("#navHome").on("click", function() {
+	        console.log("하단 메뉴 : 홈");
+	        location.href = "main";
+	    });
+
+	    // 조치보고
+	    $("#navReport").on("click", function() {
+	        console.log("하단 메뉴 : 조치보고");
+	        location.href = "history";
+	    });
 	});
-});

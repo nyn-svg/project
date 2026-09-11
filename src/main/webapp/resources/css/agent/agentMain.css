@@ -260,13 +260,13 @@ body {
 
 /* 3. 🚨 아이콘 박스를 완벽한 원형(Circle) 파스텔톤으로 변경 */
 .notice-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;     
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;         
+    font-size: 18px;         
     flex-shrink: 0;
 }
 
@@ -443,13 +443,13 @@ body {
 }
 
 .quick-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 16px;
+    font-size: 20px;
 }
 
 /* 그리드용 아이콘 커스텀 컬러 */

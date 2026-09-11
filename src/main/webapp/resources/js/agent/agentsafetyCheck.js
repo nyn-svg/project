@@ -1,43 +1,70 @@
 $(document).ready(function() {
 
-    // 폼 제출(submit) 이벤트 리스너 연결
+    // 라디오 버튼 선택 시 해당 문항의 빨간 에러 스타일 즉시 제거
+    $(document).on('change', '.check-item input[type="radio"]', function() {
+        $(this).closest('.check-item').removeClass('error');
+    });
+
+    // 폼 제출(submit) 이벤트
     $('#safetyCheckForm').on('submit', function(e) {
-        // 1. 브라우저 기본 form submit(페이지 새로고침) 방지
         e.preventDefault();
 
         let detailList = [];
         let isValid = true;
+        let $firstErrorItem = null;
 
-        // 2. JSP 문항 카드 클래스인 .check-item 기준으로 순회
+        // 기존 에러 스타일 초기화
+        $('.check-item').removeClass('error');
+
+        // 모든 점검 문항 순회
         $('.check-item').each(function() {
-            let itemId = $(this).data('item-id');
-            let checkStatus = $(this).find('input[type="radio"]:checked').val();
-            let remark = $(this).find('input.remark-input').val();
+            let $item = $(this);
+            let itemId = $item.data('item-id');
+            let checkStatus = $item.find('input[type="radio"]:checked').val();
+            let remark = $item.find('input.remark-input').val();
 
-            // 라디오 버튼 미선택 시 검증 실패 처리
+            // 라디오 버튼 미선택 시
             if (!checkStatus) {
                 isValid = false;
-                return false; // each 루프 탈출
-            }
+                $item.addClass('error'); // 빨간 테두리 적용
 
-            detailList.push({
-                itemNo: String(itemId),
-                statusCode: checkStatus,
-                remark: remark
-            });
+                // 제일 첫 번째 미선택 문항 저장 (스크롤 이동용)
+                if (!$firstErrorItem) {
+                    $firstErrorItem = $item;
+                }
+            } else {
+                detailList.push({
+                    itemNo: String(itemId),
+                    statusCode: checkStatus,
+                    remark: remark
+                });
+            }
         });
 
+        // 미선택 항목이 있는 경우
         if (!isValid) {
-            alert("모든 점검 항목의 상태를 선택해주세요.");
+            alert("선택하지 않은 점검 항목이 있습니다. 다시 확인해주세요.");
+
+            // 첫 번째 미선택 항목 위치로 스크롤
+            if ($firstErrorItem && $firstErrorItem.length) {
+                const container = document.querySelector('.safety-check-page');
+                if (container) {
+                    container.scrollTo({
+                        top: $firstErrorItem[0].offsetTop - 70,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    $firstErrorItem[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
             return;
         }
 
-        // SafetyCheckMasterDTO 구조에 맞춘 객체 생성
+        // 정상 제출 처리
         let masterDTO = {
             detailList: detailList
         };
 
-        // 3. AJAX 데이터 전송
         $.ajax({
             url: contextPath + '/agent/safetyCheck/submit',
             type: 'POST',
@@ -45,7 +72,6 @@ $(document).ready(function() {
             data: JSON.stringify(masterDTO),
             success: function(res) {
                 if (res.success) {
-                    // 완료 페이지로 이동
                     location.href = contextPath + '/agent/safetyCheck/complete';
                 } else {
                     alert("저장 실패: " + res.message);

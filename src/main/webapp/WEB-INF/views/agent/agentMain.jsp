@@ -166,7 +166,7 @@
 						</div>
 
 						<div class="quick-text">
-							<strong> 위험 알림 </strong> <span> 위험 상황 확인 </span>
+							<strong> 긴급 보고 </strong> <span> 긴급 조치 보고 </span>
 						</div>
 						<i class="fa-solid fa-chevron-right quick-arrow"></i>
 					</button>
