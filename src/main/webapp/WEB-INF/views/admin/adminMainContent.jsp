@@ -192,11 +192,18 @@
             <button type="button" class="drone-modal-close" onclick="closeDroneModal()">&times;</button>
         </div>
         <div class="drone-modal-body">
-            <!-- MJPEG / MP4 모두 지원 가능하도록 img와 video 태그 준비 -->
-            <img id="modalStreamImg" src="" alt="스트리밍 연결 중..." style="width:100%; height:auto; display:none;" />
-            <video id="modalStreamVideo" src="" controls autoplay style="width:100%; height:auto; display:none;"></video>
-            <div id="modalNoStream" class="no-stream-msg" style="display:none;">연결된 드론 영상이 없습니다.</div>
-        </div>
+		    <!-- 비디오/이미지와 Canvas를 겹쳐 올려줄 상대 위치(relative) 컨테이너 -->
+		    <div style="position: relative; display: inline-block; width: 100%;">
+		        <!-- MJPEG / MP4 모두 지원 가능하도록 img와 video 태그 준비 -->
+		        <img id="modalStreamImg" src="" alt="스트리밍 연결 중..." style="width:100%; height:auto; display:none;" />
+		        <video id="modalStreamVideo" src="" controls autoplay style="width:100%; height:auto; display:none;"></video>
+		        
+		        <!-- 🎯 [신규 추가] AI 바운딩 박스를 그릴 투명 캔버스 레이어 -->
+		        <canvas id="aiOverlayCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></canvas>
+		    </div>
+		
+		    <div id="modalNoStream" class="no-stream-msg" style="display:none;">연결된 드론 영상이 없습니다.</div>
+		</div>
     </div>
 </div>
     

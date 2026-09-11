@@ -306,13 +306,30 @@ function renderAdminDroneList() {
                     .on('mouseover', function() { $(this).css('background', 'rgba(255, 255, 255, 0.1)'); })
                     .on('mouseout', function() { $(this).css('background', 'rgba(255, 255, 255, 0.05)'); })
                     .on('click', function() {
-                        // 💡 드론 항목 클릭 시 실행할 동작 (모달 팝업 호출 등)
-                        if (typeof openDroneModalByData === 'function') {
-                            openDroneModalByData(drone);
-                        } else if (typeof openDroneModal === 'function') {
-                            openDroneModal({ droneId: droneId, streamUrl: streamUrl });
-                        }
-                    });
+				    // 1. 기존 모달 오픈 처리
+				    if (typeof openDroneModalByData === 'function') {
+				        openDroneModalByData(drone);
+				    } else if (typeof openDroneModal === 'function') {
+				        openDroneModal({ droneId: droneId, streamUrl: streamUrl });
+				    }
+				
+				    // 2. 기존 실행 중인 AI 분석 타이머가 있다면 제거
+				    if (window.aiDetectTimer) {
+				        clearInterval(window.aiDetectTimer);
+				    }
+				
+				    // 3. 모달이 켜지고 영상 DOM이 생성될 때까지 약간의 유예시간(500ms) 후 캡처 시작
+				    setTimeout(function() {
+				        // 모달 내부의 video 또는 img 태그 selector (실제 모달 내부 태그 id/class에 맞춰 수정)
+				        var mediaEl = document.getElementById('modalStreamVideo');
+				
+				        if (mediaEl) {
+				            window.aiDetectTimer = setInterval(function() {
+				                captureAndSendAIFrame(mediaEl, droneId);
+				            }, 500); // 시간 간격 변경
+				        }
+				    }, 500);
+				});
 
                 var html = 
                     '<div style="display: flex; justify-content: space-between; align-items: center;">' +
@@ -338,15 +355,150 @@ function renderAdminDroneList() {
     });
 }
 
+function drawBoundingBoxes(boxes) {
+    // <img>와 <video> 중 현재 화면에 보이고 있는 요소 선택
+    var mediaEl = document.getElementById('modalStreamVideo');
+    if (!mediaEl || mediaEl.style.display === 'none') {
+        mediaEl = document.getElementById('modalStreamImg');
+    }
+    
+    var canvas = document.getElementById('aiOverlayCanvas');
+    if (!mediaEl || !canvas) return;
+
+    var ctx = canvas.getContext('2d');
+
+    // 미디어의 원본 해상도 구하기
+    var sourceWidth = mediaEl.videoWidth || mediaEl.naturalWidth || canvas.width;
+    var sourceHeight = mediaEl.videoHeight || mediaEl.naturalHeight || canvas.height;
+    
+    // 화면에 실제로 표시되고 있는 크기 구하기
+    var displayWidth = mediaEl.clientWidth;
+    var displayHeight = mediaEl.clientHeight;
+
+    // 캔버스 크기를 현재 화면 표시 크기와 동일하게 맞춰 해상도 깨짐 방지
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
+
+    // 이전 프레임 잔상 지우기
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!boxes || boxes.length === 0) return;
+
+    // 원본 영상 좌표 -> 화면 표시 좌표 비율 계산
+    var scaleX = displayWidth / sourceWidth;
+    var scaleY = displayHeight / sourceHeight;
+
+    boxes.forEach(function(item) {
+        var box = item.box; // [x1, y1, x2, y2]
+        var x1 = box[0] * scaleX;
+        var y1 = box[1] * scaleY;
+        var width = (box[2] - box[0]) * scaleX;
+        var height = (box[3] - box[1]) * scaleY;
+
+        // 라벨에 따른 박스 색상 구분 (사람: 형광 하늘색, 야생동물: 빨간색)
+        var color = (item.label === 'person') ? '#00e5ff' : '#ff0055';
+
+        // 1. 바운딩 박스 테두리 그리기
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x1, y1, width, height);
+
+        // 2. 라벨 텍스트 상자 배경
+        ctx.fillStyle = color;
+        ctx.font = 'bold 12px Arial';
+        var labelText = item.label + ' ' + Math.round(item.confidence * 100) + '%';
+        var textWidth = ctx.measureText(labelText).width;
+
+        var textY = (y1 - 18 > 0) ? y1 - 18 : y1;
+        ctx.fillRect(x1, textY, textWidth + 8, 18);
+
+        // 3. 라벨 텍스트 출력
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(labelText, x1 + 4, textY + 13);
+    });
+}
+
+//영상(video) 또는 이미지(img/canvas) 요소를 캡처하여 Spring으로 보내는 함수
+function captureAndSendAIFrame(mediaElement, droneId) {
+    if (!mediaElement) return;
+
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    // mediaElement가 <video>인 경우
+    if (mediaElement.tagName === 'VIDEO') {
+        if (mediaElement.paused || mediaElement.ended || !mediaElement.videoWidth) return;
+        canvas.width = mediaElement.videoWidth;
+        canvas.height = mediaElement.videoHeight;
+        ctx.drawImage(mediaElement, 0, 0, canvas.width, canvas.height);
+    } 
+    // mediaElement가 스트리밍 <img>인 경우 (MJPEG 등)
+    else if (mediaElement.tagName === 'IMG') {
+        if (!mediaElement.complete || !mediaElement.naturalWidth) return;
+        canvas.width = mediaElement.naturalWidth;
+        canvas.height = mediaElement.naturalHeight;
+        ctx.drawImage(mediaElement, 0, 0, canvas.width, canvas.height);
+    } else {
+        return;
+    }
+
+    // Canvas를 이미지 파일(Blob)로 변환 후 자바 서버 전송
+    canvas.toBlob(function(blob) {
+        if (!blob) return;
+
+        var formData = new FormData();
+        formData.append("file", blob, "frame.jpg");
+        formData.append("drone_id", droneId || "drone1");
+
+        var contextPath = window.contextPath || '';
+
+        $.ajax({
+            url: contextPath + "/api/detectImage",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                console.log("[" + droneId + "] AI 감지 결과:", res);
+
+                // 응답 데이터 기반 모달 UI 실시간 갱신
+                $('#modalPeopleCount').text(res.people_count + '명');
+                $('#modalDensity').text(res.density_percent + '%');
+                $('#modalDangerLevel').text(res.danger_level);
+                
+                // 야생동물이 감지된 경우 처리
+                if (res.detected_animals && res.detected_animals.length > 0) {
+                    $('#modalAnimalWarning').text('⚠️ 감지된 동물: ' + res.detected_animals.join(', ')).show();
+                } else {
+                    $('#modalAnimalWarning').hide();
+                }
+       		    // 🎯 [추가] AI 바운딩 박스 Canvas 렌더링 호출
+                if (res.boxes) {
+                    drawBoundingBoxes(res.boxes);
+                }
+            }
+        });
+    }, "image/jpeg", 0.8);
+}
 
 
+function closeDroneModal() {
+    // 1. AI 감지 인터벌 타이머 중지
+    if (window.aiDetectTimer) {
+        clearInterval(window.aiDetectTimer);
+        window.aiDetectTimer = null;
+    }
 
+    // 2. Canvas에 남아있는 바운딩 박스 지우기
+    var canvas = document.getElementById('aiOverlayCanvas');
+    if (canvas) {
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
-
-
-
-
-
+    // 3. 모달 닫기
+    $('#droneVideoModal').hide();
+}
 
 window.contextPath = '${pageContext.request.contextPath}';
 
