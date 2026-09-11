@@ -28,11 +28,11 @@
             <span class="nav-icon"><i class="fa-solid fa-file-invoice"></i></span>
             <span class="nav-label">이력</span>
         </button>
-        <!-- 4) 시스템 설정 -->
-        <button class="quick-nav-item" data-target="panel-admin-system">
-            <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
-            <span class="nav-label">설정</span>
-        </button>
+        <!-- 4) 비상연락망 관리 -->
+		<button class="quick-nav-item" data-target="panel-admin-emergency">
+		    <span class="nav-icon"><i class="fa-solid fa-address-book"></i></span>
+		    <span class="nav-label">연락망</span>
+		</button>
     </nav>
 </aside>
 
@@ -80,59 +80,38 @@
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- 4) 체크리스트 상세 보기 공통 모달 (Modal) -->
-<!-- ========================================== -->
-<div id="checklistDetailModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); z-index: 9999; justify-content: center; align-items: center;">
-    <div class="modal-content" style="background: #1e1e2d; color: #fff; width: 680px; max-width: 90%; max-height: 85vh; border-radius: 12px; border: 1px solid #323248; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        
-        <!-- 모달 헤더 -->
-        <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid #323248; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 700;" id="modal-user-title">점검 상세 내역</h3>
-                <span id="modal-target-badge" class="badge" style="padding: 4px 8px; border-radius: 4px; font-size: 12px;">요원</span>
-            </div>
-            <button type="button" class="btn-close-modal" style="background: transparent; border: none; color: #aaa; font-size: 20px; cursor: pointer;">&times;</button>
-        </div>
 
-        <!-- 모달 상단 정보 요약 바 -->
-        <div class="modal-sub-header" style="background: #151521; padding: 12px 20px; display: flex; justify-content: space-between; font-size: 13px; color: #aaa; border-bottom: 1px solid #2b2b40;">
-            <div><i class="fa-regular fa-clock"></i> 제출시간: <span id="modal-check-date" style="color: #fff;">-</span></div>
-            <div id="modal-status-summary" style="display: flex; gap: 8px;">
-                <!-- 정상 N, 주의 N, 위험 N 건수 표시 -->
-            </div>
-        </div>
-
-        <!-- 모달 본문 (답변 리스트 스크롤 구역) -->
-        <div class="modal-body" id="modal-detail-body" style="padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px;">
-            <!-- 카테고리 및 문항별 답변 상세 내용이 동적으로 생성됩니다 -->
-        </div>
-
-        <!-- 모달 푸터 -->
-        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid #323248; text-align: right;">
-            <button type="button" class="btn-close-modal" style="background: #323248; color: #fff; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer;">닫기</button>
-        </div>
-    </div>
-</div>
-
-
-
-    <!-- 4) 시스템 설정 패널 -->
-    <div id="panel-admin-system" class="drawer-content">
-        <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-            <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">시스템 설정</span>
-        </div>
-        <div class="drawer-body">
-            <div style="padding: 10px 0; color: #a0aec0; font-size: 13px;">
-                <p></p>
-            </div>
-        </div>
-    </div>
+    <!-- 4) 비상연락망 관리 패널 -->
+	<div id="panel-admin-emergency" class="drawer-content">
+	    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 36px; min-height: 36px; margin-bottom: 4px;">
+	        <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">비상연락망 관리</span>
+	        
+	        <!-- 깔끔한 + 아이콘 버튼 -->
+	        <button type="button" onclick="openEmergencyContactModal()" title="연락처 추가"
+	                style="background: rgb(0, 0, 0); border: none; color: #fff; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);">
+	            <i class="fa-solid fa-plus" style="font-size: 13px;"></i>
+	        </button>
+	    </div>
+	    
+	    <div class="drawer-body" style="padding-top: 0;">
+	        <!-- 💡 [위치 바짝 올린] 카테고리 필터 탭 -->
+	        <div class="emergency-tab-group" style="display: flex; gap: 4px; margin: 4px 0 10px 0; background: rgba(0,0,0,0.2); padding: 3px; border-radius: 6px;">
+	            <button type="button" class="emg-tab-btn active" data-category="ALL" onclick="filterEmergencyCategory('ALL', this)"
+	                    style="flex: 1; padding: 5px 0; font-size: 11px; background: rgb(0, 0, 0); color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.2s;">전체</button>
+	            <button type="button" class="emg-tab-btn" data-category="HOST" onclick="filterEmergencyCategory('HOST', this)"
+	                    style="flex: 1; padding: 5px 0; font-size: 11px; background: transparent; color: #a0aec0; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;">주최측</button>
+	            <button type="button" class="emg-tab-btn" data-category="AGENCY" onclick="filterEmergencyCategory('AGENCY', this)"
+	                    style="flex: 1; padding: 5px 0; font-size: 11px; background: transparent; color: #a0aec0; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;">유관기관</button>
+	            <button type="button" class="emg-tab-btn" data-category="MEDICAL" onclick="filterEmergencyCategory('MEDICAL', this)"
+	                    style="flex: 1; padding: 5px 0; font-size: 11px; background: transparent; color: #a0aec0; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;">의료</button>
+	        </div>
+	
+	        <!-- 비상연락망 목록 컨테이너 -->
+	        <div id="emergencyContactListContainer"></div>
+	    </div>
+	</div>
 
 </div>
-
-
-
 
 
 
@@ -183,7 +162,78 @@
 </div>
 
 
+<!-- ========================================== -->
+<!-- 체크리스트 상세 보기 공통 모달 (테마 통일) -->
+<!-- ========================================== -->
+<div id="checklistDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 15, 0.85); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+    
+    <div style="background: radial-gradient(circle at 0% 0%, #1a102f 0%, #0d1127 50%, #080914 100%); border: 1px solid rgba(147, 51, 234, 0.25); border-radius: 16px; width: 680px; max-width: 90%; max-height: 85vh; padding: 24px; color: #f1f5f9; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(126, 34, 206, 0.12); display: flex; flex-direction: column; position: relative; z-index: 100000;">
+        
+        <!-- 헤더 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 14px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 id="modal-user-title" style="margin: 0; font-size: 16px; font-weight: 700; color: #e2e8f0;">점검 상세 내역</h3>
+                <span id="modal-target-badge" style="padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">요원</span>
+            </div>
+            <button type="button" class="btn-close-modal" style="background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer;">✕</button>
+        </div>
 
+        <!-- 서브 요약 바 -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 14px;">
+            <div>제출시간: <span id="modal-check-date" style="color: #fff;">-</span></div>
+            <div id="modal-status-summary" style="display: flex; gap: 10px; font-weight: 600;"></div>
+        </div>
+
+        <!-- 본문 (스크롤) -->
+        <div id="modal-detail-body" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; padding-right: 4px;">
+            <!-- 동적 데이터 영역 -->
+        </div>
+
+        <!-- 푸터 -->
+        <div style="margin-top: 18px; text-align: right; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px;">
+            <button type="button" class="btn-close-modal" style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 12px;">닫기</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- 비상연락망 등록/수정 모달 -->
+<div id="emergencyContactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #1e1e2d; border: 1px solid #2b2b40; border-radius: 8px; width: 360px; padding: 20px; color: #fff;">
+        <h3 id="emergencyModalTitle" style="margin-top: 0; font-size: 16px; margin-bottom: 15px;">비상연락처 등록</h3>
+        
+        <input type="hidden" id="emgContactId">
+
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; color: #a0aec0; margin-bottom: 4px;">카테고리</label>
+            <select id="emgCategory" style="width: 100%; background: #151521; border: 1px solid #363654; color: #fff; padding: 8px; border-radius: 4px;">
+                <option value="HOST">행사 주최측</option>
+                <option value="AGENCY">유관기관</option>
+                <option value="MEDICAL">의료 인프라</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; color: #a0aec0; margin-bottom: 4px;">구분 / 기관명</label>
+            <input type="text" id="emgTitle" placeholder="예: 종합상황실 직통" style="width: 100%; background: #151521; border: 1px solid #363654; color: #fff; padding: 8px; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; color: #a0aec0; margin-bottom: 4px;">연락처 / 채널</label>
+            <input type="text" id="emgPhone" placeholder="예: 02-1234-5678" style="width: 100%; background: #151521; border: 1px solid #363654; color: #fff; padding: 8px; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 12px; color: #a0aec0; margin-bottom: 4px;">정렬 순서</label>
+            <input type="number" id="emgSortOrder" value="1" style="width: 100%; background: #151521; border: 1px solid #363654; color: #fff; padding: 8px; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="closeEmergencyContactModal()" style="background: #363654; border: none; color: #fff; padding: 8px 14px; border-radius: 4px; cursor: pointer;">취소</button>
+            <button type="button" onclick="saveEmergencyContact()" style="background: #38bdf8; border: none; color: #fff; padding: 8px 14px; border-radius: 4px; cursor: pointer;">저장</button>
+        </div>
+    </div>
+</div>
 
 
 
@@ -507,6 +557,9 @@ $(document).ready(function() {
         e.stopPropagation();
         loadChecklistHistory();
     });
+    $('[data-target="panel-admin-emergency"]').on('click', function() {
+        renderEmergencyContactList();
+    });
 
     // 1. 제출 이력 목록 로드 AJAX
     function loadChecklistHistory() {
@@ -577,7 +630,7 @@ $(document).ready(function() {
         });
     }
 
-    // 3. 모달 열기 및 상세 결과 조회 AJAX
+ // 3. 모달 열기 및 상세 결과 조회 AJAX
     function openDetailModal(userId, checkDateStr, targetType) {
         $('#modal-user-title').text(userId + ' 님의 점검 결과');
         $('#modal-check-date').text(checkDateStr);
@@ -587,16 +640,22 @@ $(document).ready(function() {
             .text(isAgent ? '안전요원' : '관제사')
             .css('background', isAgent ? '#007bff' : '#6f42c1');
 
+        // 💡 [수정] AJAX 요청과 상관없이 모달 창부터 화면에 즉시 표시
+        $('#checklistDetailModal').css('display', 'flex');
+        $('#modal-detail-body').html('<div style="text-align:center; color:#aaa; padding:20px;">불러오는 중...</div>');
+
         $.ajax({
             url: '${pageContext.request.contextPath}/admin/api/checklist/history/detail',
             type: 'GET',
             data: { userId: userId, checkDateStr: checkDateStr },
+            dataType: 'json',
             success: function(details) {
+                console.log("받아온 상세 데이터:", details);
                 renderModalDetail(details);
-                $('#checklistDetailModal').css('display', 'flex');
             },
-            error: function() {
-                alert('상세 정보를 불러오지 못했습니다.');
+            error: function(xhr, status, error) {
+                console.error("상세조회 에러:", error);
+                $('#modal-detail-body').html('<div style="text-align:center; color:#f87171; padding:20px;">상세 정보를 불러오지 못했습니다.</div>');
             }
         });
     }
@@ -620,10 +679,13 @@ $(document).ready(function() {
             else if (d.checkStatus === '주의') caution++;
             else if (d.checkStatus === '위험') danger++;
 
-            if (!categoryMap[d.category]) {
-                categoryMap[d.category] = [];
+            // 💡 [수정] category 값이 없거나 null일 경우 대비 예외처리 추가
+            var catName = d.category || '기타 점검 항목';
+
+            if (!categoryMap[catName]) {
+                categoryMap[catName] = [];
             }
-            categoryMap[d.category].push(d);
+            categoryMap[catName].push(d);
         });
 
         // 헤더 요약 렌더링
@@ -644,12 +706,19 @@ $(document).ready(function() {
                 else if (item.checkStatus === '위험') statusStyle = 'background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid #e74c3c;';
                 else statusStyle = 'background: #323248; color: #aaa;';
 
+                // 💡 [수정] itemTitle, question 누락 예외처리
+                var title = item.itemTitle || item.title || '점검 항목';
+                var questionText = item.question || '';
+                var statusText = item.checkStatus || '미응답';
+
                 catHtml += '    <div style="padding: 10px; background: #1e1e2d; border-radius: 6px; border: 1px solid #2a2a3d;">';
                 catHtml += '      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">';
-                catHtml += '        <div style="font-size: 13px; font-weight: 600; color: #ddd;">' + item.itemTitle + '</div>';
-                catHtml += '        <span style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; white-space: nowrap; ' + statusStyle + '">' + item.checkStatus + '</span>';
+                catHtml += '        <div style="font-size: 13px; font-weight: 600; color: #ddd;">' + title + '</div>';
+                catHtml += '        <span style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; white-space: nowrap; ' + statusStyle + '">' + statusText + '</span>';
                 catHtml += '      </div>';
-                catHtml += '      <div style="font-size: 12px; color: #888; margin-top: 4px;">' + item.question + '</div>';
+                if (questionText) {
+                    catHtml += '      <div style="font-size: 12px; color: #888; margin-top: 4px;">' + questionText + '</div>';
+                }
 
                 if (item.remark && item.remark.trim() !== '') {
                     catHtml += '  <div style="margin-top: 6px; padding: 6px 10px; background: #252538; border-left: 3px solid #f1c40f; font-size: 12px; color: #ffeb3b;">';
@@ -671,5 +740,216 @@ $(document).ready(function() {
         }
     });
 });
+
+
+//비상연락망 전체 데이터 보관 변수 및 현재 선택된 카테고리
+var rawEmergencyList = [];
+var currentEmergencyCategory = 'ALL';
+
+// 1. 비상연락망 목록 불러오기 (AJAX)
+function renderEmergencyContactList() {
+    var ctx = window.contextPath || '';
+    var $container = $('#emergencyContactListContainer');
+
+    if (!$container.length) return;
+
+    $.ajax({
+        url: ctx + '/api/emergency/list',
+        type: 'GET',
+        dataType: 'json',
+        success: function(list) {
+            rawEmergencyList = list || [];
+            // 데이터 로드 완료 후 현재 선택된 탭 기준으로 목록 렌더링
+            displayFilteredEmergencyList();
+        },
+        error: function(xhr, status, error) {
+            console.error("비상연락망 로드 실패:", error);
+            $container.html('<div style="color: #f87171; font-size: 12px; padding: 10px 0; text-align: center;">목록을 불러오지 못했습니다.</div>');
+        }
+    });
+}
+
+// 2. 카테고리 탭 클릭 이벤트 처리
+function filterEmergencyCategory(category, btnElem) {
+    currentEmergencyCategory = category;
+
+    // 탭 스타일 전환
+    $('.emg-tab-btn').css({
+        'background': 'transparent',
+        'color': '#a0aec0',
+        'font-weight': 'normal'
+    }).removeClass('active');
+
+    $(btnElem).css({
+        'background': '#38bdf8',
+        'color': '#fff',
+        'font-weight': 'bold'
+    }).addClass('active');
+
+    // 필터링된 목록 출력
+    displayFilteredEmergencyList();
+}
+
+// 3. 실제 화면 카드 렌더링 함수
+function displayFilteredEmergencyList() {
+    var $container = $('#emergencyContactListContainer');
+    $container.empty();
+
+    // 선택된 카테고리 필터링
+    var filteredList = rawEmergencyList.filter(function(item) {
+        if (currentEmergencyCategory === 'ALL') return true;
+        return item.category === currentEmergencyCategory;
+    });
+
+    if (!filteredList || filteredList.length === 0) {
+        $container.html('<div style="color: #a0aec0; font-size: 12px; padding: 15px 0; text-align: center;">해당 카테고리의 연락처가 없습니다.</div>');
+        return;
+    }
+
+    var $ul = $('<ul>').css({
+        'list-style': 'none',
+        'padding': '0',
+        'margin': '0'
+    });
+
+    var categoryMap = {
+        'HOST': '행사 주최측',
+        'AGENCY': '유관기관',
+        'MEDICAL': '의료 인프라'
+    };
+
+    filteredList.forEach(function(item) {
+        var categoryName = categoryMap[item.category] || item.category;
+
+        var $li = $('<li>').css({
+            'background': 'rgba(255, 255, 255, 0.05)',
+            'border': '1px solid rgba(255, 255, 255, 0.1)',
+            'border-radius': '8px',
+            'padding': '10px 12px',
+            'margin-bottom': '8px',
+            'position': 'relative'
+        });
+
+        var html = 
+            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">' +
+                '<span style="font-size: 11px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">' +
+                    categoryName +
+                '</span>' +
+                '<div>' +
+                    '<button type="button" onclick="openEmergencyContactModal(' + item.contactId + ', \'' + item.category + '\', \'' + item.title + '\', \'' + item.phone + '\', ' + item.sortOrder + ')" ' +
+                            'style="background: none; border: none; color: #a0aec0; font-size: 11px; cursor: pointer; margin-right: 4px;">수정</button>' +
+                    '<button type="button" onclick="deleteEmergencyContact(' + item.contactId + ')" ' +
+                            'style="background: none; border: none; color: #f87171; font-size: 11px; cursor: pointer;">삭제</button>' +
+                '</div>' +
+            '</div>' +
+            '<div style="color: #fff; font-size: 13px; font-weight: bold; margin-bottom: 2px;">' + item.title + '</div>' +
+            '<div style="color: #a0aec0; font-size: 12px;">' + item.phone + '</div>';
+
+        $li.html(html);
+        $ul.append($li);
+    });
+
+    $container.append($ul);
+}
+
+//모달 열기 (등록/수정 공용)
+function openEmergencyContactModal(id, category, title, phone, sortOrder) {
+    if (id) {
+        // 수정 모드
+        $('#emergencyModalTitle').text('비상연락처 수정');
+        $('#emgContactId').val(id);
+        $('#emgCategory').val(category);
+        $('#emgTitle').val(title);
+        $('#emgPhone').val(phone);
+        $('#emgSortOrder').val(sortOrder);
+    } else {
+        // 신규 등록 모드
+        $('#emergencyModalTitle').text('비상연락처 등록');
+        $('#emgContactId').val('');
+        $('#emgCategory').val('HOST');
+        $('#emgTitle').val('');
+        $('#emgPhone').val('');
+        $('#emgSortOrder').val(1);
+    }
+    $('#emergencyContactModal').css('display', 'flex');
+}
+
+// 모달 닫기
+function closeEmergencyContactModal() {
+    $('#emergencyContactModal').hide();
+}
+
+// 저장 (등록/수정 처리)
+function saveEmergencyContact() {
+    var ctx = window.contextPath || '';
+    var id = $('#emgContactId').val();
+    var category = $('#emgCategory').val();
+    var title = $.trim($('#emgTitle').val());
+    var phone = $.trim($('#emgPhone').val());
+    var sortOrder = $('#emgSortOrder').val() || 0;
+
+    if (!title) {
+        alert('구분 / 기관명을 입력해 주세요.');
+        return;
+    }
+    if (!phone) {
+        alert('연락처 / 채널을 입력해 주세요.');
+        return;
+    }
+
+    var data = {
+        contactId: id ? parseInt(id) : null,
+        category: category,
+        title: title,
+        phone: phone,
+        sortOrder: parseInt(sortOrder)
+    };
+
+    var url = id ? '/api/emergency/modify' : '/api/emergency/add';
+
+    $.ajax({
+        url: ctx + url,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(res) {
+            if (res) {
+                alert(id ? '수정되었습니다.' : '등록되었습니다.');
+                closeEmergencyContactModal();
+                renderEmergencyContactList(); // 목록 다시 뿌리기
+            } else {
+                alert('처리에 실패했습니다.');
+            }
+        },
+        error: function() {
+            alert('서버통신 오류가 발생했습니다.');
+        }
+    });
+}
+
+// 삭제 처리
+function deleteEmergencyContact(id) {
+    if (!confirm('이 연락처를 삭제하시겠습니까?')) return;
+
+    var ctx = window.contextPath || '';
+
+    $.ajax({
+        url: ctx + '/api/emergency/remove',
+        type: 'POST',
+        data: { contactId: id },
+        success: function(res) {
+            if (res) {
+                renderEmergencyContactList(); // 목록 다시 뿌리기
+            } else {
+                alert('삭제 실패했습니다.');
+            }
+        },
+        error: function() {
+            alert('서버통신 오류가 발생했습니다.');
+        }
+    });
+}
+
+
 </script>
 
