@@ -17,7 +17,13 @@
 	                <span class="drone-title"> [ ${droneId} ] 실시간 스트리밍</span>
 	            </div>
 	            <div class="stream-placeholder">
-	                <img id="stream-video" src="${drone.url}" onerror="showToastError(this, '${droneId}')" alt="실시간 스트리밍" />
+	            	<!-- 💡 초기 로딩 스피너 박스 -->
+	                <div class="stream-loading-box" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 2; gap: 8px;">
+	                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #0ea5e9; filter: drop-shadow(0 0 8px #0ea5e9);"></i>
+	                    <span style="color: #94a3b8; font-size: 13px; font-weight: 600;">스트리밍 연결 중...</span>
+	                </div>
+	                
+	                <img id="stream-video" src="${drone.url}" onerror="handleStreamError(this, '${droneId}')" alt="실시간 스트리밍" />
 	            	
 	            	<!-- 전체화면 토글 버튼 -->
 				    <button type="button" class="btn-fullscreen" id="btnFullscreen" title="전체화면">
@@ -172,7 +178,7 @@
 	    <div class="history-header">
 	        <div class="header-title-box">
 	            <i class="fa-solid fa-list-check title-icon"></i>
-	            <h3 class="title-text">실시간 감지 이력</h3>
+	            <h3 class="title-text">실시간 감지/조치 이력</h3>
 	            <span class="count-badge" id="totalHistoryCount">총 0건</span>
 	        </div>
 	        <div class="header-action-box">
@@ -220,6 +226,7 @@
 <script>
 const ctx = window.contextPath || '';
 let eventSource = null; // SSE 객체 전역 관리
+let autoSwitchTimer = null; // 자동 전환 타이머 전역 변수
 
 // 1. 범용 토스트 메시지 출력 함수
 function showToast(message, type = 'info') {
@@ -248,13 +255,31 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// 2. 스트리밍 에러 전용 함수
-function showToastError(imgElement, droneId) {
+//2. 스트리밍 에러 전용 함수 (가운데 고정 안내 표시)
+function handleStreamError(imgElement, errorDroneId) {
     if (imgElement) {
-        imgElement.onerror = null;
+        imgElement.onerror = null; // 무한 반복 방지
         imgElement.style.display = 'none';
     }
-    showToast('⚠️ [ ' + droneId + ' ] 스트리밍 서버 응답 없음', 'error');
+    
+    const placeholder = imgElement ? imgElement.closest('.stream-placeholder') : null;
+    if (placeholder) {
+        // 남아있는 로딩 박스 제거
+        const loadingBox = placeholder.querySelector('.stream-loading-box');
+        if (loadingBox) loadingBox.remove();
+        
+        // 이미 에러 안내가 있다면 중복 생성 방지
+        if (placeholder.querySelector('.stream-notice-box')) return;
+
+        // realtime 페이지 스타일과 맞춘 고정 에러 안내 박스 생성
+        const errorHtml = `
+            <div class="stream-notice-box error" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 2; gap: 8px;">
+                <i class="fa-solid fa-plug-circle-xmark" style="font-size: 32px; color: #fcd34d; filter: drop-shadow(0 0 8px #f59e0b);"></i>
+                <span style="color: #fcd34d; font-size: 14px; font-weight: 600;">[ ${errorDroneId} ] 응답 없음 (점검 필요)</span>
+            </div>
+        `;
+        placeholder.insertAdjacentHTML('beforeend', errorHtml);
+    }
 }
 
 // 3. 자동 신고 알림 삭제
@@ -269,7 +294,7 @@ function deleteReportItem(btn) {
     }
 }
 
-// 4. SSE 연결 및 해제 관리
+// 4. SSE 연결 관리 (진입할 때)
 function initSSE() {
     if (eventSource) {
         eventSource.close();
@@ -289,6 +314,19 @@ function initSSE() {
         setTimeout(initSSE, 3000); // 3초 후 재연결
     };
 }
+
+// 스트리밍 페이지 이탈 시 자원을 해제하는 전역 함수 (나갈 때)
+window.destroyStreamPage = function() {
+    if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+    }
+    if (autoSwitchTimer) {
+        clearInterval(autoSwitchTimer);
+        autoSwitchTimer = null;
+    }
+    localStorage.setItem('droneAutoSwitch', 'false');
+};
 
 //밀리초 타임스탬프를 'YYYY-MM-DD HH:mm:ss' 포맷으로 변환하는 함수
 function formatDate(timestamp) {
@@ -310,7 +348,7 @@ function formatDate(timestamp) {
     return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
 }
 
-//상세보기 팝업 함수
+// 감지 이력 상세페이지 팝업 함수
 function openDetailPop(situNo) {
     var url = ctx + '/detection/detail?no=' + situNo;
     
@@ -320,7 +358,7 @@ function openDetailPop(situNo) {
     var windowName = 'Detail_' + situNo;
     
     // 팝업창 옵션 (크기, 스크롤, 리사이즈 설정)
-    var windowOption = 'width=630, height=720, top=100, left=200, scrollbars=yes, resizable=yes';
+    var windowOption = 'width=630, height=830, top=100, left=200, scrollbars=yes, resizable=yes';
     
     var detailPop = window.open(url, windowName, windowOption);
     
@@ -344,7 +382,7 @@ function getSituationList() {
             $('#totalHistoryCount').text('총 ' + (situations ? situations.length : 0) + '건');
             
             if (!situations || situations.length === 0) {
-                $tbody.append('<tr><td colspan="8" style="text-align:center;">감지 이력이 없습니다.</td></tr>');
+                $tbody.append('<tr><td colspan="8" style="text-align:center;">생성된 감지/조치 이력이 없습니다.</td></tr>');
                 return;
             }
              
@@ -383,17 +421,10 @@ function getSituationList() {
             });
         },
         error: function(err) {
-            console.error('감지 목록 조회 실패:', err);
+            console.error('감지/조치 목록 조회 실패:', err);
         }
     });
 }
-
-// 6. 페이지 이동/이탈 시 SSE 세션 정상 종료 (서버 메모리 보호)
-window.addEventListener('beforeunload', function() {
-    if (eventSource) {
-        eventSource.close();
-    }
-});
 
 // 페이지 진입/복원/SPA 전환 공통 초기화 함수
 window.initStreamPage = function() {
@@ -403,19 +434,31 @@ window.initStreamPage = function() {
 
 // 7. 메인 컨트롤 및 초기화
 $(document).ready(function() {
-    const currentDroneId = '${droneId}';
+	let currentDroneId = '${droneId}';
     const switchIntervalTime = 20000;
-    let autoSwitchTimer = null;
     
  	// 💡 최초 진입 시 데이터 로딩 및 SSE 연결 (1회만 호출)
     window.initStreamPage();
+ 	
+ 	// 💡 현재 접속한 페이지가 스트리밍 페이지(/stream)인지 확인
+    const isStreamPage = window.location.pathname.endsWith('/control/stream') || window.location.pathname.endsWith('/stream');
 
-    function handleAutoSwitch(isOn) {
+ 	// 최초 진입 시 영상 로드 성공 감지
+    $('#stream-video').on('load', function() {
+        const placeholder = this.closest('.stream-placeholder');
+        if (placeholder) {
+            $(placeholder).find('.stream-loading-box, .stream-notice-box').remove();
+        }
+        $(this).show();
+    });
+ 	
+ 	function handleAutoSwitch(isOn) {
         if (autoSwitchTimer) {
             clearInterval(autoSwitchTimer);
             autoSwitchTimer = null;
         }
-        if (isOn) {
+     	// 💡 /stream 페이지이고, 스위치가 ON일 때만 타이머를 가동!
+        if (isOn && isStreamPage) {
             autoSwitchTimer = setInterval(moveToNextDrone, switchIntervalTime);
         }
     }
@@ -437,15 +480,74 @@ $(document).ready(function() {
                 });
                 const nextIndex = (currentIndex + 1) % flyingDrones.length;
                 const nextDrone = flyingDrones[nextIndex];
-
-                location.href = ctx + '/control/stream?id=' + nextDrone.droneId + '&zone=' + encodeURIComponent(nextDrone.zoneName);
+                
+             	// 1. 현재 드론 ID 갱신
+                currentDroneId = nextDrone.droneId;
+             	
+             	// 💡 2. 영상 교체 시 에러 핸들러(onerror)를 새 드론 ID와 함께 다시 바인딩!
+                const $video = $('#stream-video');
+                const placeholder = $video.closest('.stream-placeholder')[0];
+             	
+             	// 💡 전환 시 기존에 남아있던 로딩 박스나 에러 안내 박스 모두 청소
+                if (placeholder) {
+                    $(placeholder).find('.stream-loading-box, .stream-notice-box').remove();
+                    
+                    // 새로운 로딩 스피너 부착
+                    const loadingHtml = `
+                        <div class="stream-loading-box" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 2; gap: 8px;">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #0ea5e9; filter: drop-shadow(0 0 8px #0ea5e9);"></i>
+                            <span style="color: #94a3b8; font-size: 13px; font-weight: 600;">스트리밍 연결 중...</span>
+                        </div>
+                    `;
+                    $(placeholder).prepend(loadingHtml);
+                }
+                
+             	// 💡 다음 드론 영상으로 바뀔 때 기존 영상 숨기고 로딩 스피너 다시 생성
+                $video.hide();
+             	
+             	// 에러 핸들러 연결
+                $video[0].onerror = function() {
+                	handleStreamError(this, currentDroneId);
+                };
+                				
+             	// 💡 새 영상 로드 성공 시 로딩 박스 제거 및 영상 노출
+                $video.off('load').on('load', function() {
+                    const ph = this.closest('.stream-placeholder');
+                    if (ph) {
+                        const lBox = ph.querySelector('.stream-loading-box');
+                        if (lBox) lBox.remove();
+                    }
+                    $(this).show();
+                });
+             	
+                $video.attr('src', nextDrone.url);
+                
+             	// 3. 드론 이름 및 구역명 텍스트 교체 및 주소창 갱신
+                $('.drone-title').text(' [ ' + nextDrone.droneId + ' ] 실시간 스트리밍');
+                $('#drone-name-display').text(nextDrone.droneId);
+                $('#drone-zone-display').text(nextDrone.zoneName);
+                
+                // 4. URL 주소창 갱신 (새로고침 없이 주소만 변경하여 뒤로가기 지원)
+                const newUrl = ctx + '/control/stream?id=' + nextDrone.droneId + '&zone=' + encodeURIComponent(nextDrone.zoneName);
+                history.replaceState(null, '', newUrl); // pushState 대신 replaceState를 쓰면 뒤로가기 히스토리가 지저분해지는 걸 막을 수 있습니다.
+                
+             	// 💡 5. 비동기로 다음 드론이 넘어갈 때 하단 감지/조치 이력 목록도 함께 갱신!
+                if (typeof getSituationList === 'function') {
+                    getSituationList();
+                }
+                
+                // 6. 화면 전환 알림 토스트 띄우기
+                showToast('🔄 [ ' + nextDrone.droneId + ' ] 화면으로 자동 전환되었습니다.', 'info');
             }
         });
     }
 
-    // 초기 상태 로드
+ 	// [초기화 실행 흐름]
+    // 1. localStorage에서 자동전환 여부를 읽어옴
     const isAutoOn = localStorage.getItem('droneAutoSwitch') === 'true';
     $('#auto-switch-toggle').prop('checked', isAutoOn);
+    
+ 	// 2. 스트리밍 페이지라면 저장된 설정값에 따라 타이머 즉시 재시작!
     handleAutoSwitch(isAutoOn);
 
     // 순회 관제 토글
@@ -512,6 +614,15 @@ $(document).ready(function() {
             }
         }, 1000);
     });
+});
+
+// 💡 SPA 환경에서 상단 헤더 메뉴 등을 눌러 다른 화면으로 넘어갈 때 자동 전환 모드 강제 OFF
+$(document).on('click', '.header-link', function() {
+    localStorage.setItem('droneAutoSwitch', 'false');
+    if (autoSwitchTimer) {
+        clearInterval(autoSwitchTimer);
+        autoSwitchTimer = null;
+    }
 });
 
 // 뒤로가기/앞으로가기(BFCache) 및 사이드바 이동 복원 대응

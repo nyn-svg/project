@@ -24,6 +24,15 @@ public interface SituationMapper {
 	// 감지 이력 등록
     int insertSituation(SituationDTO situation);
     
+    // 감지(조치) 확인일시 기록
+    int checkSituation(String situNo);
+    
+    // 조치 시작일시 기록
+    int startWorkSituation(String situNo);
+    
+    // 조치 종료일시 기록
+    int endWorkSituation(String situNo);
+    
     // 감지 이력 수정 또는 조치 내용 입력
     int updateSituation(SituationDTO situation);
     

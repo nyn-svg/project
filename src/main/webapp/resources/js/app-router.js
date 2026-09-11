@@ -66,9 +66,16 @@ $(document).ready(function() {
                     initDetectionPage();
                 }
 				
+				if (typeof initRealtimePage === 'function') {
+					initRealtimePage();
+				}
 				// 💡 비동기 이동 완료 후 stream 페이지의 로드 함수가 존재하면 강제 실행
 				if (typeof window.initStreamPage === 'function') {
 					window.initStreamPage();
+				}
+				// 비동기 페이지 로드 함수
+				if (typeof window.destroyStreamPage === 'function') {
+				    window.destroyStreamPage(); // 다른 페이지로 가기 전 스트리밍 자원 및 타이머 완벽 정리!
 				}
               
             },
@@ -114,6 +121,10 @@ $(document).ready(function() {
                 if (typeof initAreaManagement === 'function') {
                     initAreaManagement();
                 }
+				
+				if (typeof initRealtimePage === 'function') {
+				    initRealtimePage();
+				}
 
 
                 history.pushState(null, '', targetUrl);

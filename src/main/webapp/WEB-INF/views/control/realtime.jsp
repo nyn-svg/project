@@ -17,7 +17,8 @@
 </div>
 
 <script>
-$(document).ready(function() {
+//💡 전역 초기화 함수로 분리하여 SPA 비동기 이동 시에도 실행되도록 설정
+window.initRealtimePage = function() {
     var ctx = window.contextPath || '';
 
  	// 1. [공통] 상태별 안내 HTML 생성 함수
@@ -56,6 +57,12 @@ $(document).ready(function() {
         imgElement.onerror = null; // 무한 반복 차단
         var parent = imgElement.parentElement;
         if (!parent) return;
+        
+     	// 💡 에러 발생 시 남아있는 로딩 스피너 박스가 있다면 강제 제거!
+        var loadingBox = parent.querySelector('.loading-box');
+        if (loadingBox) {
+            loadingBox.remove();
+        }
 
         imgElement.style.display = 'none';
 
@@ -116,8 +123,26 @@ $(document).ready(function() {
             wrapperElement.className = 'video-wrapper';
 
             if (isFlying) {
+            	// 💡 영상 로드 전까지 보여줄 로딩 스피너 기본 장착
+                wrapperElement.innerHTML = `
+                    <div class="drone-notice loading-box">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 28px; color: #0ea5e9; filter: drop-shadow(0 0 8px #0ea5e9);"></i>
+                        <span style="margin-top: 8px; color: #94a3b8; font-size: 13px;">스트리밍 연결 중...</span>
+                    </div>
+                `;
+            	
                 var videoElement = document.createElement('img');
+                videoElement.style.display = 'none'; // 처음에 이미지는 숨김 처리
                 videoElement.src = drone.url;
+                
+             	// 💡 영상 로드가 성공적으로 완료되었을 때
+                videoElement.onload = function() {
+                    var loadingBox = wrapperElement.querySelector('.loading-box');
+                    if (loadingBox) {
+                        loadingBox.remove(); // 로딩 스피너 제거
+                    }
+                    this.style.display = 'block'; // 숨겨둔 실제 영상 노출
+                };
                 
                 // 🌟 [핵심] 동적 img 생성 시 onerror 핸들러 바인딩
                 videoElement.onerror = function() {
@@ -145,5 +170,10 @@ $(document).ready(function() {
             renderDroneGrid(drones);
         }
     });
+};
+
+//최초 직접 진입 시 실행
+$(document).ready(function() {
+	window.initRealtimePage();
 });
 </script>

@@ -15,6 +15,7 @@
 			SITU_LON		AS situLon,
 			SITU_DATE		AS situDate,
 			WORK_CONTENT 	AS workContent,
+			CHECK_DATE		AS checkDate,
 			START_DATE		AS startDate,
 			END_DATE		AS endDate,
 			ZONE_NAME		AS zoneName,
@@ -37,6 +38,7 @@
 			SITU_LON		AS situLon,
 			SITU_DATE		AS situDate,
 			WORK_CONTENT 	AS workContent,
+			CHECK_DATE		AS checkDate,
 			START_DATE		AS startDate,
 			END_DATE		AS endDate,
 			ZONE_NAME		AS zoneName,
@@ -59,6 +61,7 @@
 			SITU_LON		AS situLon,
 			SITU_DATE		AS situDate,
 			WORK_CONTENT 	AS workContent,
+			CHECK_DATE		AS checkDate,
 			START_DATE		AS startDate,
 			END_DATE		AS endDate,
 			ZONE_NAME		AS zoneName,
@@ -82,6 +85,7 @@
 			SITU_LON		AS situLon,
 			SITU_DATE		AS situDate,
 			WORK_CONTENT 	AS workContent,
+			CHECK_DATE		AS checkDate,
 			START_DATE		AS startDate,
 			END_DATE		AS endDate,
 			ZONE_NAME		AS zoneName,
@@ -106,6 +110,7 @@
 			SITU_LON		AS situLon,
 			SITU_DATE		AS situDate,
 			WORK_CONTENT	AS workContent,
+			CHECK_DATE		AS checkDate,
 			START_DATE		AS startDate,
 			END_DATE		AS endDate,
 			ZONE_NAME		AS zoneName,
@@ -140,7 +145,7 @@
             #{situType},
             #{dngrType},
             #{dngrLevel},
-            #{situContent, jdbcType=VARCHAR},
+            #{situContent},
             #{situLat, jdbcType=DOUBLE},
             #{situLon, jdbcType=DOUBLE},
             #{workContent, jdbcType=VARCHAR},
@@ -149,6 +154,27 @@
             #{situImage, jdbcType=VARCHAR}
         )
     </insert>
+    
+    <!-- 감지(조치) 확인일시 기록 -->
+    <update id="checkSituation" parameterType="string">
+    	UPDATE SITUATIONS
+    	SET CHECK_DATE = SYSDATE
+    	WHERE SITU_NO = #{situNo}
+    </update>
+    
+    <!-- 조치 시작일시 기록 -->
+    <update id="startWorkSituation" parameterType="string">
+    	UPDATE SITUATIONS
+    	SET START_DATE = SYSDATE
+    	WHERE SITU_NO = #{situNo}
+    </update>
+    
+    <!-- 조치 종료일시 기록 -->
+    <update id="endWorkSituation" parameterType="string">
+    	UPDATE SITUATIONS
+    	SET END_DATE = SYSDATE
+    	WHERE SITU_NO = #{situNo}
+    </update>
 	
 	<!-- 감지 이력 수정 또는 조치 내용 입력 -->
 	<update id="updateSituation" parameterType="com.spring.dto.SituationDTO">
@@ -157,11 +183,8 @@
             DNGR_TYPE		= #{dngrType},
             DNGR_LEVEL		= #{dngrLevel},
             SITU_STATUS		= #{situStatus},
-            SITU_CONTENT	= #{situContent, jdbcType=VARCHAR},
+            SITU_CONTENT	= #{situContent},
             WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
-            START_DATE		= #{startDate, jdbcType=DATE},
-            END_DATE		= #{endDate, jdbcType=DATE},
-            ZONE_NAME		= #{zoneName, jdbcType=VARCHAR},
             SITU_IMAGE		= #{situImage, jdbcType=VARCHAR}
         WHERE SITU_NO = #{situNo}
 	</update>

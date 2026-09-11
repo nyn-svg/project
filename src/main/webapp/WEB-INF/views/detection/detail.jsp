@@ -5,7 +5,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>감지 상세 정보 - ${situation.situNo}</title>
+    <title>감지 상세 이력 - ${situation.situNo}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
@@ -187,7 +187,7 @@
     <div class="popup-header">
         <div class="popup-title">
             <i class="fa-solid fa-triangle-exclamation"></i>
-            <span>상황 감지 이력</span>
+            <span>감지 상세 이력</span>
         </div>
         
         <!-- 조치 상태 배지 -->
@@ -222,7 +222,7 @@
                 <div class="step-label">확인</div>
                 <div class="step-time">
                     <c:choose>
-                        <c:when test="${not empty situation.startDate}"><fmt:formatDate value="${situation.startDate}" pattern="HH:mm:ss"/></c:when>
+                        <c:when test="${not empty situation.checkDate}"><fmt:formatDate value="${situation.checkDate}" pattern="HH:mm:ss"/></c:when>
                         <c:otherwise>-</c:otherwise>
                     </c:choose>
                 </div>
@@ -264,8 +264,8 @@
 		</div>
 		
 		<div class="info-box">
-		    <div class="info-label">구역명 / 작성자</div>
-		    <div class="info-value">${situation.zoneName != null ? situation.zoneName : '미지정'} (${situation.userId})</div>
+		    <div class="info-label">구역명 / 발견인</div>
+		    <div class="info-value">${situation.zoneName != null ? situation.zoneName : '인식불가'} (${situation.userId})</div>
 		</div>
 
         <!-- 위험 유형 + 위험 단계 배지 -->
