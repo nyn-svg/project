@@ -31,11 +31,6 @@
 			</div>
 
 			<div class="info-row">
-				<span class="info-label">행사명</span> 
-				<span class="info-value">대전 유성온천문화축제</span>
-			</div>
-
-			<div class="info-row">
 				<span class="info-label">점검 구역</span> 
 				<span class="info-value">${empty sessionScope.workArea ? 'A구역(공연장 일대)' : sessionScope.workArea}</span>
 			</div>

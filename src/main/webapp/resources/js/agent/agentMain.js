@@ -57,15 +57,15 @@ $(document).ready(function() {
     /* 바로가기 */
     // 위험 알림
     $(".quick-danger").on("click", function() {
-        console.log("위험 알림");
-        location.href = "history/more";
+        console.log("긴급보고");
+        location.href = "emergency";
     });
 
 
     // 안전 순찰
     $(".quick-patrol").on("click", function() {
         console.log("안전순찰");
-        location.href = "patrol";
+        location.href = "safetyCheck";
     });
 
 

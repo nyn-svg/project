@@ -18,7 +18,7 @@ public interface AgentTaskMapper {
     // 업무 수정
     int updateTask(AgentTaskDTO dto);
     
- // 이력 목록 조회 메서드 추가
+    // 이력 목록 조회 메서드 추가
     List<AgentTaskDTO> getTaskList();
     
     List<AgentTaskDTO> getTaskListPaged(Map<String, Object> paramMap);

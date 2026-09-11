@@ -164,26 +164,19 @@ public class AgentController {
 	    return "agent/agentsafetyCheckComplete";
 	}
 
-	/* ====================================== 보류 ============================================== */
 	
+	/* ==========[조치보고 페이지]============= */
 	@GetMapping("/history/more")
 	@ResponseBody
-	public Map<String, Object> getMoreTasks(@RequestParam(value = "offset", defaultValue = "0") int offset,
+	public Map<String, Object> getMoreTasks(
+			@RequestParam(value = "offset", defaultValue = "0") int offset,
 			@RequestParam(value = "limit", defaultValue = "4") int limit,
-			@RequestParam(value = "taskArea", required = false) String taskArea,
-			@RequestParam(value = "taskType", required = false) String taskType,
-			@RequestParam(value = "keyword", required = false) String keyword,
-			@RequestParam(value = "startDate", required = false) String startDate,
-			@RequestParam(value = "endDate", required = false) String endDate) {
+			@RequestParam(value = "actionStatus", required = false, defaultValue = "ALL") String actionStatus) {
 
 		Map<String, Object> paramMap = new HashMap<>();
 		paramMap.put("offset", offset);
 		paramMap.put("limit", limit);
-		paramMap.put("taskArea", taskArea);
-		paramMap.put("taskType", taskType);
-		paramMap.put("keyword", keyword);
-		paramMap.put("startDate", startDate);
-		paramMap.put("endDate", endDate);
+		paramMap.put("actionStatus", actionStatus); // 상태 파라미터 전달
 
 		List<AgentTaskDTO> taskList = agentTaskService.getTaskListPaged(paramMap);
 		int totalCount = agentTaskService.getTaskListCount(paramMap);

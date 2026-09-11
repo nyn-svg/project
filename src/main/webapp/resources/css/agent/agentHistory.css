@@ -1,298 +1,287 @@
-/* 기본 리셋 및 레이아웃 */
+@charset "UTF-8";
+
+/* ==================================================
+   1. 기본 초기화 및 모바일 레이아웃 설정 (앱 테마 동기화)
+================================================== */
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent; /* 모바일 터치 하이라이트 박스 제거 */
 }
 
 body {
-    background-color: #f8fafc;
+    background-color: #f4f6f9;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    color: #1e293b;
 }
 
-/* 모바일 컨테이너 */
 .mobile-container {
     width: 100%;
     max-width: 430px;
     height: 100vh;
     max-height: 932px;
-    background-color: #ffffff;
+    background-color: #f8fafc;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     position: relative;
-    overflow-y: auto;
-    padding-bottom: 70px; /* 하단 네비게이션 여백 */
+    overflow: hidden;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.06);
+    border-radius: 32px;
 }
 
-/* 상단 헤더 */
+/* ==================================================
+   2. 상단 헤더 (모던 플랫 헤더 구조 통일)
+================================================== */
 .mobile-header {
-    height: 56px;
-    background-color: #1d4ed8;
+    flex-shrink: 0;
+    height: 64px;
+    padding: 0 20px;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #f1f5f9;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    color: #ffffff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
 }
 
 .btn-back {
+    text-decoration: none;
+    font-size: 18px;
+    color: #1a1f2c;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
     background: none;
     border: none;
-    color: #ffffff;
-    font-size: 1.2rem;
     cursor: pointer;
-    padding: 4px;
 }
 
 .header-title {
-    font-size: 1.1rem;
+    font-size: 16px;
     font-weight: 700;
+    color: #1a1f2c;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .header-dummy {
-    width: 24px;
+    width: 32px;
 }
 
-/* 메인 컨텐츠 영역 */
+/* ==================================================
+   3. 메인 스크롤 콘텐츠 영역
+================================================== */
 .mobile-content {
-    padding: 16px;
     flex: 1;
-}
-
-/* 검색 필터 카드 */
-.filter-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
+    overflow-y: auto !important;
+    padding: 24px 20px;
+    padding-bottom: 96px !important; /* 하단 메뉴바 영역 확보 */
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.filter-row {
+/* 모바일 웹뷰 가독성을 위한 스크롤바 숨김 */
+.mobile-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==================================================
+   4. 서브 메뉴바
+================================================== */
+/* 서브 메뉴바 컨테이너 */
+.sub-menu-bar {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 4px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
-.filter-label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #334155;
-    width: 80px;
-}
-
-.filter-input, .filter-select {
+/* 탭 버튼 */
+.sub-menu-bar .tab-btn {
     flex: 1;
     height: 40px;
-    padding: 0 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    color: #334155;
-    background-color: #ffffff;
-    outline: none;
-}
-
-.filter-select {
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%3c64748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 14px;
-}
-
-.date-input-wrapper {
-    position: relative;
-    flex: 1;
-    display: flex;
-    align-items: center;
-}
-
-.date-input-wrapper .filter-input {
-    width: 100%;
-    padding-right: 32px;
-}
-
-.calendar-icon {
-    position: absolute;
-    right: 12px;
-    color: #64748b;
-    font-size: 0.9rem;
-    pointer-events: none;
-}
-
-.btn-search {
-    width: 100%;
-    height: 42px;
-    background-color: #1d4ed8;
-    color: #ffffff;
+    background: transparent;
     border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 700;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
     cursor: pointer;
-    margin-top: 4px;
+    transition: all 0.2s ease;
 }
 
-/* 카운트 헤더 */
+/* 활성화된 탭 스타일 */
+.sub-menu-bar .tab-btn.active {
+    background-color: #121824;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.sub-menu-bar .tab-btn:active {
+    transform: scale(0.97);
+}
+
+/* ==================================================
+   5. 리스트 정보 인포 헤더
+================================================== */
 .list-count-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 16px 0 10px 0;
+    margin: 20px 0 12px 0;
 }
 
 .list-count-header .count-text {
     font-size: 14px;
-    font-weight: 600;
-    color: #334155;
+    font-weight: 700;
+    color: #1a1f2c;
 }
 
 .list-count-header .count {
-    color: #1d4ed8; /* 건수 강조 컬러 */
+    color: #0056b3; 
     font-weight: 700;
 }
 
-/* 이력 리스트 영역 */
-.history-list {
-    max-height: 520px;       /* 모바일 화면에 맞게 조절 */
-    overflow-y: auto;        /* 내부 스크롤 허용 */
-    -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
-    padding-bottom: 10px;
+/* + 업무 등록 버튼 */
+.btn-task-register {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: #0056b3; 
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
 }
 
-/* Chrome, Safari, Opera 스크롤바 감추기 */
+.btn-task-register:active {
+    transform: scale(0.96);
+}
+
+/* ==================================================
+   6. 이력 리스트 및 메뉴 카드형 최적화 (터치 피드백 동기화)
+================================================== */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; 
+}
+
 .history-list::-webkit-scrollbar {
     display: none;
 }
 
-.btn-task-register {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #ffffff;
-    background-color: #1d4ed8;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.btn-task-register:active {
-    background-color: #1e40af;
-}
-
-.btn-task-register i {
-    font-size: 11px;
-}
-
+/* 💳 순찰 메뉴 카드 스타일을 고스란히 이식한 리스트 본체 */
 .history-card {
+    width: 100%;
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 20px; 
+    padding: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.history-card:active {
+    transform: scale(0.98);
 }
 
 .card-main {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .title-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
-/* 배지 공통 */
+/* 🎨 파스텔톤 앱 인라인 전용 유형 배지 */
 .badge {
-    display: inline-block;
-    padding: 3px 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 8px;
     font-size: 11px;
-    font-weight: 600;
-    border-radius: 4px;
-    margin-right: 6px;
+    font-weight: 700;
+    border: 1px solid transparent;
 }
 
-.badge-emergency {
-    color: #ef4444;
-    border: 1px solid #fca5a5;
-    background-color: #fef2f2;
-}
-
-.badge-report {
-    color: #f97316;
-    border: 1px solid #ffedd5;
-    background-color: #fff7ed;
-}
-
-.badge-patrol {
-    color: #2563eb;
-    border: 1px solid #bfdbfe;
-    background-color: #eff6ff;
-}
-
-.badge-check {
-    background-color: #e6f4ea;
-    color: #137333;
-}
-
-/* 5. 지원 (보라색) */
-.badge-support {
-    background-color: #f3e8fd;
-    color: #8430ce;
-}
-
-/* 6. 기타 (회색) */
-.badge-other {
-    background-color: #f1f3f4;
-    color: #5f6368;
-}
+.badge-emergency { background-color: #fef2f2; color: #ef4444; border-color: #fee2e2; } 
+.badge-patrol    { background-color: #eff6ff; color: #2563eb; border-color: #dbeafe; } 
+.badge-check     { background-color: #f0fdf4; color: #16a34a; border-color: #dcfce7; } 
+.badge-support   { background-color: #faf5ff; color: #7c3aed; border-color: #f3e8fd; } 
+.badge-other     { background-color: #f8fafc; color: #64748b; border-color: #e2e8f0; } 
 
 .history-title {
-    font-size: 0.95rem;
+    font-size: 15px;
     font-weight: 700;
-    color: #1e293b;
+    color: #1a1f2c;
+    letter-spacing: -0.3px;
 }
 
 .info-meta {
-    font-size: 0.75rem;
-    color: #64748b;
+    font-size: 12px;
+    color: #8c96a8; 
     display: flex;
     gap: 8px;
+    margin-top: 2px;
 }
 
+/* 캡슐 알약 형태의 조치 처리상태 칩 기본 베이스 */
 .badge-status {
-    padding: 4px 10px;
-    background-color: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    color: #16a34a;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 12px;
     font-weight: 700;
+    border: 1px solid #e2e8f0;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 🚨 누락되어 적용되지 않던 동적 상태값 컬러링 스타일 명세 전면 보강 */
+/* 1. 조치완료 상태 */
+.status-complete {
+    background-color: #f0fdf4 !important;
+    color: #16a34a !important;
+    border-color: #dcfce7 !important;
+}
+/* 2. 조치중 상태 */
+.status-progress {
+    background-color: #fffbeb !important;
+    color: #d97706 !important;
+    border-color: #fef3c7 !important;
+}
+/* 3. 미조치 종결 상태 */
+.status-end {
+    background-color: #f8fafc !important;
+    color: #64748b !important;
+    border-color: #e2e8f0 !important;
 }
 
 /* ==================================================
-   7. 고정 하단 탭 메뉴바 (BOTTOM NAVIGATION)
+   7. 고정 하단 메뉴 네비게이션 바 (공통 테마 동기화)
 ================================================== */
 .bottom-nav {
     position: absolute;
@@ -301,12 +290,12 @@ body {
     right: 0;
     height: 72px;
     background-color: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(10px); /* 투명 유리 효과 */
+    backdrop-filter: blur(10px);
     border-top: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: 8px; /* 아래쪽 여백 확보 */
+    padding-bottom: 8px;
     z-index: 10;
 }
 
@@ -331,7 +320,6 @@ body {
     font-weight: 500;
 }
 
-/* 활성화 상태 (Home) 폰트 색상 및 가 강조 */
 .nav-item.active {
     color: #1a1f2c;
 }
