@@ -77,23 +77,23 @@
 	</select>
 
     <!-- 6. 모달용 상세 제출 결과 조회 -->
-    <select id="selectChecklistHistoryDetail" parameterType="map" resultType="com.spring.dto.ChecklistHistoryDTO">
-        SELECT 
-            R.RESULT_ID    AS resultId,
-            R.USER_ID      AS userId,
-            I.TARGET_TYPE  AS targetType,
-            I.CATEGORY     AS category,
-            I.ITEM_TITLE   AS itemTitle,
-            I.QUESTION     AS question,
-            R.CHECK_STATUS AS checkStatus,
-            R.REMARK       AS remark,
-            TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS') AS checkDateStr
-        FROM CHECKLIST_RESULT R
-        JOIN CHECKLIST_ITEM I ON R.ITEM_ID = I.ITEM_ID
-        WHERE R.USER_ID = #{userId}
-          AND TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS') = #{checkDateStr}
-        ORDER BY I.SORT_ORDER ASC, I.ITEM_ID ASC
-    </select>
+	<select id="selectChecklistHistoryDetail" parameterType="map" resultType="com.spring.dto.ChecklistHistoryDTO">
+	    SELECT 
+	        R.RESULT_ID    AS resultId,
+	        R.USER_ID      AS userId,
+	        I.TARGET_TYPE  AS targetType,
+	        I.CATEGORY     AS category,
+	        I.ITEM_TITLE   AS itemTitle,
+	        I.QUESTION     AS question,
+	        R.CHECK_STATUS AS checkStatus,
+	        R.REMARK       AS remark,
+	        TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI:SS') AS checkDateStr
+	    FROM CHECKLIST_RESULT R
+	    JOIN CHECKLIST_ITEM I ON R.ITEM_ID = I.ITEM_ID
+	    WHERE R.USER_ID = #{userId}
+	      AND TO_CHAR(R.CHECK_DATE, 'YYYY-MM-DD HH24:MI') = SUBSTR(#{checkDateStr}, 1, 16)
+	    ORDER BY I.SORT_ORDER ASC, I.ITEM_ID ASC
+	</select>
     
      <!-- 7. 사전 점검 제출 결과 DB 저장 -->
     <insert id="insertSafetyCheckDetail">

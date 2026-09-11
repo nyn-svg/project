@@ -41,12 +41,6 @@ public class AdminController {
 	@GetMapping("/main")
 	public String adminMainPage(HttpSession session, Model model) {
 
-		// 1. 관리자 권한 세션 체크 (필요시 활성화)
-		/*
-		 * String role = (String) session.getAttribute("role"); if (role == null ||
-		 * !role.contains("ROLE_ADMIN")) { return "redirect:/login"; }
-		 */
-
 		// 2. 대시보드 상단 요약 통계 데이터 조회
 		int totalAgentCount = adminService.getTotalAgentCount(); // 전체 요원 수
 		int onDutyCount = adminService.getOnDutyAgentCount(); // 근무중 요원 수
