@@ -135,11 +135,6 @@ $(document).ready(function() {
         });
     });
 
-    // 브라우저 뒤로가기 / 앞으로가기 대응
-    window.onpopstate = function() {
-        location.reload();
-    };
-
     function updateHeaderActiveByUrl() {
         $('.header-nav .nav-link').removeClass('active');
         var currentPath = window.location.pathname;

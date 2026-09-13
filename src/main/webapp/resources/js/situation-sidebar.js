@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ${data.situContent || '내용 없음'}
             </div>
             <div style="font-size: 11px; color: #666; margin-top: 4px;">
-                보고자: ${data.userId || 'agent'}
+                보고자: ${data.finder || 'agent'}
             </div>
         `;
 
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('situ-modal-dngr-type').textContent = data.dngrType || '위험 상황';
         document.getElementById('situ-modal-zone').textContent = data.zoneName || '-';
-        document.getElementById('situ-modal-user').textContent = data.userId || '-';
+        document.getElementById('situ-modal-user').textContent = data.finder || '-';
         document.getElementById('situ-modal-time').textContent = data.situDate || '방금 전';
         document.getElementById('situ-modal-content').textContent = data.situContent || '내용 없음';
 

@@ -192,9 +192,8 @@
         
         <!-- 조치 상태 배지 -->
         <c:choose>
-            <c:when test="${situation.situStatus eq '대기'}"><span class="badge status-pending">대기</span></c:when>
-            <c:when test="${situation.situStatus eq '확인'}"><span class="badge status-confirmed">확인</span></c:when>
-            <c:when test="${situation.situStatus eq '조치'}"><span class="badge status-in-progress">조치중</span></c:when>
+            <c:when test="${situation.situStatus eq '감지'}"><span class="badge status-pending">감지</span></c:when>
+            <c:when test="${situation.situStatus eq '조치'}"><span class="badge status-in-progress">조치</span></c:when>
             <c:when test="${situation.situStatus eq '완료'}"><span class="badge status-completed">완료</span></c:when>
             <c:when test="${situation.situStatus eq '미해결'}"><span class="badge status-failed">미해결</span></c:when>
             <c:when test="${situation.situStatus eq '취소'}"><span class="badge status-canceled">취소</span></c:when>
@@ -217,17 +216,6 @@
                 <div class="step-time"><fmt:formatDate value="${situation.situDate}" pattern="HH:mm:ss"/></div>
             </div>
 
-            <div class="timeline-step ${situation.situStatus eq '확인' ? 'active' : (situation.situStatus eq '조치' || situation.situStatus eq '완료' ? 'completed' : '')}">
-                <div class="step-icon"><i class="fa-solid fa-eye"></i></div>
-                <div class="step-label">확인</div>
-                <div class="step-time">
-                    <c:choose>
-                        <c:when test="${not empty situation.checkDate}"><fmt:formatDate value="${situation.checkDate}" pattern="HH:mm:ss"/></c:when>
-                        <c:otherwise>-</c:otherwise>
-                    </c:choose>
-                </div>
-            </div>
-
             <div class="timeline-step ${situation.situStatus eq '조치' ? 'active' : (situation.situStatus eq '완료' ? 'completed' : '')}">
                 <div class="step-icon"><i class="fa-solid fa-wrench"></i></div>
                 <div class="step-label">조치</div>
@@ -241,7 +229,7 @@
 
             <div class="timeline-step ${situation.situStatus eq '완료' ? 'completed active' : ''}">
                 <div class="step-icon"><i class="fa-solid fa-check"></i></div>
-                <div class="step-label">종료</div>
+                <div class="step-label">완료</div>
                 <div class="step-time">
                     <c:choose>
                         <c:when test="${not empty situation.endDate}"><fmt:formatDate value="${situation.endDate}" pattern="HH:mm:ss"/></c:when>
@@ -265,7 +253,7 @@
 		
 		<div class="info-box">
 		    <div class="info-label">구역명 / 발견인</div>
-		    <div class="info-value">${situation.zoneName != null ? situation.zoneName : '인식불가'} (${situation.userId})</div>
+		    <div class="info-value">${situation.zoneName != null ? situation.zoneName : '인식불가'} / ${not empty situation.finder ? situation.finder : situation.droneId}</div>
 		</div>
 
         <!-- 위험 유형 + 위험 단계 배지 -->
