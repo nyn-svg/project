@@ -1,8 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/stream.css">
-
 <!-- 전체 화면 분할 컨테이너 -->
 <div class="drone-stream-wrapper">
 
@@ -18,12 +16,12 @@
 	            </div>
 	            <div class="stream-placeholder">
 	            	<!-- 💡 초기 로딩 스피너 박스 -->
-	                <div class="stream-loading-box" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 2; gap: 8px;">
-	                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #0ea5e9; filter: drop-shadow(0 0 8px #0ea5e9);"></i>
-	                    <span style="color: #94a3b8; font-size: 13px; font-weight: 600;">스트리밍 연결 중...</span>
+	                <div class="stream-loading-box">
+	                    <i class="fa-solid fa-spinner fa-spin"></i>
+	                    <span>스트리밍 연결 중...</span>
 	                </div>
 	                
-	                <img id="stream-video" src="${drone.url}" onerror="handleStreamError(this, '${droneId}')" alt="실시간 스트리밍" />
+	                <img id="stream-video" src="${drone.url}" data-drone-id="${droneId}" onerror="handleStreamError(this, this.getAttribute('data-drone-id'))" alt="실시간 스트리밍" />
 	            	
 	            	<!-- 전체화면 토글 버튼 -->
 				    <button type="button" class="btn-fullscreen" id="btnFullscreen" title="전체화면">
@@ -41,154 +39,153 @@
 	    </div>
 
 	    <!-- [상단-우측 영역] 관제 컨트롤 카드가 위치할 독립 패널 -->
-	    <div class="control-panel-right">
-	    	<!-- 순회 관제 모드 -->
-		    <div class="control-card auto-switch-card">
-		        <span id="auto-switch-label">자동 전환 모드</span>
-		        <label class="switch">
-		            <input type="checkbox" id="auto-switch-toggle" role="switch" aria-labelledby="auto-switch-label">
-		            <span class="slider round"></span>
-		        </label>
-		    </div>
-	
-	        <!-- 1. 드론 정보 카드 -->
-	        <div class="control-card drone-info-card">
-	            <div class="card-title" id="drone-name-display">${droneId}</div>
-	            <div class="info-row">
-	                <span>배터리</span>
-	                <span class="info-value" id="drone-battery-display">70%</span>
-	            </div>
-	            <div class="info-row">
-	                <span>구역명</span>
-	                <span class="info-value" id="drone-zone-display">${zoneName}</span>
-	            </div>
-	        </div>
-	
-	        <!-- 2. 밀집도 카드 -->
-	        <div class="control-card density-card">
-	            <div class="card-header">
-	                <span class="card-title">밀집도</span>
-	                <div class="density-value-box">
-	                    <span id="density-rate-display">00</span>%
-	                </div>
-	            </div>
-	
-	            <!-- 오버레이 및 사람 수 표시 스위치 그룹 (간격 일체화) -->
-				<div class="toggle-group-box">
-				    <div class="toggle-row-item">
-				        <span id="overlay-label">오버레이 효과</span>
-				        <label class="switch">
-				            <input type="checkbox" id="btn-toggle-overlay" role="switch" aria-labelledby="overlay-label" checked>
-				            <span class="slider round"></span>
-				        </label>
-				    </div>
-				    <div class="toggle-row-item">
-				        <span id="count-label">사람 수 표시</span>
-				        <label class="switch">
-				            <input type="checkbox" id="btn-toggle-count" role="switch" aria-labelledby="count-label" checked>
-				            <span class="slider round"></span>
-				        </label>
-				    </div>
-				</div>
-	
-	            <!-- 민감도 설정 -->
-	            <div class="sensitivity-panel">
-	                <div class="sensitivity-label">민감도 설정</div>
-	                <div class="sensitivity-grid">
-	                    <button type="button" class="sens-btn" data-level="low">저고도<br><small>100.0</small></button>
-	                    <button type="button" class="sens-btn active" data-level="mid">기본<br><small>150.0</small></button>
-	                    <button type="button" class="sens-btn" data-level="high">고고도<br><small>200.0</small></button>
-	                </div>
-	            </div>
-	        </div>
-	        
-	        <!-- 3. 야생동물 감지 카드 -->
-	        <div class="control-card wildlife-card">
-	            <div class="card-header">
-	                <span class="card-title">야생동물</span>
-	                <span class="danger-badge" id="wildlife-risk-level">심각</span>
-	            </div>
-	
-	            <!-- 야생동물 바운딩 박스 스위치 -->
-	            <div class="toggle-group-box" style="margin-bottom: 8px;">
-	                <div class="toggle-row-item">
-	                    <span id="bbox-label">바운딩 박스</span>
-	                    <label class="switch">
-	                        <input type="checkbox" id="btn-toggle-bbox" role="switch" aria-labelledby="bbox-label" checked>
-	                        <span class="slider round"></span>
+	    <div class="stream-control-area">
+        
+            <!-- 0. 자동 전환 모드 -->
+            <div class="control-card auto-switch-card">
+                <div class="card-header">
+                    <span class="card-title">자동 전환 모드</span>
+                    <div class="card-action">
+                        <label class="switch">
+	                    	<input type="checkbox" id="auto-switch-toggle">
+	                    	<span class="slider round"></span>
 	                    </label>
-	                </div>
-	            </div>
-	
-	            <div class="wildlife-body">
-	                <div class="detection-info">
-	                    <div>객체명 : <strong id="detected-object-name" style="color: #f8fafc;">고라니</strong></div>
-	                    <div>신뢰도 : <span id="detected-confidence">72</span>%</div>
-	                </div>
-	                <button type="button" class="misdetect-btn" id="btn-report-misdetection">오감지</button>
-	            </div>
-	        </div>
-	
-	        <!-- 4. 자동 신고 카드 -->
-			<div class="control-card report-card">
-			    <div class="card-header">
-			        <div class="card-title">자동 신고</div>
-			    </div>
-			    
-			    <!-- 이력 목록 스크롤 & 고정 영역 -->
-			    <div class="report-list-wrapper" id="report-list-wrapper">
-			        
-			        <!-- 이력 아이템 1 -->
-			        <div class="report-status-box">
-			            <div class="report-box-header">
-			                <span class="status-text">소방서 신고 완료</span>
-			                <span class="status-time">2026-08-27 09:58</span>
-			                <button class="btn-report-close" onclick="deleteReportItem(this)" title="삭제">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. 드론 정보 카드 -->
+            <div class="control-card drone-info-card">
+                <div class="card-header">
+                    <span class="card-title" id="drone-id">${droneId}</span> <!-- drone-name-display → drone-id -->
+                </div>
+                <div class="card-body">
+                    <div class="info">
+                        <div>배터리 : <span class="info-value" id="drone-battery">70%</span></div>
+                        <div>구역명 : <span class="info-value" id="drone-zone">${zoneName}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 밀집도 카드 -->
+            <div class="control-card density-info-card"> <!-- density-card → density-info-card -->
+                <div class="card-header">
+                    <span class="card-title">밀집도</span>
+                    <div class="card-action density-value"> <!-- density-value-box → density-value -->
+                        <span id="density-rate">00%</span>
+                    </div> <!-- density-rate-display → density-rate -->
+                </div>
+                <div class="card-body">
+                    <div class="toggle-box">
+                        <div class="toggle">
+                            <span class="toggle-label">오버레이 효과</span>
+                            <label class="switch">
+                                <input type="checkbox" id="density-overlay-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="toggle">
+                            <span class="toggle-label">사람 수 표시</span>
+                            <label class="switch">
+                                <input type="checkbox" id="density-count-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="sens-panels">
+                        <div class="panels-label">민감도 설정</div>
+                        <div class="panels">
+                            <button type="button" class="card-btn sens-btn" sens-level="low">저고도<br><small>100.0</small></button>
+                            <button type="button" class="card-btn sens-btn active" sens-level="mid">기본<br><small>150.0</small></button>
+                            <button type="button" class="card-btn sens-btn" sens-level="high">고고도<br><small>200.0</small></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 야생동물 감지 카드 -->
+            <div class="control-card animal-info-card"> <!-- wildlife-card → animal-info-card -->
+                <div class="card-header">
+                    <span class="card-title">야생동물</span>
+                    <div class="card-action">
+                        <span class="danger-level-badge" id="danger-level">관심</span>
+                        <!-- danger-badge → danger-level-badge, wildlife-risk-level → danger-level -->
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-box">
+                        <div class="toggle">
+                            <span class="toggle-label">바운딩 박스</span>
+                            <label class="switch">
+                                <input type="checkbox" id="animal-boxing-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="animal-action">
+                        <div class="info">
+                            <div>객체명 : <span class="info-value" id="object-name">고라니</span></div>
+                            <div>신뢰도 : <span class="info-value" id="object-conf">72%</span></div>
+                        </div>
+                        <button type="button" class="card-btn misdetect-btn" id="misdetect">오감지</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 자동 신고 카드 -->
+            <div class="control-card auto-report-card"> <!-- report-card → auto-report-card -->
+                <div class="card-header">
+                    <span class="card-title">자동 신고</span>
+                </div>
+                <div class="card-body" id="report-list">
+                    <!-- 이력 아이템 1 -->
+			        <div class="report">
+			            <div class="report-header">
+			                <span class="report-title">소방서 신고 완료</span>
+			                <span class="report-date">2026-08-27 09:58</span>
+			                <button class="close-btn" onclick="deleteReportItem(this)" title="삭제">&times;</button>
 			            </div>
-			            <div class="report-box-msg">유선으로 신고유무 확인 바랍니다.</div>
+			            <div class="report-msg">유선으로 신고유무 확인 바랍니다.</div>
 			        </div>
-			
 			        <!-- 이력 아이템 2 -->
-			        <div class="report-status-box">
-			            <div class="report-box-header">
-			                <span class="status-text">경찰서 신고 완료</span>
-			                <span class="status-time">2026-08-27 10:15</span>
-			                <button class="btn-report-close" onclick="deleteReportItem(this)" title="삭제">&times;</button>
+			        <div class="report">
+			            <div class="report-header">
+			                <span class="report-title">경찰서 신고 완료</span>
+			                <span class="report-date">2026-08-27 10:15</span>
+			                <button class="close-btn" onclick="deleteReportItem(this)" title="삭제">&times;</button>
 			            </div>
-			            <div class="report-box-msg">관할 파출소에 위치 정보 전달 완료.</div>
+			            <div class="report-msg">관할 파출소에 위치 정보 전달 완료.</div>
 			        </div>
-			        
 			        <!-- 이력 아이템 3 -->
-			        <div class="report-status-box">
-			            <div class="report-box-header">
-			                <span class="status-text">예시 화면</span>
-			                <span class="status-time">2026-08-27 10:15</span>
-			                <button class="btn-report-close" onclick="deleteReportItem(this)" title="삭제">&times;</button>
+			        <div class="report">
+			            <div class="report-header">
+			                <span class="report-title">예시 화면</span>
+			                <span class="report-date">2026-08-27 10:15</span>
+			                <button class="close-btn" onclick="deleteReportItem(this)" title="삭제">&times;</button>
 			            </div>
-			            <div class="report-box-msg">DB와 연동되지 않습니다. 아직</div>
+			            <div class="report-msg">DB와 연동되지 않습니다. 아직</div>
 			        </div>
-			
-			    </div>
-			</div>
-	    </div>
+                </div>
+            </div>
+        </div>
    	</div> <!-- .stream-top-content 끝 -->
 
-	<!-- [하단 영역] 감지 이력 테이블 -->
-	<div class="detection-history-section">
+	<!-- [하단 영역] 실시간 이력 테이블 -->
+	<div class="detection-history">
 	    <div class="history-header">
-	        <div class="header-title-box">
+	        <div class="header-title">
 	            <i class="fa-solid fa-list-check title-icon"></i>
 	            <h3 class="title-text">실시간 감지/조치 이력</h3>
-	            <span class="count-badge" id="totalHistoryCount">총 0건</span>
+	            <span class="count-badge" id="totalCount">총 0건</span>
 	        </div>
-	        <div class="header-action-box">
-	            <button type="button" class="btn-manual-register" id="btnManualRegister">
+	        <div class="header-btn">
+	            <button type="button" class="register-btn" id="registerSituation">
 	                <i class="fa-solid fa-plus"></i> 수동 이벤트 등록
 	            </button>
 	        </div>
 	    </div>
 
-	    <div class="history-table-wrapper">
+	    <div class="history-body">
 	        <table class="history-table">
 	            <thead>
 	                <tr>
@@ -208,11 +205,10 @@
 	        </table>
 	    </div>
 
-	    <div class="history-footer-legend">
+	    <div class="history-footer">
 	        <span class="legend-title"><i class="fa-solid fa-circle-info"></i> 조치 상태 범례:</span>
 	        <div class="legend-items">
-	            <span class="legend-item"><span class="badge status-pending">대기</span> 신규 감지 이벤트 (확인 필요)</span>
-	            <span class="legend-item"><span class="badge status-confirmed">확인</span> 현장 확인</span>
+	            <span class="legend-item"><span class="badge status-pending">감지</span> 신규 감지 이벤트</span>
 	            <span class="legend-item"><span class="badge status-in-progress">조치</span> 조치 중</span>
 	            <span class="legend-item"><span class="badge status-completed">완료</span> 조치 완료</span>
 	            <span class="legend-item"><span class="badge status-failed">미해결</span> 조치 실패</span>
@@ -224,7 +220,6 @@
 </div>
 
 <script>
-const ctx = window.contextPath || '';
 let eventSource = null; // SSE 객체 전역 관리
 let autoSwitchTimer = null; // 자동 전환 타이머 전역 변수
 
@@ -257,25 +252,32 @@ function showToast(message, type = 'info') {
 
 //2. 스트리밍 에러 전용 함수 (가운데 고정 안내 표시)
 function handleStreamError(imgElement, errorDroneId) {
-    if (imgElement) {
-        imgElement.onerror = null; // 무한 반복 방지
-        imgElement.style.display = 'none';
-    }
+	if (!imgElement) return;
     
-    const placeholder = imgElement ? imgElement.closest('.stream-placeholder') : null;
+    imgElement.onerror = null; // 무한 에러 방지
+    imgElement.style.display = 'none';
+    
+ 	// 💡 파라미터가 비어있을 경우 태그의 data 속성에서 직접 가져오도록 방어 로직 추가
+    const targetDroneId = errorDroneId || imgElement.getAttribute('data-drone-id') || 'UNKNOWN';
+    
+    const placeholder = imgElement.closest('.stream-placeholder');
     if (placeholder) {
         // 남아있는 로딩 박스 제거
         const loadingBox = placeholder.querySelector('.stream-loading-box');
-        if (loadingBox) loadingBox.remove();
+        if (loadingBox) {
+        	loadingBox.remove();
+        }
         
         // 이미 에러 안내가 있다면 중복 생성 방지
-        if (placeholder.querySelector('.stream-notice-box')) return;
+        if (placeholder.querySelector('.stream-notice-box')) {
+        	return;
+        }
 
         // realtime 페이지 스타일과 맞춘 고정 에러 안내 박스 생성
         const errorHtml = `
-            <div class="stream-notice-box error" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 2; gap: 8px;">
-                <i class="fa-solid fa-plug-circle-xmark" style="font-size: 32px; color: #fcd34d; filter: drop-shadow(0 0 8px #f59e0b);"></i>
-                <span style="color: #fcd34d; font-size: 14px; font-weight: 600;">[ ${errorDroneId} ] 응답 없음 (점검 필요)</span>
+            <div class="stream-notice-box error">
+                <i class="fa-solid fa-plug-circle-xmark"></i>
+                <span>[ ${targetDroneId} ] 응답 없음 (점검 필요)</span>
             </div>
         `;
         placeholder.insertAdjacentHTML('beforeend', errorHtml);
@@ -284,12 +286,13 @@ function handleStreamError(imgElement, errorDroneId) {
 
 // 3. 자동 신고 알림 삭제
 function deleteReportItem(btn) {
-    const itemBox = btn.closest('.report-status-box');
-    const wrapper = itemBox.parentElement;
+    const itemBox = btn.closest('.report');
+    if (!itemBox) return;
     
+    const wrapper = itemBox.parentElement;
     itemBox.remove();
     
-    if (wrapper.querySelectorAll('.report-status-box').length === 0) {
+    if (wrapper.querySelectorAll('.report').length === 0) {
         wrapper.innerHTML = '<div class="empty-report-msg">자동 신고 이력이 없습니다.</div>';
     }
 }
@@ -379,7 +382,7 @@ function getSituationList() {
             $tbody.empty();
             
             // 총 건수 배지 업데이트
-            $('#totalHistoryCount').text('총 ' + (situations ? situations.length : 0) + '건');
+            $('#totalCount').text('총 ' + (situations ? situations.length : 0) + '건');
             
             if (!situations || situations.length === 0) {
                 $tbody.append('<tr><td colspan="8" style="text-align:center;">생성된 감지/조치 이력이 없습니다.</td></tr>');
@@ -394,8 +397,7 @@ function getSituationList() {
                 '판단불가': 'danger-unknown'
             };
             var statusClassMap = {
-                '대기': 'status-pending',
-                '확인': 'status-confirmed',
+                '감지': 'status-pending',
                 '조치': 'status-in-progress',
                 '완료': 'status-completed',
                 '미해결': 'status-failed',
@@ -450,6 +452,10 @@ $(document).ready(function() {
             $(placeholder).find('.stream-loading-box, .stream-notice-box').remove();
         }
         $(this).show();
+        
+        if ($('.stream-header-info .live-badge').length === 0) {
+            $('.stream-header-info').prepend('<span class="live-badge">LIVE</span>');
+        }
     });
  	
  	function handleAutoSwitch(isOn) {
@@ -486,6 +492,7 @@ $(document).ready(function() {
              	
              	// 💡 2. 영상 교체 시 에러 핸들러(onerror)를 새 드론 ID와 함께 다시 바인딩!
                 const $video = $('#stream-video');
+             	$video.attr('data-drone-id', currentDroneId); // 현재 시점의 값을 DOM에 박아둠
                 const placeholder = $video.closest('.stream-placeholder')[0];
              	
              	// 💡 전환 시 기존에 남아있던 로딩 박스나 에러 안내 박스 모두 청소
@@ -494,9 +501,9 @@ $(document).ready(function() {
                     
                     // 새로운 로딩 스피너 부착
                     const loadingHtml = `
-                        <div class="stream-loading-box" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 2; gap: 8px;">
-                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #0ea5e9; filter: drop-shadow(0 0 8px #0ea5e9);"></i>
-                            <span style="color: #94a3b8; font-size: 13px; font-weight: 600;">스트리밍 연결 중...</span>
+                        <div class="stream-loading-box">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <span>스트리밍 연결 중...</span>
                         </div>
                     `;
                     $(placeholder).prepend(loadingHtml);
@@ -507,8 +514,10 @@ $(document).ready(function() {
              	
              	// 에러 핸들러 연결
                 $video[0].onerror = function() {
-                	handleStreamError(this, currentDroneId);
-                };
+				    // DOM에서 직접 읽어오므로 변수 스코프 문제 발생 안 함
+				    const droneId = this.getAttribute('data-drone-id');
+				    handleStreamError(this, droneId);
+				};
                 				
              	// 💡 새 영상 로드 성공 시 로딩 박스 제거 및 영상 노출
                 $video.off('load').on('load', function() {
@@ -524,8 +533,8 @@ $(document).ready(function() {
                 
              	// 3. 드론 이름 및 구역명 텍스트 교체 및 주소창 갱신
                 $('.drone-title').text(' [ ' + nextDrone.droneId + ' ] 실시간 스트리밍');
-                $('#drone-name-display').text(nextDrone.droneId);
-                $('#drone-zone-display').text(nextDrone.zoneName);
+                $('#drone-id').text(nextDrone.droneId);
+                $('#ddrone-zone').text(nextDrone.zoneName);
                 
                 // 4. URL 주소창 갱신 (새로고침 없이 주소만 변경하여 뒤로가기 지원)
                 const newUrl = ctx + '/control/stream?id=' + nextDrone.droneId + '&zone=' + encodeURIComponent(nextDrone.zoneName);
@@ -578,11 +587,11 @@ $(document).ready(function() {
     bindToggleToast('#btn-toggle-bbox', '🐾 바운딩 박스 표시');
 
     // 민감도 설정
-    $('.sensitivity-grid').on('click', '.sens-btn', function() {
+    $('.panels').on('click', '.sens-btn', function() {
         $('.sens-btn').removeClass('active');
         $(this).addClass('active');
 
-        var level = $(this).data('level');
+        var level = $(this).data('sens-level');
         var levelNames = {
             'low': '저고도(100.0)',
             'mid': '기본(150.0)',
