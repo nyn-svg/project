@@ -102,7 +102,7 @@ public class SituationController {
         try {
             // 1. 사용자 아이디 설정
             if (principal != null) {
-                situation.setUserId(principal.getName());
+                situation.setFinder(principal.getName());
             } else {
                 // 리다이렉트?
             }
