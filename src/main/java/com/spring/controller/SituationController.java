@@ -4,7 +4,9 @@ import java.io.File;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,26 +32,26 @@ public class SituationController {
     private SituationService situationService;
     
     // 공유 감지조치이력 목록
- 	private static final List<SituationDTO> situationList = Collections.synchronizedList(new ArrayList<>());
+    private static final List<SituationDTO> situationList = Collections.synchronizedList(new ArrayList<>());
     
     // 전체 감지조치이력 목록 조회
     @GetMapping("/total/api/list")
     @ResponseBody
     public List<SituationDTO> getTotalSituationList() {
-		// 리스트가 비어있을 때만 (최초 1회만) DB에서 조회해서 채움
-		if (situationList.isEmpty()) {
-			// 여러 요청이 동시에 들어와도 안전하게 딱 한 번만 채우도록 동기화 잠금
-			synchronized (situationList) {
-				// 더블 체크
-				if (situationList.isEmpty()) {
-					List<SituationDTO> list = situationService.getTotalSituationList();
-					situationList.addAll(list);
-				}
-			}
-		}
-		
-		return situationList;
-	}
+        // 리스트가 비어있을 때만 (최초 1회만) DB에서 조회해서 채움
+        if (situationList.isEmpty()) {
+            // 여러 요청이 동시에 들어와도 안전하게 딱 한 번만 채우도록 동기화 잠금
+            synchronized (situationList) {
+                // 더블 체크
+                if (situationList.isEmpty()) {
+                    List<SituationDTO> list = situationService.getTotalSituationList();
+                    situationList.addAll(list);
+                }
+            }
+        }
+        
+        return situationList;
+    }
     
     // 상세 보기 팝업 창 호출
     @GetMapping("/detection/detail")
@@ -65,40 +67,40 @@ public class SituationController {
         return "detection/detail"; 
     }
     
-	/*
-	 * // 감지조치이력 목록 조회 (검색조건 포함)
-	 * 
-	 * @GetMapping("/detect/list")
-	 * 
-	 * @ResponseBody public List<SituationDTO> getSituationList() {
-	 * 
-	 * }
-	 * 
-	 * // (수동) 위험 감지 이력 등록
-	 * 
-	 * @PostMapping("/detect/regist")
-	 * 
-	 * @ResponseBody public Map<String, Object> registSituation() {
-	 * 
-	 * }
-	 * 
-	 * // (자동) 위험 감지 이력 AJAX 비동기 등록 API (파일 업로드 지원)
-	 * 
-	 * @PostMapping("/detect/api/insert")
-	 * 
-	 * @ResponseBody public Map<String, Object> insertSituation() {
-	 * 
-	 * }
-	 */
+    /*
+     * // 감지조치이력 목록 조회 (검색조건 포함)
+     * 
+     * @GetMapping("/detect/list")
+     * 
+     * @ResponseBody public List<SituationDTO> getSituationList() {
+     * 
+     * }
+     * 
+     * // (수동) 위험 감지 이력 등록
+     * 
+     * @PostMapping("/detect/regist")
+     * 
+     * @ResponseBody public Map<String, Object> registSituation() {
+     * 
+     * }
+     * 
+     * // (자동) 위험 감지 이력 AJAX 비동기 등록 API (파일 업로드 지원)
+     * 
+     * @PostMapping("/detect/api/insert")
+     * 
+     * @ResponseBody public Map<String, Object> insertSituation() {
+     * 
+     * }
+     */
     
     // 상황 보고(긴급 보고) AJAX 비동기 등록 API (파일 업로드 지원)
     @PostMapping("/agent/api/report")
     @ResponseBody
     public ResponseEntity<String> registerReport(SituationDTO situation,
-    											 @RequestParam(value = "photo", required = false) MultipartFile photo,
-      											 HttpServletRequest request,
-      											 Principal principal) {
-    	
+                                                 @RequestParam(value = "photo", required = false) MultipartFile photo,
+                                                 HttpServletRequest request,
+                                                 Principal principal) {
+        
         try {
             // 1. 사용자 아이디 설정
             if (principal != null) {
@@ -143,13 +145,61 @@ public class SituationController {
         }
     }
     
-	/*
-	 * // 감지 이력 수정 또는 조치 이력 입력
-	 * 
-	 * @PostMapping("/detect/modify")
-	 * 
-	 * @ResponseBody public Map<String, Object> modifySituation() {
-	 * 
-	 * }
-	 */
+    /*
+     * // 감지 이력 수정 또는 조치 이력 입력
+     * 
+     * @PostMapping("/detect/modify")
+     * 
+     * @ResponseBody public Map<String, Object> modifySituation() {
+     * 
+     * }
+     */
+
+    // =========================================================================
+    // [현장 조치 승인 및 관리 기능 - fieldAction.jsp 연동 API]
+    // =========================================================================
+
+    // 현장 조치 목록 비동기 조회 (statusType: PENDING / HISTORY)
+    @GetMapping("/admin/fieldAction/api/list")
+    @ResponseBody
+    public List<SituationDTO> getFieldActionList(@RequestParam(value = "statusType", defaultValue = "PENDING") String statusType) {
+        return situationService.getFieldActionList(statusType);
+    }
+
+    // 모달용 단건 상세정보 비동기 조회
+    @GetMapping("/admin/fieldAction/api/detail")
+    @ResponseBody
+    public SituationDTO getFieldActionDetail(@RequestParam("actionId") String actionId) {
+        return situationService.getSituationBySituNo(actionId);
+    }
+
+    // 현장 조치 승인 / 반려 처리
+    @PostMapping("/admin/fieldAction/process")
+    @ResponseBody
+    public Map<String, Object> processFieldAction(@RequestParam("actionId") String actionId,
+                                                  @RequestParam("status") String status,
+                                                  @RequestParam(value = "adminComment", required = false) String adminComment,
+                                                  Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // 로그인한 관리자 계정 ID 세팅
+            String adminId = (principal != null) ? principal.getName() : "ADMIN";
+            
+            // 승인/반려 비즈니스 로직 수행
+            boolean isSuccess = situationService.processFieldAction(actionId, status, adminComment, adminId);
+
+            if (isSuccess) {
+                response.put("status", "success");
+                response.put("message", "성공적으로 처리되었습니다.");
+            } else {
+                response.put("status", "fail");
+                response.put("message", "처리에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", "서버 처리 중 오류 발생: " + e.getMessage());
+        }
+        return response;
+    }
 }

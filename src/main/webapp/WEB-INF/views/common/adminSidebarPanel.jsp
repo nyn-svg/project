@@ -320,13 +320,23 @@ function renderAdminDroneList() {
 				
 				    // 3. 모달이 켜지고 영상 DOM이 생성될 때까지 약간의 유예시간(500ms) 후 캡처 시작
 				    setTimeout(function() {
-				        // 모달 내부의 video 또는 img 태그 selector (실제 모달 내부 태그 id/class에 맞춰 수정)
+				        // ⭕ modalStreamVideo가 안 보이면 modalStreamImg를 타깃으로 설정
 				        var mediaEl = document.getElementById('modalStreamVideo');
-				
+				        if (!mediaEl || mediaEl.style.display === 'none' || !mediaEl.src) {
+				            mediaEl = document.getElementById('modalStreamImg');
+				        }
+
 				        if (mediaEl) {
-				            window.aiDetectTimer = setInterval(function() {
-				                captureAndSendAIFrame(mediaEl, droneId);
-				            }, 500); // 시간 간격 변경
+				            // 💡 [핵심 추가] 캡처 전 crossorigin 속성을 강제로 부여
+				            if (mediaEl.tagName === 'IMG') {
+				                mediaEl.crossOrigin = "anonymous";
+				            }
+
+				            if (mediaEl.src) {
+				                window.aiDetectTimer = setInterval(function() {
+				                    captureAndSendAIFrame(mediaEl, droneId);
+				                }, 1500);
+				            }
 				        }
 				    }, 500);
 				});

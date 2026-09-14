@@ -28,4 +28,5 @@ public class SituationDTO {
     private String droneId;		// 드론아이디 (자동 등록 시, 화면 상에는 발견인 란에 드론아이디가 표시, FK DRONES 테이블 참조)
     private String finder;		// 발견인 (수동감지-관제사 / 긴급보고-안전요원, FK USERS 테이블 참조)
     private String worker;      // 조치인 (FK USERS 테이블 참조)
+
 }

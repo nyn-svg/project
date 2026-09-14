@@ -132,7 +132,7 @@
         <div class="dashboard-card chart-card">
             <div class="chart-box">
                 <div class="card-header">
-                    <span class="card-title">시간대별 밀집도 추이 (전체)</span>
+                    <span class="card-title">밀집도 추이 (%)</span>
                 </div>
                 <div class="card-body">
                     <!-- Chart.js 등의 라인 차트 영역 -->
@@ -143,7 +143,7 @@
             </div>
             <div class="chart-box">
                 <div class="card-header">
-                    <span class="card-title">야생동물 출현 빈도 (최근 7일)</span>
+                    <span class="card-title">야생동물 감지 신호 수위 (%)</span>
                 </div>
                 <div class="card-body">
                     <!-- Chart.js 등의 바 차트 영역 -->
@@ -212,8 +212,271 @@
 <!-- adminMain.js 파일이 들어있는 정확한 경로로 지정 -->
 <script src="${pageContext.request.contextPath}/resources/js/admin/adminMain.js"></script>
 
-<!-- WEB-INF/views/admin/adminMain.jsp 파일 최하단 -->
+<!-- 1. Chart.js 외부 라이브러리 불러오기 (단독으로 닫아야 함) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- 2. 실제 차트 및 데이터 로드 자바스크립트 로직 -->
+<script>
+// 1. 변수 재선언 에러 방지를 위해 window 객체에 직접 할당
+window.densityChartInstance = window.densityChartInstance || null;
+window.animalChartInstance = window.animalChartInstance || null;
+
+// 1. 실시간 인파 밀집도 파도 차트 구현
+function initRealtimeDensityChart() {
+    const canvas = document.getElementById('densityChart');
+    if (!canvas) return; // Canvas 요소가 아직 없으면 안전하게 종료
+    
+    // 기존 차트 객체가 남아있다면 삭제
+    if (window.densityChartInstance) {
+        window.densityChartInstance.destroy();
+        window.densityChartInstance = null;
+    }
+
+    const ctx = canvas.getContext('2d');
+    const initialData = Array.from({length: 30}, () => Math.floor(Math.random() * 20) + 20);
+    const initialLabels = Array.from({length: 30}, () => '');
+
+    window.densityChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: initialLabels,
+            datasets: [{
+                label: '실시간 밀집 수위',
+                data: initialData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: { 
+                    ticks: { color: '#888', font: { size: 10 } }, 
+                    grid: { color: '#2b2b40' },
+                    min: 0,
+                    max: 60
+                }
+            }
+        }
+    });
+
+    // window.densityTimer에 타이머 ID 저장 (재로드 시 clearInterval 가능하게 처리)
+    window.densityTimer = setInterval(function() {
+        if (!window.densityChartInstance) return;
+
+        const currentData = window.densityChartInstance.data.datasets[0].data;
+        const lastVal = currentData[currentData.length - 1];
+        
+        let nextVal = lastVal + (Math.random() * 3 - 1.5);
+        if (nextVal < 15) nextVal = 18;
+        if (nextVal > 50) nextVal = 45;
+
+        currentData.shift();
+        currentData.push(nextVal);
+
+        window.densityChartInstance.update('none');
+    }, 80);
+}
+
+// 2. 실시간 야생동물 AI 감지 신호 수위 차트 (%)
+function initRealtimeAnimalChart() {
+    const canvas = document.getElementById('animalChart');
+    if (!canvas) return; // Canvas 요소가 아직 없으면 안전하게 종료
+
+    if (window.animalChartInstance) {
+        window.animalChartInstance.destroy();
+        window.animalChartInstance = null;
+    }
+
+    const ctx = canvas.getContext('2d');
+    const initialLabels = Array.from({length: 30}, () => '');
+    const initialGorani = Array.from({length: 30}, () => +(Math.random() * 6 + 8).toFixed(1));
+    const initialBoar   = Array.from({length: 30}, () => +(Math.random() * 4 + 3).toFixed(1));
+
+    window.animalChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: initialLabels,
+            datasets: [
+                {
+                    label: '고라니 감지 신호 (%)',
+                    data: initialGorani,
+                    borderColor: '#a855f7',
+                    backgroundColor: 'rgba(168, 85, 247, 0.12)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                },
+                {
+                    label: '멧돼지 감지 신호 (%)',
+                    data: initialBoar,
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        color: '#ccc',
+                        font: { size: 10 },
+                        boxWidth: 10,
+                        usePointStyle: true
+                    }
+                }
+            },
+            scales: {
+                x: { display: false },
+                y: { 
+                    ticks: { 
+                        color: '#888', 
+                        font: { size: 10 },
+                        callback: function(value) { return value + '%'; }
+                    }, 
+                    grid: { color: '#2b2b40' },
+                    min: 0,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // window.animalTimer에 타이머 ID 저장
+    window.animalTimer = setInterval(function() {
+        if (!window.animalChartInstance) return;
+
+        const goraniData = window.animalChartInstance.data.datasets[0].data;
+        const boarData = window.animalChartInstance.data.datasets[1].data;
+
+        const lastGorani = goraniData[goraniData.length - 1];
+        let nextGorani = lastGorani + (Math.random() * 1.2 - 0.6);
+        if (nextGorani < 6) nextGorani = 6.5;
+        if (nextGorani > 18) nextGorani = 17.5;
+
+        const lastBoar = boarData[boarData.length - 1];
+        let nextBoar = lastBoar + (Math.random() * 0.8 - 0.4);
+        if (nextBoar < 2) nextBoar = 2.5;
+        if (nextBoar > 10) nextBoar = 9.5;
+
+        goraniData.shift();
+        goraniData.push(+nextGorani.toFixed(1));
+
+        boarData.shift();
+        boarData.push(+nextBoar.toFixed(1));
+
+        window.animalChartInstance.update('none');
+    }, 80);
+}
+
+// 3. 최근 위험 이벤트 실시간 갱신 로직
+function initRealtimeEvents() {
+    const $eventList = $('.event-list');
+    if ($eventList.length === 0) return;
+
+    const zones = ['푸드존', '메인 무대', '산책로 A구역', '동문 입구', '주차장 B구역', '체험 부스'];
+    const dngrTypes = ['인파 밀집', '멧돼지 출현', '고라니 포착', '동선 혼잡', '안전펜스 충돌'];
+    const levels = [
+        { text: '심각', class: 'danger' },
+        { text: '경계', class: 'warning' },
+        { text: '주의', class: 'caution' }
+    ];
+    const statuses = [
+        { text: '처리중', class: '' },
+        { text: '출동', class: '' },
+        { text: '완료', class: 'done' }
+    ];
+
+    // window.eventTimer에 타이머 ID 저장
+    window.eventTimer = setInterval(function() {
+        const now = new Date();
+        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + 
+                        String(now.getMinutes()).padStart(2, '0') + ':' + 
+                        String(now.getSeconds()).padStart(2, '0');
+
+        const randZone = zones[Math.floor(Math.random() * zones.length)];
+        const randType = dngrTypes[Math.floor(Math.random() * dngrTypes.length)];
+        const randLevel = levels[Math.floor(Math.random() * levels.length)];
+        const randStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+        const newHtml = '<li class="event-item" style="display:none;">' +
+                            '<span class="event-time">' + timeStr + '</span>' +
+                            '<span class="event-desc">' + randZone + ' ' + randType + '</span>' +
+                            '<span class="badge-tag ' + randLevel.class + '">' + randLevel.text + '</span>' +
+                            '<span class="action-status ' + randStatus.class + '">' + randStatus.text + '</span>' +
+                        '</li>';
+
+        $eventList.prepend(newHtml);
+        $eventList.find('li:first').slideDown(300);
+
+        if ($eventList.find('li').length > 4) {
+            $eventList.find('li:last').remove();
+        }
+    }, 4000);
+}
+
+// 4. 대시보드 실시간 실행 및 초기화
+window.startRealtimeDashboard = function() {
+    // 이전 인터벌 타이머 해제
+    if (window.densityTimer) clearInterval(window.densityTimer);
+    if (window.animalTimer) clearInterval(window.animalTimer);
+    if (window.eventTimer) clearInterval(window.eventTimer);
+
+    // 이전 차트 객체 제거
+    if (window.densityChartInstance) { 
+        window.densityChartInstance.destroy(); 
+        window.densityChartInstance = null; 
+    }
+    if (window.animalChartInstance) { 
+        window.animalChartInstance.destroy(); 
+        window.animalChartInstance = null; 
+    }
+
+    // 부모 wrapper 높이 지정
+    $('.chart-wrapper').css({'position': 'relative', 'height': '200px', 'width': '100%'});
+
+    // 기능 순차 실행
+    initRealtimeDensityChart();
+    initRealtimeAnimalChart();
+    initRealtimeEvents();
+};
+
+// 🚀 AJAX 삽입 후 HTML 렌더링 완료 시간을 위해 100ms 후 실행
+setTimeout(function() {
+    window.startRealtimeDashboard();
+}, 100);
+</script>
+
+
+
+
+
+
+
+
+
+
+<!-- WEB-INF/views/admin/adminMain.jsp 파일 최하단 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // adminMain.jsp HTML이 비동기로 꽂히는 즉시 지도 초기화 실행
     setTimeout(function() {

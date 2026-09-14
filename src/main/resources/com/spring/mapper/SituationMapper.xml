@@ -205,4 +205,39 @@
         FROM SITUATIONS
         WHERE END_DATE IS NOT NULL
     </select>
+    
+<!-- 현장 조치 목록 조회 (DB 컬럼명 및 테이블명 SITUATIONS로 수정) -->
+    <select id="getFieldActionList" parameterType="string" resultType="com.spring.dto.SituationDTO">
+        SELECT 
+            SITU_NO         AS situNo,
+            ZONE_NAME       AS zoneName,
+            FINDER          AS finder,
+            SITU_CONTENT    AS situContent,
+            SITU_DATE       AS situDate,      <!-- REG_DATE -> SITU_DATE -->
+            SITU_STATUS     AS situStatus,    <!-- STATUS -> SITU_STATUS -->
+            WORK_CONTENT    AS workContent,   <!-- ADMIN_COMMENT -> WORK_CONTENT 매핑 -->
+            WORKER          AS worker,        <!-- ADMIN_ID -> WORKER 매핑 -->
+            END_DATE        AS endDate        <!-- PROCESS_DATE -> END_DATE 매핑 -->
+        FROM SITUATIONS                       <!-- SITUATIONS 복수형 테이블 -->
+        <where>
+            <if test="statusType == 'PENDING'">
+                SITU_STATUS = 'PENDING' OR SITU_STATUS = '감지' OR SITU_STATUS IS NULL
+            </if>
+            <if test="statusType == 'HISTORY'">
+                SITU_STATUS IN ('APPROVE', 'REJECT', '조치', '종료')
+            </if>
+        </where>
+        ORDER BY SITU_DATE DESC
+    </select>
+
+    <!-- 승인 / 반려 업데이트 (Oracle SYSDATE 및 기존 컬럼 매핑) -->
+    <update id="processFieldAction" parameterType="map">
+        UPDATE SITUATIONS
+        SET 
+            SITU_STATUS  = #{status},
+            WORK_CONTENT = #{adminComment, jdbcType=VARCHAR},
+            WORKER       = #{adminId, jdbcType=VARCHAR},
+            END_DATE     = SYSDATE            <!-- NOW() -> SYSDATE -->
+        WHERE SITU_NO = #{actionId}
+    </update>
 </mapper>

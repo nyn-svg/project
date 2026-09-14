@@ -393,8 +393,14 @@ window.closeDroneModal = function() {
     const imgEl = document.getElementById("modalStreamImg");
     const videoEl = document.getElementById("modalStreamVideo");
     
-    if (imgEl) imgEl.src = "";
-    if (videoEl) { videoEl.pause(); videoEl.src = ""; }
+    if (imgEl) {
+        imgEl.src = "";
+        imgEl.removeAttribute("crossorigin"); // CORS 속성 리셋
+    }
+    if (videoEl) { 
+        videoEl.pause(); 
+        videoEl.src = ""; 
+    }
     if (modal) modal.style.display = "none";
 };
 
@@ -418,11 +424,20 @@ function openDroneModal(zone) {
 
     if (!streamUrl) {
         noStreamEl.style.display = "block";
-    } else if (streamUrl.endsWith(".mp4") || streamUrl.includes("video")) {
+    } else if (streamUrl.startsWith("http")) {
+        // ⚠️ [핵심] src 할당 '전에' crossOrigin 속성을 부여해야 Tainted 에러가 방지됨
+        imgEl.crossOrigin = "anonymous";
+        
+        // 브라우저의 기존 비-CORS 캐시 파기용 타임스탬프 추가
+        const cacheBuster = (streamUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        imgEl.src = streamUrl + cacheBuster;
+        imgEl.style.display = "block";
+    } else if (streamUrl.endsWith(".mp4")) {
         videoEl.src = streamUrl;
         videoEl.style.display = "block";
         videoEl.play();
     } else {
+        imgEl.crossOrigin = "anonymous";
         imgEl.src = streamUrl;
         imgEl.style.display = "block";
     }

@@ -1,6 +1,8 @@
 package com.spring.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,5 +100,24 @@ public class SituationServiceImpl implements SituationService {
 	@Override
 	public int getEndSituationCount() {
 		return situationMapper.getEndSituationCount();
+	}
+	
+	@Override
+	public List<SituationDTO> getFieldActionList(String statusType) {
+	    // statusType ('PENDING' 또는 'HISTORY') 조건에 맞춰 Mapper/DAO 호출
+	    return situationMapper.getFieldActionList(statusType); 
+	}
+
+	@Override
+	public boolean processFieldAction(String actionId, String status, String adminComment, String adminId) {
+	    Map<String, Object> paramMap = new HashMap<>();
+	    paramMap.put("actionId", actionId);
+	    paramMap.put("status", status); // 'APPROVE' 또는 'REJECT'
+	    paramMap.put("adminComment", adminComment);
+	    paramMap.put("adminId", adminId);
+
+	    // DB 처리 성공 건수가 1 이상이면 true 반환
+	    int result = situationMapper.processFieldAction(paramMap);
+	    return result > 0;
 	}
 }

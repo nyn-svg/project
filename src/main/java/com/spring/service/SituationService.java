@@ -44,5 +44,11 @@ public interface SituationService {
 
 	// 종료이력 수
 	int getEndSituationCount();
+	
+	// 현장 조치 목록 조회 (미결/완료이력 구분)
+	List<SituationDTO> getFieldActionList(String statusType);
+
+	// 현장 조치 승인/반려 처리
+	boolean processFieldAction(String actionId, String status, String adminComment, String adminId);
 
 }
