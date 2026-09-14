@@ -3,10 +3,8 @@
 <!-- 공통 하단 푸터 -->
 <footer class="app-footer">
     <div class="footer-inner">
-        <div>
-         
+        <div>        
             <p style="margin-top: 12px; color: #475569;">© 2026 2Team. All rights reserved.</p>
         </div>
-
     </div>
 </footer>

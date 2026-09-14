@@ -37,8 +37,8 @@
 .drone-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;                            /* 카드 간격 */
-    width: 100%;                          /* 전체 너비 채우기 */
+    gap: 20px;
+    width: 100%;
     padding: 10px;
     box-sizing: border-box;
 }
@@ -53,6 +53,10 @@
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
+
+/* 카드 마우스 커서 상태 ('비행' 상태 여부에 따라) */
+.drone-card.is-flying { cursor: pointer; }
+.drone-card.not-flying { cursor: not-allowed; }
 
 /* 비디오 상단 정보 바 */
 .drone-card-header {
@@ -71,8 +75,8 @@
 }
 
 .drone-status {
-	font-size: 12px;
-	color: #94a3b8;
+    font-size: 12px;
+    color: #94a3b8;
 }
 .drone-status.ready  { color: #0ea5e9; }
 .drone-status.flying { color: #22c55e; }
@@ -82,21 +86,15 @@
 .video-wrapper {
     position: relative;
     width: 100%;
-    /* 16:9 비율 유지 (필요에 따라 height를 직접 지정해도 됩니다) */
     aspect-ratio: 16 / 9; 
     background-color: #000;
 }
 
-.video-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* 영역에 여백 없이 꽉 채우기 (비율을 맞추려면 contain 사용) */
-    display: block;
-}
+.video-wrapper img,
 .video-wrapper video {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* 영역에 여백 없이 꽉 채우기 (비율을 맞추려면 contain 사용) */
+    object-fit: cover;
     display: block;
 }
 
@@ -111,6 +109,38 @@
     font-size: 13px;
     font-weight: 600;
 }
+
+/* 상태별(고장, 응답없음, 대기) 텍스트 색상 */
 .drone-notice.error { color: #f87171; }
 .drone-notice.warning { color: #fcd34d; }
 .drone-notice.ready { color: #38bdf8; }
+
+/* 상태별 아이콘(FontAwesome) 스타일 */
+.drone-notice.error i,
+.drone-notice.error svg {
+    font-size: 28px;
+    filter: drop-shadow(0 0 8px #ef4444);
+}
+.drone-notice.warning i,
+.drone-notice.warning svg {
+    font-size: 26px;
+    filter: drop-shadow(0 0 8px #f59e0b);
+}
+.drone-notice.ready i,
+.drone-notice.ready svg {
+    font-size: 25px;
+    filter: drop-shadow(0 0 8px #0ea5e9);
+}
+
+/* 로딩 스피너 전용 스타일 */
+.drone-notice.loading-box i,
+.drone-notice.loading-box svg {
+    font-size: 28px;
+    color: #0ea5e9;
+    filter: drop-shadow(0 0 8px #0ea5e9);
+}
+.drone-notice.loading-box span {
+    margin-top: 8px;
+    color: #94a3b8;
+    font-size: 13px;
+}

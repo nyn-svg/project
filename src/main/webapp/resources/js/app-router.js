@@ -33,10 +33,40 @@ window.initAreaManagement = function() {
     }
 };
 
+// 현재 URL 경로를 기준으로 헤더 메뉴 active 클래스 동기화 (전역 선언)
+function updateHeaderActiveByUrl() {
+	$('.header-nav .nav-link').removeClass('active');
+	var currentPath = window.location.pathname;
+
+	if (currentPath === '/' || currentPath === '${pageContext.request.contextPath}/') {
+	    $('.header-nav .nav-link[href$="/"]').addClass('active');
+	} else if (currentPath.includes('/main')) {
+	    $('.header-nav .nav-link[href*="main"]').addClass('active');
+	} else if (currentPath.includes('/realtime') || currentPath.includes('/stream')) {
+		$('.header-nav .nav-link[href*="realtime"]').addClass('active');
+	} else if (currentPath.includes('/detection')) {
+		$('.header-nav .nav-link[href*="detection"]').addClass('active');
+	}  else if (currentPath.includes('/cooperation')) {
+		$('.header-nav .nav-link[href*="cooperation"]').addClass('active');
+	} else if (currentPath.includes('/actionLog')) {
+		$('.header-nav .nav-link[href*="actionLog"]').addClass('active');
+	}
+}
+
+// 최초 진입 시 실행
 $(document).ready(function() {
-    updateHeaderActiveByUrl();
-
-
+    // 페이지 새로고침 (F5 / 주소창 입력) 시, 헤더 매뉴 활성화
+	updateHeaderActiveByUrl();
+	
+	// 페이지 새로고침 (F5 / 주소창 입력) 시, 최초 1회 콘텐츠 및 초기화 함수 실행
+	const currentPath = window.location.pathname;
+	if (currentPath.includes('/realtime')) {
+		if (typeof window.initRealtimePage === 'function') {
+			 window.initRealtimePage();
+		}
+	}
+	
+	// 사이드 바 비동기(AJAX) 이동 이벤트
     $(document).on('click', '.sidebar-link', function(e) {
         e.preventDefault();
         $('.header-nav .nav-link').removeClass('active');
@@ -48,6 +78,14 @@ $(document).ready(function() {
     });
 
     function loadContent(url) {
+		// 다른 페이지로 이동하기 전에 기존 스트리밍 자원 및 타이머 정리
+		if (typeof window.destroyStreamPage === 'function') {
+			window.destroyStreamPage();
+			window.destroyStreamPage = null; // 사용 후 함수 초기화
+		}
+		
+		// 다른 페이지로 이동하기 전에 Lock 해제 (추가 예정)
+		
         $.ajax({
             url: url,
             type: 'GET',
@@ -56,26 +94,24 @@ $(document).ready(function() {
             },
             success: function(response) {
                 $('#main-container').html(response);
+				
+				// 서버 요청 없이 주소창의 URL만 바꾸는 기능
                 history.pushState(null, null, url);
+				
+				// 페이지 내 비동기(AJAX) 이동 시, 헤더 메뉴 활성화
+				updateHeaderActiveByUrl();
 
                 // 비동기 이동 후 페이지별 초기화 함수 실행
                 if (typeof initAreaManagement === 'function') {
                     initAreaManagement();
                 }
+				
                 if (typeof initDetectionPage === 'function') {
                     initDetectionPage();
                 }
 				
-				if (typeof initRealtimePage === 'function') {
-					initRealtimePage();
-				}
-				// 💡 비동기 이동 완료 후 stream 페이지의 로드 함수가 존재하면 강제 실행
 				if (typeof window.initStreamPage === 'function') {
 					window.initStreamPage();
-				}
-				// 비동기 페이지 로드 함수
-				if (typeof window.destroyStreamPage === 'function') {
-				    window.destroyStreamPage(); // 다른 페이지로 가기 전 스트리밍 자원 및 타이머 완벽 정리!
 				}
               
             },
@@ -100,6 +136,14 @@ $(document).ready(function() {
         } else {
             $this.addClass('active');
         }
+		
+		// 다른 페이지로 이동하기 전에 기존 스트리밍 자원 및 타이머 정리
+		if (typeof window.destroyStreamPage === 'function') {
+			window.destroyStreamPage();
+			window.destroyStreamPage = null; // 사용 후 함수 초기화
+		}
+		
+		// 다른 페이지로 이동하기 전에 Lock 해제 (추가 예정)
 
         $.ajax({
             url: targetUrl,
@@ -107,48 +151,38 @@ $(document).ready(function() {
             dataType: 'html',
             success: function(response) {
                 var newContent = $(response).find('#main-container').html();
-
+				
                 if (newContent) {
                     $('#main-container').html(newContent);
                 } else {
                     $('#main-container').html(response);
                 }
+				
+				// 서버 요청 없이 주소창의 URL만 바꾸는 기능
+				history.pushState(null, '', targetUrl);
+				
+				if (typeof initAreaManagement === 'function') {
+					initAreaManagement();
+				}
 
                 if (typeof initDetectionPage === 'function') {
                     initDetectionPage();
-                }
-
-                if (typeof initAreaManagement === 'function') {
-                    initAreaManagement();
                 }
 				
 				if (typeof initRealtimePage === 'function') {
 				    initRealtimePage();
 				}
 
-
-                history.pushState(null, '', targetUrl);
             },
             error: function(xhr, status, error) {
                 console.error('페이지를 불러오는 중 오류가 발생했습니다:', error);
             }
         });
     });
-
-    function updateHeaderActiveByUrl() {
-        $('.header-nav .nav-link').removeClass('active');
-        var currentPath = window.location.pathname;
-
-        if (currentPath === '/' || currentPath === '${pageContext.request.contextPath}/') {
-            $('.header-nav .nav-link[href$="/"]').addClass('active');
-        } else if (currentPath.includes('/detection')) {
-            $('.header-nav .nav-link[href*="detection"]').addClass('active');
-        } else if (currentPath.includes('/realtime')) {
-            $('.header-nav .nav-link[href*="realtime"]').addClass('active');
-        } else if (currentPath.includes('/actionLog')) {
-            $('.header-nav .nav-link[href*="actionLog"]').addClass('active');
-        } else if (currentPath.includes('/history')) {
-            $('.header-nav .nav-link[href*="history"]').addClass('active');
-        }
-    }
+	
+	// 브라우저 뒤로가기 및 앞으로가기 처리
+	$(window).on('popstate', function() {
+		// 현재 변경된 URL의 화면을 비동기로 다시 로드
+		loadContent(location.pathname);
+	});
 });

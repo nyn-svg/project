@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!-- Pretendard 고급 웹폰트 CDN 로드 -->
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-<!-- 1. 우측 60px 고정 퀵바 (아이콘 전용) -->
+
+<!-- 2-1. 우측 60px 고정 퀵바 (아이콘 전용) -->
 <aside class="quick-sidebar">
     <div class="quick-top">
         <button id="toggle-drawer-btn" class="quick-btn toggle-btn" title="사이드바 열기/닫기">
@@ -30,7 +29,7 @@
     </nav>
 </aside>
 
-<!-- 2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
+<!-- 2-2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
 <div id="sub-drawer" class="sub-drawer collapsed">
     <!-- 드론 관제 패널 -->
 <!-- 드론 관제 패널 -->
@@ -202,17 +201,5 @@
 }
 </style>
 
-
-
-
-
-
-
-<!-- 외부 스크립트에 contextPath 전달 및 JS 파일 로드 -->
-<script>
-    window.contextPath = '${pageContext.request.contextPath}';
-</script>
 <script src="${pageContext.request.contextPath}/resources/js/drone-sidebar.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/situation-sidebar.js"></script>
-
-

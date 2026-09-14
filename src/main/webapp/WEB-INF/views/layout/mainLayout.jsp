@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 기반 행사장 안전관제 시스템</title>
+    
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/global.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/guideMain.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/layout.css">
@@ -21,14 +22,23 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/safetyCheck.css">
     
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/controlMainContent.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/realtime.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/control/stream.css">
+    
+    <!-- Pretendard 고급 웹폰트 CDN 로드 -->
+	<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     
     <!-- Font Awesome 최신 버전 CDN 링크 추가 -->
 	<script src="https://kit.fontawesome.com/232b0508f2.js" crossorigin="anonymous"></script>
-
+	
+	<!-- JQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- 외부 스크립트에 contextPath 전달 및 JS 파일 로드 -->
-	<script>window.contextPath = '${pageContext.request.contextPath}';</script>
+    
+    <!-- 전역에서 공통으로 사용할 contextPath -->
+	<script>
+		window.contextPath = '${pageContext.request.contextPath}';
+		const ctx = window.contextPath || '';
+	</script>
 </head>
 <body>
 
@@ -51,8 +61,8 @@
     <!-- 2. 우측 사이드바 (독립 컬럼 구역) -->
     <jsp:include page="/WEB-INF/views/common/sidebar.jsp" />
 
-    <!-- 공통 스크립트 -->
-    <script>
+<!-- 공통 스크립트 -->
+<script>
     $(document).ready(function() {
         // 1. 페이지 로드 시 저장된 사이드바 상태 복원
         var savedTarget = sessionStorage.getItem('activeNavTarget');
@@ -106,7 +116,7 @@
             sessionStorage.setItem('activeNavTarget', targetId);
         });
 
-     // 3. << / >> 토글 버튼 클릭 이벤트
+     	// 3. << / >> 토글 버튼 클릭 이벤트
         $('#toggle-drawer-btn').on('click', function() {
             const $drawer = $('#sub-drawer');
             const $sidebar = $('.quick-sidebar');
