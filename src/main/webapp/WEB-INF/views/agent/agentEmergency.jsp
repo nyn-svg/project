@@ -107,6 +107,8 @@
 <!-- JS -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/agent/agentEmergency.js"></script>
+<!-- 감지 알림(토스트 알림) -->
+<jsp:include page="/WEB-INF/views/common/agentAlarm.jsp" />
 
 </body>
 </html>

@@ -16,11 +16,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.dto.AgentTaskDTO;
 import com.spring.dto.ChecklistItemDTO;
+import com.spring.dto.EmergencyContactDTO;
 import com.spring.dto.SafetyCheckDetailDTO;
 import com.spring.dto.SafetyCheckMasterDTO;
 import com.spring.dto.UserDTO;
 import com.spring.service.AgentTaskService;
 import com.spring.service.ChecklistService;
+import com.spring.service.EmergencyContactService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -32,6 +34,8 @@ public class AgentController {
 	private AgentTaskService agentTaskService;
 	@Autowired
 	private ChecklistService checklistService;
+	@Autowired
+	private EmergencyContactService emergencyContactService;
 
 	/* ==========[메인 페이지]============= */
 	@GetMapping("/main")
@@ -63,6 +67,13 @@ public class AgentController {
 		agentTaskService.updateWorkStatus(loginUserId, workStatus);
 		return "redirect:/agent/main";
 	}
+	
+	// 비상연락망 목록 조회 API
+	@GetMapping("/emergency-contacts")
+	@ResponseBody
+	public List<EmergencyContactDTO> getEmergencyContacts() {
+	    return emergencyContactService.getContactList();
+	}
 
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
@@ -73,12 +84,18 @@ public class AgentController {
 	/* ==========[안전순찰 페이지]============= */
 	@GetMapping("/patrol")
 	public String agentInfoPage(HttpSession session, Model model) {
-		String loginUserId = (String) session.getAttribute("userId");
-		if (loginUserId == null) loginUserId = "agent01";
+	    String loginUserId = (String) session.getAttribute("userId");
+	    if (loginUserId == null) loginUserId = "agent01";
 
-		UserDTO user = agentTaskService.findByUserId(loginUserId);
-		model.addAttribute("user", user);
-		return "agent/agentPatrol";
+	    UserDTO user = agentTaskService.findByUserId(loginUserId);
+	    model.addAttribute("user", user);
+
+	    String workArea = user.getWorkArea(); 
+	    List<Map<String, Object>> todayList = checklistService.getTodayPatrolByArea(workArea);
+	    
+	    model.addAttribute("todayList", todayList);
+
+	    return "agent/agentPatrol";
 	}
 
 	// 긴급 보고

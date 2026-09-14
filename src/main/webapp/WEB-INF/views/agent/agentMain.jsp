@@ -159,7 +159,7 @@
 				</div>
 
 				<div class="quick-grid">
-					<!-- 위험 알림 -->
+					<!-- 긴급 보고 -->
 					<button type="button" class="quick-card quick-danger">
 						<div class="quick-icon danger-icon">
 							<i class="fa-solid fa-triangle-exclamation"></i>
@@ -171,7 +171,7 @@
 						<i class="fa-solid fa-chevron-right quick-arrow"></i>
 					</button>
 
-					<!-- 안전 순찰 -->
+					<!-- 사전 점검 -->
 					<button type="button" class="quick-card quick-patrol">
 						<div class="quick-icon patrol-icon">
 							<i class="fa-solid fa-shield-halved"></i>
@@ -184,18 +184,36 @@
 						<i class="fa-solid fa-chevron-right quick-arrow"></i>
 					</button>
 
-					<!-- 나의 구역 -->
+					<!-- 비상 연락망 -->
 					<button type="button" class="quick-card quick-area">
 						<div class="quick-icon area-icon">
-							<i class="fa-solid fa-location-dot"></i>
+							<i class="fa-solid fa-phone-volume"></i>
 						</div>
 
 						<div class="quick-text">
-							<strong> 나의 구역 </strong> <span> 담당 구역 확인 </span>
+							<strong> 비상 연락망 </strong> <span> 비상 연락망 </span>
 						</div>
 
 						<i class="fa-solid fa-chevron-right quick-arrow"></i>
 					</button>
+
+					<!-- 비상연락망 팝업 모달 -->
+					<div id="contactModal" class="custom-modal-overlay">
+						<div class="custom-modal-content">
+							<div class="modal-header-row">
+								<h3>📞 비상 연락망</h3>
+								<button type="button" class="modal-close-x"
+									id="btnCloseContactModal">&times;</button>
+							</div>
+							<div class="modal-body-area">
+								<ul id="contactListArea" class="contact-modal-list"></ul>
+							</div>
+							<div class="modal-footer-row">
+								<button type="button" class="modal-confirm-btn"
+									id="btnConfirmContactModal">확인</button>
+							</div>
+						</div>
+					</div>
 
 
 					<!-- 조치보고 -->
@@ -205,7 +223,7 @@
 						</div>
 
 						<div class="quick-text">
-							<strong> 조치보고 </strong> <span> 안전조치 보고 </span>
+							<strong> 조치 보고 </strong> <span> 안전조치 보고 </span>
 						</div>
 
 						<i class="fa-solid fa-chevron-right quick-arrow"></i>
@@ -245,8 +263,14 @@
 
 	<!-- JS -->
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script>
+		window.contextPath = "${pageContext.request.contextPath}";
+	</script>
 	<script
 		src="${pageContext.request.contextPath}/resources/js/agent/agentMain.js"></script>
+
+	<!-- 감지 알림(토스트 알림) -->
+	<jsp:include page="/WEB-INF/views/common/agentAlarm.jsp" />
 
 </body>
 </html>

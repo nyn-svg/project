@@ -68,12 +68,14 @@
 					</label>
 
 					<!-- 퇴근 -->
-					<label class="status-option-card type-danger"> 
-						<input type="radio" name="workStatus" value="퇴근" class="status-option-input" ${user.workStatus eq '퇴근' ? 'checked' : ''}> 
-						<span class="custom-radio"></span>
+					<label class="status-option-card type-danger"> <input
+						type="radio" name="workStatus" value="퇴근"
+						class="status-option-input"
+						${user.workStatus eq '퇴근' ? 'checked' : ''}> <span
+						class="custom-radio"></span>
 						<div class="status-text-group">
-							<span class="status-title">퇴근</span> 
-							<span class="status-desc">오늘 일과를 마치고 퇴근했습니다.</span>
+							<span class="status-title">퇴근</span> <span class="status-desc">오늘
+								일과를 마치고 퇴근했습니다.</span>
 						</div>
 					</label>
 
@@ -96,6 +98,9 @@
 	</script>
 	<script
 		src="${pageContext.request.contextPath}/resources/js/agent/agentStatusEdit.js"></script>
+
+	<!-- 감지 알림(토스트 알림) -->
+	<jsp:include page="/WEB-INF/views/common/agentAlarm.jsp" />
 
 </body>
 </html>

@@ -17,24 +17,24 @@ $(document).ready(function() {
 
 
     /* 안전 수칙 */
-	/* 안전 수칙 클릭 핸들러 */
-	$(".rule-item").on("click", function () {
-	    const title = $(this).data("title");
-	    const rawRule = $(this).data("rule");
+    /* 안전 수칙 클릭 핸들러 */
+    $(".rule-item").on("click", function() {
+        const title = $(this).data("title");
+        const rawRule = $(this).data("rule");
 
-	    const ruleArray = rawRule.split("|");
-	    
-	    let htmlContent = "<ol class='modal-rule-list'>";
-	    ruleArray.forEach(function(sentence) {
-	        htmlContent += "<li>" + sentence + "</li>";
-	    });
-	    htmlContent += "</ol>";
+        const ruleArray = rawRule.split("|");
 
-	    $("#modalTitle").text(title);
-	    $("#modalBodyText").html(htmlContent);
+        let htmlContent = "<ol class='modal-rule-list'>";
+        ruleArray.forEach(function(sentence) {
+            htmlContent += "<li>" + sentence + "</li>";
+        });
+        htmlContent += "</ol>";
 
-	    $("#ruleModal").css("display", "flex");
-	});
+        $("#modalTitle").text(title);
+        $("#modalBodyText").html(htmlContent);
+
+        $("#ruleModal").css("display", "flex");
+    });
 
     // 상단 우측 X 버튼 누를 때 팝업 닫기
     $("#btnCloseModal").on("click", function() {
@@ -69,18 +69,56 @@ $(document).ready(function() {
     });
 
 
-    // 나의 구역
-    $(".quick-area").on("click", function() {
-        console.log("나의 구역");
-        // 실제 담당구역 Controller URL 확인 후 연결
-        alert("나의 구역 화면");
-    });
-
-
     // 조치 보고
     $(".quick-report").on("click", function() {
         console.log("조치보고");
         location.href = "history";
+    });
+
+
+    // 비상 연락망 클릭 핸들러
+    $(".quick-area").on("click", function() {
+        $.ajax({
+            url: contextPath + "/agent/emergency-contacts",
+            type: "GET",
+            dataType: "json",
+            success: function(list) {
+                let htmlContent = "";
+                if (!list || list.length === 0) {
+                    htmlContent = "<li style='text-align:center; padding:20px; color:#94a3b8;'>등록된 비상연락처가 없습니다.</li>";
+                } else {
+                    list.forEach(function(item) {
+                        htmlContent += `
+	                        <li class="contact-item">
+	                            <div class="contact-info">
+	                                <span class="contact-category">\${item.category}</span>
+	                                <strong class="contact-title">\${item.title}</strong>
+	                            </div>
+	                            <a href="tel:\${item.phone}" class="call-btn">
+	                                <i class="fa-solid fa-phone"></i> \${item.phone}
+	                            </a>
+	                        </li>
+	                    `;
+                    });
+                }
+                $("#contactListArea").html(htmlContent);
+                $("#contactModal").css("display", "flex");
+            },
+            error: function() {
+                alert("비상연락망을 불러오는 데 실패했습니다.");
+            }
+        });
+    });
+
+    // 비상연락망 모달 닫기 이벤트
+    $("#btnCloseContactModal, #btnConfirmContactModal").on("click", function() {
+        $("#contactModal").css("display", "none");
+    });
+
+    $("#contactModal").on("click", function(e) {
+        if ($(e.target).hasClass("custom-modal-overlay")) {
+            $(this).css("display", "none");
+        }
     });
 
 

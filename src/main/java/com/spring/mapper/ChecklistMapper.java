@@ -1,6 +1,7 @@
 package com.spring.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -32,4 +33,6 @@ public interface ChecklistMapper {
     
     // 7. 사전 점검 제출 결과 DB 저장
     int insertSafetyCheckDetail(@Param("inspector") String inspector, @Param("detail") SafetyCheckDetailDTO detail);
+
+	List<Map<String, Object>> selectTodayPatrolByArea(String workArea);
 }

@@ -277,6 +277,13 @@ body {
 }
 
 /* 5. 텍스트 및 화살표 스타일 */
+.notice-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* 중간 텍스트 영역이 남은 가로 공간을 가득 채움 */
+    min-width: 0; /* 말줄임표(...) 처리를 위한 속성 */
+}
+
 .notice-title {
     font-size: 14px;
     font-weight: 700;
@@ -293,9 +300,19 @@ body {
     margin-top: 2px;
 }
 
+/* 화살표 아이콘 우측 끝 고정 */
+.notice-time {
+    margin-left: auto; /* 무조건 우측 끝으로 밀어내기 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding-left: 8px;
+}
+
 .notice-time i {
     color: #b2becd;
-    font-size: 11px;
+    font-size: 14px;
 }
 
 /* 클릭 시 부드러운 반응 */
@@ -501,6 +518,62 @@ body {
     align-items: center;
     gap: 8px;
     cursor: pointer;
+}
+
+/* 비상연락망 모달 전용 스타일 */
+.contact-modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.contact-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.contact-item:last-child {
+    border-bottom: none;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.contact-category {
+    font-size: 11px;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.contact-title {
+    font-size: 14px;
+    color: #1a1f2c;
+    font-weight: 600;
+}
+
+.call-btn {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.call-btn:active {
+    background-color: #dcfce7;
 }
 
 /* ==================================================

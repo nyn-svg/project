@@ -74,5 +74,9 @@
 	</script>
 	<script
 		src="${pageContext.request.contextPath}/resources/js/agent/agentHistory.js"></script>
+
+	<!-- 감지 알림(토스트 알림) -->
+	<jsp:include page="/WEB-INF/views/common/agentAlarm.jsp" />
+	
 </body>
 </html>

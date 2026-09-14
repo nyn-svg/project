@@ -58,7 +58,7 @@ public class SituationServiceImpl implements SituationService {
         		
         	} else { // 자동감지, 수동감지
         		// 이벤트명: "situation-alert", 데이터: 저장된 SituationDTO 객체
-        		// sseService.sendEvent("situation-alert", situation); 아직 안 만듦
+        		sseService.sendEvent("situation-alert", situation);
         	}
         }
         

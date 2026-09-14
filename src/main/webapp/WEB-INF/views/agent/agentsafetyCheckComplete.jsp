@@ -76,8 +76,8 @@
 		<!-- 하단 버튼 영역 -->
 		<footer class="bottom-action-area">
 			<button type="button" class="btn-secondary" onclick="history.back()">수정하기</button>
-			<button type="button" class="btn-primary" onclick="location.href='${pageContext.request.contextPath}/agent/main'">
-				홈으로 이동
+			<button type="button" class="btn-primary" onclick="location.href='${pageContext.request.contextPath}/agent/patrol'">
+				점검 완료
 			</button>
 		</footer>
 

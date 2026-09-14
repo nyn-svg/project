@@ -1,6 +1,7 @@
 package com.spring.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,63 +16,68 @@ import com.spring.mapper.ChecklistMapper;
 @Service
 public class ChecklistServiceImpl implements ChecklistService {
 
-    @Autowired
-    private ChecklistMapper checklistMapper;
+	@Autowired
+	private ChecklistMapper checklistMapper;
 
-    @Override
-    public List<ChecklistItemDTO> getItemsByTarget(String targetType) {
-        return checklistMapper.selectItemsByTarget(targetType);
-    }
+	@Override
+	public List<ChecklistItemDTO> getItemsByTarget(String targetType) {
+		return checklistMapper.selectItemsByTarget(targetType);
+	}
 
-    @Override
-    public boolean registerChecklistItem(ChecklistItemDTO dto) {
-        // 정렬 순서 기본값 미입력 시 1로 설정
-        if (dto.getSortOrder() == null) {
-            dto.setSortOrder(1);
-        }
-        // 사용 여부 기본값 미입력 시 Y로 설정
-        if (dto.getIsUse() == null || dto.getIsUse().isEmpty()) {
-            dto.setIsUse("Y");
-        }
-        return checklistMapper.insertChecklistItem(dto) > 0;
-    }
+	@Override
+	public boolean registerChecklistItem(ChecklistItemDTO dto) {
+		// 정렬 순서 기본값 미입력 시 1로 설정
+		if (dto.getSortOrder() == null) {
+			dto.setSortOrder(1);
+		}
+		// 사용 여부 기본값 미입력 시 Y로 설정
+		if (dto.getIsUse() == null || dto.getIsUse().isEmpty()) {
+			dto.setIsUse("Y");
+		}
+		return checklistMapper.insertChecklistItem(dto) > 0;
+	}
 
-    @Override
-    public boolean modifyChecklistItem(ChecklistItemDTO dto) {
-        return checklistMapper.updateChecklistItem(dto) > 0;
-    }
+	@Override
+	public boolean modifyChecklistItem(ChecklistItemDTO dto) {
+		return checklistMapper.updateChecklistItem(dto) > 0;
+	}
 
-    @Override
-    public boolean removeChecklistItem(Long itemId) {
-        return checklistMapper.deleteChecklistItem(itemId) > 0;
-    }
-    
-    @Override
-    public List<ChecklistHistoryDTO> getChecklistHistoryList() {
-        return checklistMapper.selectChecklistHistoryList();
-    }
+	@Override
+	public boolean removeChecklistItem(Long itemId) {
+		return checklistMapper.deleteChecklistItem(itemId) > 0;
+	}
 
-    @Override
-    public List<ChecklistHistoryDTO> getChecklistHistoryDetail(String userId, String checkDateStr) {
-        return checklistMapper.selectChecklistHistoryDetail(userId, checkDateStr);
-    }
-    
- // 사전점검 제출 데이터 저장 구현 (추가)
-    @Override
-    @Transactional
-    public boolean insertSafetyCheck(SafetyCheckMasterDTO masterDTO) {
-        if (masterDTO == null || masterDTO.getDetailList() == null) {
-            return false;
-        }
+	@Override
+	public List<ChecklistHistoryDTO> getChecklistHistoryList() {
+		return checklistMapper.selectChecklistHistoryList();
+	}
 
-        int insertedRows = 0;
-        String inspector = masterDTO.getInspector();
+	@Override
+	public List<ChecklistHistoryDTO> getChecklistHistoryDetail(String userId, String checkDateStr) {
+		return checklistMapper.selectChecklistHistoryDetail(userId, checkDateStr);
+	}
 
-        for (SafetyCheckDetailDTO detail : masterDTO.getDetailList()) {
-            // ChecklistMapper에 개별/다중 저장 쿼리 매핑 필요
-            insertedRows += checklistMapper.insertSafetyCheckDetail(inspector, detail);
-        }
+	// 사전점검 제출 데이터 저장 구현 (추가)
+	@Override
+	@Transactional
+	public boolean insertSafetyCheck(SafetyCheckMasterDTO masterDTO) {
+		if (masterDTO == null || masterDTO.getDetailList() == null) {
+			return false;
+		}
 
-        return insertedRows > 0;
-    }
+		int insertedRows = 0;
+		String inspector = masterDTO.getInspector();
+
+		for (SafetyCheckDetailDTO detail : masterDTO.getDetailList()) {
+			// ChecklistMapper에 개별/다중 저장 쿼리 매핑 필요
+			insertedRows += checklistMapper.insertSafetyCheckDetail(inspector, detail);
+		}
+
+		return insertedRows > 0;
+	}
+
+	@Override
+	public List<Map<String, Object>> getTodayPatrolByArea(String workArea) {
+		return checklistMapper.selectTodayPatrolByArea(workArea);
+	}
 }

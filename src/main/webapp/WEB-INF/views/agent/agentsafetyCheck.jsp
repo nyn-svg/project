@@ -1,4 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <!DOCTYPE html>
@@ -6,10 +7,13 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>사전 점검</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/agent/agentsafetyCheck.css">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet"
+	href="${pageContext.request.contextPath}/resources/css/agent/agentsafetyCheck.css">
 </head>
 
 <body>
@@ -31,13 +35,11 @@
 			</div>
 
 			<div class="info-row">
-				<span class="info-label">점검 구역</span> 
-				<span class="info-value">${empty sessionScope.workArea ? 'A구역(공연장 일대)' : sessionScope.workArea}</span>
+				<span class="info-label">점검 구역</span> <span class="info-value">${empty sessionScope.workArea ? 'A구역(공연장 일대)' : sessionScope.workArea}</span>
 			</div>
 
 			<div class="info-row">
-				<span class="info-label">점검자</span> 
-				<span class="info-value">${empty sessionScope.userId ? 'agent01' : sessionScope.userId}</span>
+				<span class="info-label">점검자</span> <span class="info-value">${empty sessionScope.userId ? 'agent01' : sessionScope.userId}</span>
 			</div>
 		</section>
 
@@ -49,65 +51,59 @@
 				<!-- 카테고리 구분 -->
 				<c:if test="${currentCategory ne item.category}">
 					<c:if test="${not empty currentCategory}">
-						</div>
-						</section>
-					</c:if>
+	</div>
+	</section>
+	</c:if>
 
-					<section class="check-section">
-						<div class="section-title">
-							<i class="fa-solid fa-list-check"></i> <span>${item.category}</span>
-						</div>
+	<section class="check-section">
+		<div class="section-title">
+			<i class="fa-solid fa-list-check"></i> <span>${item.category}</span>
+		</div>
 
-						<div class="section-items">
-						<c:set var="currentCategory" value="${item.category}" />
-				</c:if>
+		<div class="section-items">
+			<c:set var="currentCategory" value="${item.category}" />
+			</c:if>
 
-				<!-- 개별 문항 카드 -->
-				<div class="check-item" data-item-id="${item.itemId}">
-					<div class="item-header">
-						<span class="item-title">${item.itemTitle}</span>
-						<p class="item-question">${item.question}</p>
-					</div>
-
-					<!-- 상태 선택 옵션 -->
-					<div class="status-options">
-						<label class="status-option"> 
-							<input type="radio" name="check_${item.itemId}" value="NORMAL">
-							<span>정상</span>
-						</label> 
-						<label class="status-option"> 
-							<input type="radio" name="check_${item.itemId}" value="WARN">
-							<span>주의</span>
-						</label> 
-						<label class="status-option"> 
-							<input type="radio" name="check_${item.itemId}" value="DANGER">
-							<span>위험</span>
-						</label> 
-						<label class="status-option"> 
-							<input type="radio" name="check_${item.itemId}" value="NONE">
-							<span>해당없음</span>
-						</label>
-					</div>
-
-					<!-- 비고란 -->
-					<div class="remark-box">
-						<input type="text" class="remark-input" name="remark_${item.itemId}" placeholder="비고를 입력해주세요">
-					</div>
+			<!-- 개별 문항 카드 -->
+			<div class="check-item" data-item-id="${item.itemId}">
+				<div class="item-header">
+					<span class="item-title">${item.itemTitle}</span>
+					<p class="item-question">${item.question}</p>
 				</div>
+
+				<!-- 상태 선택 옵션 -->
+				<div class="status-options">
+					<label class="status-option"> <input type="radio"
+						name="check_${item.itemId}" value="NORMAL"> <span>정상</span>
+					</label> <label class="status-option"> <input type="radio"
+						name="check_${item.itemId}" value="WARN"> <span>주의</span>
+					</label> <label class="status-option"> <input type="radio"
+						name="check_${item.itemId}" value="DANGER"> <span>위험</span>
+					</label> <label class="status-option"> <input type="radio"
+						name="check_${item.itemId}" value="NONE"> <span>해당없음</span>
+					</label>
+				</div>
+
+				<!-- 비고란 -->
+				<div class="remark-box">
+					<input type="text" class="remark-input"
+						name="remark_${item.itemId}" placeholder="비고를 입력해주세요">
+				</div>
+			</div>
 			</c:forEach>
 
 			<c:if test="${not empty currentCategory}">
-						</div>
-					</section>
-			</c:if>
+		</div>
+	</section>
+	</c:if>
 
-			<!-- 제출 버튼 -->
-			<div class="submit-area">
-				<button type="submit" class="submit-btn">
-					제출하기 <i class="fa-solid fa-chevron-right"></i>
-				</button>
-			</div>
-		</form>
+	<!-- 제출 버튼 -->
+	<div class="submit-area">
+		<button type="submit" class="submit-btn">
+			제출하기 <i class="fa-solid fa-chevron-right"></i>
+		</button>
+	</div>
+	</form>
 	</div>
 
 	<!-- JS 전역 변수 선언 및 외부 JS 호출 -->
@@ -115,7 +111,11 @@
 	<script>
 		const contextPath = "${pageContext.request.contextPath}";
 	</script>
-	<script src="${pageContext.request.contextPath}/resources/js/agent/agentsafetyCheck.js"></script>
-	
+	<script
+		src="${pageContext.request.contextPath}/resources/js/agent/agentsafetyCheck.js"></script>
+
+	<!-- 감지 알림(토스트 알림) -->
+	<jsp:include page="/WEB-INF/views/common/agentAlarm.jsp" />
+
 </body>
 </html>
