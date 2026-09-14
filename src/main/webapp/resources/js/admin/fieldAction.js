@@ -1,66 +1,189 @@
 /**
  * 현장 조치 승인 및 관리 (fieldAction.js)
- * Pure JavaScript (Vanilla JS) & Fetch API 기반
  */
-
 function initFieldActionPage() {
-    const tabPendingBox = document.getElementById('tab-pending');
-    const tabHistoryBox = document.getElementById('tab-history');
+    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
     const actionDetailModal = document.getElementById('actionDetailModal');
 
-    if (!tabPendingBox && !tabHistoryBox) return;
+    // 1. 초기 데이터 로드 (페이지 열릴 때 미결 목록 조회)
+    loadPendingList();
 
-    // 1. 탭 전환 함수
+    // 2. 탭 전환
     window.switchTab = function (tabType) {
         const tabBtns = document.querySelectorAll('.tab-btn');
         tabBtns.forEach(btn => btn.classList.remove('active'));
 
+        const pendingBox = document.getElementById('tab-pending');
+        const historyBox = document.getElementById('tab-history');
+
         if (tabType === 'pending') {
             if (tabBtns[0]) tabBtns[0].classList.add('active');
-            if (tabPendingBox) tabPendingBox.style.display = 'block';
-            if (tabHistoryBox) tabHistoryBox.style.display = 'none';
+            if (pendingBox) pendingBox.style.display = 'block';
+            if (historyBox) historyBox.style.display = 'none';
+            loadPendingList();
         } else if (tabType === 'history') {
             if (tabBtns[1]) tabBtns[1].classList.add('active');
-            if (tabPendingBox) tabPendingBox.style.display = 'none';
-            if (tabHistoryBox) tabHistoryBox.style.display = 'block';
+            if (pendingBox) pendingBox.style.display = 'none';
+            if (historyBox) historyBox.style.display = 'block';
+            loadHistoryList();
         }
     };
 
-    // 2. 모달 열기 함수
+    // 3. 미결 조치 목록 AJAX 조회
+    function loadPendingList() {
+        fetch(basePath + '/admin/fieldAction/api/list?statusType=PENDING')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('pendingTbody');
+                const countBadge = document.getElementById('pendingCount');
+                if (countBadge) countBadge.textContent = data.length;
+
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">검토 대기 중인 조치 건이 없습니다.</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.situNo || ''}</td>
+                        <td>${item.zoneName || ''}</td>
+                        <td>${item.finder || '안전요원'}</td>
+                        <td>${item.situContent || ''}</td>
+                        <td>${formatDate(item.situDate)}</td>
+                        <td><span class="status-badge status-pending">검토 대기</span></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" onclick="openDetailModal('${item.situNo}')">상세 검토</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => console.error('미결 목록 로드 실패:', err));
+    }
+
+    // 4. 완료 이력 목록 AJAX 조회
+    function loadHistoryList() {
+        fetch(basePath + '/admin/fieldAction/api/list?statusType=HISTORY')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('historyTbody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">완료된 조치 이력이 없습니다.</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const status = item.situStatus || '';
+                    const isApproved = (status === 'APPROVE' || status === '조치' || status === '종료');
+                    const statusClass = isApproved ? 'status-approved' : 'status-rejected';
+                    const statusText = isApproved ? '조치 승인' : '조치 반려';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.situNo || ''}</td>
+                        <td>${item.zoneName || ''}</td>
+                        <td>${item.finder || ''}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${item.endDate || item.situDate || ''}</td>
+                        <td>${item.worker || '관리자'}</td>
+                        <td>
+                            <button type="button" class="btn btn-secondary" onclick="openDetailModal('${item.situNo}')">이력 조회</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => console.error('이력 목록 로드 실패:', err));
+    }
+	
+	// 타임스탬프 숫자를 YYYY-MM-DD HH:mm 형식으로 변환
+	function formatDate(time) {
+	    if (!time) return '-';
+	    const date = new Date(Number(time));
+	    if (isNaN(date.getTime())) return time; // 이미 문자열 날짜면 그대로 반환
+	    
+	    const yyyy = date.getFullYear();
+	    const mm = String(date.getMonth() + 1).padStart(2, '0');
+	    const dd = String(date.getDate()).padStart(2, '0');
+	    const hh = String(date.getHours()).padStart(2, '0');
+	    const mi = String(date.getMinutes()).padStart(2, '0');
+	    
+	    return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+	}
+
+    // 5. 모달 열기 (비동기 데이터 단건 조회)
     window.openDetailModal = function (actionId) {
-        const mActionId = document.getElementById('mActionId');
-        const adminComment = document.getElementById('adminComment');
-
-        if (mActionId) mActionId.textContent = actionId;
-        if (adminComment) adminComment.value = '';
-
-        if (actionDetailModal) {
-            actionDetailModal.style.display = 'flex';
+        console.log("👉 [모달 요청 id]:", actionId);
+        if (!actionId) {
+            alert('올바른 요청 ID가 아닙니다.');
+            return;
         }
+
+        fetch(basePath + '/admin/fieldAction/api/detail?actionId=' + actionId)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('서버 응답 오류 (' + res.status + ')');
+                }
+                return res.text(); // 빈 응답 예외 방지
+            })
+            .then(text => {
+                if (!text || text.trim() === '') {
+                    throw new Error('DB에 해당 이력 정보가 존재하지 않습니다.');
+                }
+                const data = JSON.parse(text);
+
+                document.getElementById('mActionId').textContent = data.situNo || actionId;
+                document.getElementById('mWorkerInfo').textContent = `${data.finder || '요원'}`;
+                document.getElementById('mActionContent').textContent = data.situContent || '내용 없음';
+                
+                const adminCommentEl = document.getElementById('adminComment');
+                if (adminCommentEl) {
+                    adminCommentEl.value = data.workContent || data.adminComment || '';
+                }
+
+                // 사진 표시 영역 처리
+                const photoBox = document.getElementById('mPhotoBox');
+                if (photoBox) {
+                    if (data.situImage) {
+                        photoBox.innerHTML = `<img src="${basePath}/resources/upload/situation/${data.situImage}" style="max-width:100%; max-height:200px; border-radius:6px;">`;
+                    } else {
+                        photoBox.innerHTML = '<span style="color:#64748b; font-size:12px;">첨부 사진 없음</span>';
+                    }
+                }
+
+                if (actionDetailModal) {
+                    actionDetailModal.style.display = 'flex';
+                }
+            })
+            .catch(err => {
+                console.error('상세 정보 로드 실패:', err);
+                alert('상세 정보 로드 실패: ' + err.message);
+            });
     };
 
-    // 3. 모달 닫기 함수
+    // 6. 모달 닫기
     window.closeModal = function () {
-        if (actionDetailModal) {
-            actionDetailModal.style.display = 'none';
-        }
+        if (actionDetailModal) actionDetailModal.style.display = 'none';
     };
 
-    // 4. 모달 배경 클릭 시 닫기 (오버레이 이벤트 처리)
+    // 7. 모달 배경 클릭 시 닫기
     if (actionDetailModal) {
         actionDetailModal.onclick = function (e) {
-            if (e.target === actionDetailModal) {
-                window.closeModal();
-            }
+            if (e.target === actionDetailModal) window.closeModal();
         };
     }
 
-    // 5. 승인 / 반려 처리 함수
+    // 8. 승인 / 반려 처리 전송
     window.processAction = function (type) {
-        const mActionId = document.getElementById('mActionId');
+        const actionId = document.getElementById('mActionId').textContent.trim();
         const adminCommentEl = document.getElementById('adminComment');
-
-        const actionId = mActionId ? mActionId.textContent.trim() : '';
         const adminComment = adminCommentEl ? adminCommentEl.value.trim() : '';
         const actionTypeName = (type === 'APPROVE') ? '승인' : '반려';
 
@@ -70,37 +193,28 @@ function initFieldActionPage() {
             return;
         }
 
-        if (!confirm(`${actionId} 건을 최종 [${actionTypeName}] 처리하시겠습니까?`)) {
+        if (!confirm(`[${actionId}] 건을 최종 [${actionTypeName}] 처리하시겠습니까?`)) {
             return;
         }
-
-        const basePath = (typeof contextPath !== 'undefined' && contextPath !== null) 
-            ? contextPath 
-            : ((typeof window.contextPath !== 'undefined') ? window.contextPath : '');
-        
-        const processUrl = basePath + '/admin/fieldAction/process';
 
         const formData = new URLSearchParams();
         formData.append('actionId', actionId);
         formData.append('status', type);
         formData.append('adminComment', adminComment);
 
-        fetch(processUrl, {
+        fetch(basePath + '/admin/fieldAction/process', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
             },
             body: formData.toString()
         })
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
-            return response.json();
-        })
+        .then(res => res.json())
         .then(res => {
             if (res && res.status === 'success') {
                 alert(`성공적으로 ${actionTypeName} 처리되었습니다.`);
                 window.closeModal();
-                location.reload();
+                loadPendingList(); // 비동기로 목록 재갱신
             } else {
                 alert('처리 실패: ' + (res.message || '오류가 발생했습니다.'));
             }
@@ -112,7 +226,6 @@ function initFieldActionPage() {
     };
 }
 
-// 동기/비동기 페이지 전환 감지
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initFieldActionPage);
 } else {
