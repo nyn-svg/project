@@ -181,7 +181,7 @@
 	        </div>
 	        <div class="header-btn">
 	            <button type="button" class="regist-btn" id="registSituation">
-	                <i class="fa-solid fa-plus"></i> 수동 이벤트 등록
+	                <i class="fa-solid fa-plus"></i> 수동 감지 등록
 	            </button>
 	        </div>
 	    </div>
@@ -318,12 +318,10 @@ function handleStreamError(imgElement, errorDroneId) {
 		}
 
 		// realtime 페이지 스타일과 맞춘 고정 에러 안내 박스 생성
-		const errorHtml = `
-			<div class="stream-notice-box error">
-			<i class="fa-solid fa-plug-circle-xmark"></i>
-			<span>[ ${targetDroneId} ] 응답 없음 (점검 필요)</span>
-			</div>
-		`;
+		const errorHtml = '<div class="stream-notice-box error">'
+						+ '<i class="fa-solid fa-plug-circle-xmark"></i>'
+						+ '<span>[ ' + targetDroneId + ' ] 응답 없음 (점검 필요)</span>'
+						+ '</div>';
 		placeholder.insertAdjacentHTML('beforeend', errorHtml);
 	}
 }
@@ -558,7 +556,7 @@ function openPopup(url, windowName, width = 630, height = 830) {
 
 //수동감지 등록 팝업
 function openRegistPop() {
-    openPopup(ctx + '/detection/regist', 'Regist', 'DetectionRegistPop');
+    openPopup(ctx + '/detection/regist', 'Regist');
 }
 
 // 감지/조치 이력 상세페이지 팝업

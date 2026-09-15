@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">
     
-	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/detection-status.css">	
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/detection/detection-status.css">	
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/actionLog.css">
 
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin/adminMainContent.css">
