@@ -58,11 +58,12 @@
             </div>
 
             <div class="action-buttons">
+            <!-- 보고서 생성 버튼 추가 -->
+				<button type="button" id="btn-generate-report" class="btn btn-info" style="margin-left: 8px;">
+				    <i class="fas fa-robot"></i> AI 보고서 생성
+				</button>
                 <button type="button" class="btn btn-primary" id="btn-save">
                     <i class="fa-solid fa-floppy-disk"></i> 점검결과 저장
-                </button>
-                <button type="button" class="btn btn-outline" id="btn-print">
-                    <i class="fa-solid fa-print"></i> 출력 / PDF
                 </button>
             </div>
         </div>
@@ -269,6 +270,32 @@
             </table>
         </div>
 
+    </div>
+</div>
+
+<!-- AI 법적 보고서 전용 모달 -->
+<div id="aiReportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 15, 0.85); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+    <div style="background: radial-gradient(circle at 0% 0%, #1a102f 0%, #0d1127 50%, #080914 100%); border: 1px solid rgba(147, 51, 234, 0.25); border-radius: 16px; width: 720px; max-width: 90%; max-height: 85vh; padding: 24px; color: #f1f5f9; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(126, 34, 206, 0.12); display: flex; flex-direction: column;">
+        
+        <!-- 헤더 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 14px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 10px #38bdf8;"></span>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #e2e8f0;">AI 안전점검 법적 보고서</h3>
+            </div>
+            <button type="button" onclick="closeAiReportModal()" style="background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer;">✕</button>
+        </div>
+
+        <!-- 본문 (보고서 내용 출력 영역) -->
+        <div style="overflow-y: auto; flex: 1; padding-right: 6px;">
+            <pre id="aiReportContent" style="white-space: pre-wrap; word-break: break-all; font-family: inherit; font-size: 13px; line-height: 1.6; color: #cbd5e1; margin: 0; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"></pre>
+        </div>
+
+        <!-- 푸터 -->
+        <div style="margin-top: 18px; text-align: right; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="window.print()" style="background: #0284c7; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">인쇄 / PDF 출력</button>
+            <button type="button" onclick="closeAiReportModal()" style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px;">닫기</button>
+        </div>
     </div>
 </div>
 

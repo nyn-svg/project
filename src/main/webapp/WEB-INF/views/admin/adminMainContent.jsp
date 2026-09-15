@@ -217,176 +217,267 @@
 
 <!-- 2. 실제 차트 및 데이터 로드 자바스크립트 로직 -->
 <script>
-// 1. 변수 재선언 에러 방지를 위해 window 객체에 직접 할당
+//==========================================
+//차트 인스턴스 전역 관리
+//==========================================
 window.densityChartInstance = window.densityChartInstance || null;
 window.animalChartInstance = window.animalChartInstance || null;
 
-// 1. 실시간 인파 밀집도 파도 차트 구현
+//1. 실시간 인파 밀집도 차트 초기화
 function initRealtimeDensityChart() {
-    const canvas = document.getElementById('densityChart');
-    if (!canvas) return; // Canvas 요소가 아직 없으면 안전하게 종료
-    
-    // 기존 차트 객체가 남아있다면 삭제
-    if (window.densityChartInstance) {
-        window.densityChartInstance.destroy();
-        window.densityChartInstance = null;
-    }
+ const canvas = document.getElementById('densityChart');
+ if (!canvas) {
+     console.warn("[Chart Debug] #densityChart Canvas 요소를 찾을 수 없습니다.");
+     return false;
+ }
+ 
+ if (window.densityChartInstance) {
+     window.densityChartInstance.destroy();
+     window.densityChartInstance = null;
+ }
 
-    const ctx = canvas.getContext('2d');
-    const initialData = Array.from({length: 30}, () => Math.floor(Math.random() * 20) + 20);
-    const initialLabels = Array.from({length: 30}, () => '');
+ const ctx = canvas.getContext('2d');
+ const initialData = Array(30).fill(0);
+ const initialLabels = Array(30).fill('');
 
-    window.densityChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: initialLabels,
-            datasets: [{
-                label: '실시간 밀집 수위',
-                data: initialData,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.15)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { display: false },
-                y: { 
-                    ticks: { color: '#888', font: { size: 10 } }, 
-                    grid: { color: '#2b2b40' },
-                    min: 0,
-                    max: 60
-                }
-            }
-        }
-    });
-
-    // window.densityTimer에 타이머 ID 저장 (재로드 시 clearInterval 가능하게 처리)
-    window.densityTimer = setInterval(function() {
-        if (!window.densityChartInstance) return;
-
-        const currentData = window.densityChartInstance.data.datasets[0].data;
-        const lastVal = currentData[currentData.length - 1];
-        
-        let nextVal = lastVal + (Math.random() * 3 - 1.5);
-        if (nextVal < 15) nextVal = 18;
-        if (nextVal > 50) nextVal = 45;
-
-        currentData.shift();
-        currentData.push(nextVal);
-
-        window.densityChartInstance.update('none');
-    }, 80);
+ window.densityChartInstance = new Chart(ctx, {
+     type: 'line',
+     data: {
+         labels: initialLabels,
+         datasets: [{
+             label: '실시간 밀집 수위 (%)',
+             data: initialData,
+             borderColor: '#3b82f6',
+             backgroundColor: 'rgba(59, 130, 246, 0.15)',
+             borderWidth: 2,
+             fill: true,
+             tension: 0.4,
+             pointRadius: 0
+         }]
+     },
+     options: {
+         responsive: true,
+         maintainAspectRatio: false,
+         animation: false,
+         plugins: { legend: { display: false } },
+         scales: {
+             x: { display: false },
+             y: { 
+                 ticks: { color: '#888', font: { size: 10 } }, 
+                 grid: { color: '#2b2b40' },
+                 min: 0,
+                 max: 100
+             }
+         }
+     }
+ });
+ console.log("[Chart Debug] 밀집도 차트 초기화 완료");
+ return true;
 }
 
-// 2. 실시간 야생동물 AI 감지 신호 수위 차트 (%)
+//2. 실시간 야생동물 AI 감지 신호 차트 초기화
 function initRealtimeAnimalChart() {
-    const canvas = document.getElementById('animalChart');
-    if (!canvas) return; // Canvas 요소가 아직 없으면 안전하게 종료
+ const canvas = document.getElementById('animalChart');
+ if (!canvas) {
+     console.warn("[Chart Debug] #animalChart Canvas 요소를 찾을 수 없습니다.");
+     return false;
+ }
 
-    if (window.animalChartInstance) {
-        window.animalChartInstance.destroy();
-        window.animalChartInstance = null;
+ if (window.animalChartInstance) {
+     window.animalChartInstance.destroy();
+     window.animalChartInstance = null;
+ }
+
+ const ctx = canvas.getContext('2d');
+ const initialLabels = Array(30).fill('');
+ const initialGorani = Array(30).fill(0);
+ const initialBoar = Array(30).fill(0);
+
+ window.animalChartInstance = new Chart(ctx, {
+     type: 'line',
+     data: {
+         labels: initialLabels,
+         datasets: [
+             {
+                 label: '고라니 감지 신호 (%)',
+                 data: initialGorani,
+                 borderColor: '#a855f7',
+                 backgroundColor: 'rgba(168, 85, 247, 0.12)',
+                 borderWidth: 2,
+                 fill: true,
+                 tension: 0.4,
+                 pointRadius: 0
+             },
+             {
+                 label: '멧돼지 감지 신호 (%)',
+                 data: initialBoar,
+                 borderColor: '#f97316',
+                 backgroundColor: 'rgba(249, 115, 22, 0.12)',
+                 borderWidth: 2,
+                 fill: true,
+                 tension: 0.4,
+                 pointRadius: 0
+             }
+         ]
+     },
+     options: {
+         responsive: true,
+         maintainAspectRatio: false,
+         animation: false,
+         plugins: {
+             legend: {
+                 display: true,
+                 position: 'top',
+                 align: 'end',
+                 labels: {
+                     color: '#ccc',
+                     font: { size: 10 },
+                     boxWidth: 10,
+                     usePointStyle: true
+                 }
+             }
+         },
+         scales: {
+             x: { display: false },
+             y: { 
+                 ticks: { 
+                     color: '#888', 
+                     font: { size: 10 },
+                     callback: function(value) { return value + '%'; }
+                 }, 
+                 grid: { color: '#2b2b40' },
+                 min: 0,
+                 max: 100
+             }
+         }
+     }
+ });
+ console.log("[Chart Debug] 동물 차트 초기화 완료");
+ return true;
+}
+
+//💡 3. 밀집도 차트 갱신 함수 (평소 잔잔한 파동 + AI 연동 시 실제 수치 반영)
+function updateDensityChart(densityVal) {
+    if (!window.densityChartInstance) {
+        var initialized = initRealtimeDensityChart();
+        if (!initialized) return;
     }
 
-    const ctx = canvas.getContext('2d');
-    const initialLabels = Array.from({length: 30}, () => '');
-    const initialGorani = Array.from({length: 30}, () => +(Math.random() * 6 + 8).toFixed(1));
-    const initialBoar   = Array.from({length: 30}, () => +(Math.random() * 4 + 3).toFixed(1));
+    const chart = window.densityChartInstance;
+    let val;
 
-    window.animalChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: initialLabels,
-            datasets: [
-                {
-                    label: '고라니 감지 신호 (%)',
-                    data: initialGorani,
-                    borderColor: '#a855f7',
-                    backgroundColor: 'rgba(168, 85, 247, 0.12)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0
-                },
-                {
-                    label: '멧돼지 감지 신호 (%)',
-                    data: initialBoar,
-                    borderColor: '#f97316',
-                    backgroundColor: 'rgba(249, 115, 22, 0.12)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    align: 'end',
-                    labels: {
-                        color: '#ccc',
-                        font: { size: 10 },
-                        boxWidth: 10,
-                        usePointStyle: true
-                    }
-                }
-            },
-            scales: {
-                x: { display: false },
-                y: { 
-                    ticks: { 
-                        color: '#888', 
-                        font: { size: 10 },
-                        callback: function(value) { return value + '%'; }
-                    }, 
-                    grid: { color: '#2b2b40' },
-                    min: 0,
-                    max: 100
-                }
-            }
-        }
-    });
+    // AI 감지 수치가 유효하면 실제 수치 사용, 없거나 0이면 평소 관제용 베이스라인(15~25%) 생성
+    if (densityVal !== undefined && densityVal !== null && Number(densityVal) > 0) {
+        val = Number(densityVal);
+    } else {
+        const lastVal = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1] || 18;
+        const noise = (Math.random() - 0.5) * 4; // -2 ~ +2 변동
+        val = Math.min(Math.max(Math.round(lastVal + noise), 12), 26);
+    }
 
-    // window.animalTimer에 타이머 ID 저장
-    window.animalTimer = setInterval(function() {
-        if (!window.animalChartInstance) return;
+    chart.data.datasets[0].data.shift();
+    chart.data.datasets[0].data.push(val);
 
-        const goraniData = window.animalChartInstance.data.datasets[0].data;
-        const boarData = window.animalChartInstance.data.datasets[1].data;
-
-        const lastGorani = goraniData[goraniData.length - 1];
-        let nextGorani = lastGorani + (Math.random() * 1.2 - 0.6);
-        if (nextGorani < 6) nextGorani = 6.5;
-        if (nextGorani > 18) nextGorani = 17.5;
-
-        const lastBoar = boarData[boarData.length - 1];
-        let nextBoar = lastBoar + (Math.random() * 0.8 - 0.4);
-        if (nextBoar < 2) nextBoar = 2.5;
-        if (nextBoar > 10) nextBoar = 9.5;
-
-        goraniData.shift();
-        goraniData.push(+nextGorani.toFixed(1));
-
-        boarData.shift();
-        boarData.push(+nextBoar.toFixed(1));
-
-        window.animalChartInstance.update('none');
-    }, 80);
+    chart.update();
 }
+
+//💡 4. 야생동물 차트 갱신 함수 (평소 미세 신호 + AI 감지 시 튐 현상 연동)
+function updateAnimalChart(boxes) {
+    if (!window.animalChartInstance) {
+        var initialized = initRealtimeAnimalChart();
+        if (!initialized) return;
+    }
+
+    let goraniVal = 0;
+    let boarVal = 0;
+
+    if (boxes && Array.isArray(boxes) && boxes.length > 0) {
+        boxes.forEach(function(item) {
+            const label = String(item.label || '').toLowerCase();
+            const confidencePercent = Number(item.confidence || 0) * 100;
+
+            if (label.includes('gorani') || label.includes('고라니')) {
+                goraniVal = Math.max(goraniVal, confidencePercent);
+            } else if (label.includes('boar') || label.includes('멧돼지')) {
+                boarVal = Math.max(boarVal, confidencePercent);
+            }
+        });
+    }
+
+    // 감지된 동물이 없을 때도 바닥에서 살짝 이퀄라이저처럼 다이나믹하게 움직임 (0~3% 미세 신호)
+    if (goraniVal === 0) goraniVal = +(Math.random() * 3).toFixed(1);
+    if (boarVal === 0) boarVal = +(Math.random() * 3).toFixed(1);
+
+    const chart = window.animalChartInstance;
+    
+    chart.data.datasets[0].data.shift();
+    chart.data.datasets[0].data.push(+goraniVal.toFixed(1));
+
+    chart.data.datasets[1].data.shift();
+    chart.data.datasets[1].data.push(+boarVal.toFixed(1));
+
+    chart.update();
+}
+
+//💡 5. AI 감지 통신 함수
+function captureAndSendAIFrame(mediaElement, droneId) {
+ if (!mediaElement) return;
+
+ var canvas = document.createElement('canvas');
+ var ctx = canvas.getContext('2d');
+
+ if (mediaElement.tagName === 'VIDEO') {
+     if (mediaElement.paused || mediaElement.ended || !mediaElement.videoWidth) return;
+     canvas.width = mediaElement.videoWidth;
+     canvas.height = mediaElement.videoHeight;
+     ctx.drawImage(mediaElement, 0, 0, canvas.width, canvas.height);
+ } else if (mediaElement.tagName === 'IMG') {
+     if (!mediaElement.complete || !mediaElement.naturalWidth) return;
+     canvas.width = mediaElement.naturalWidth;
+     canvas.height = mediaElement.naturalHeight;
+     ctx.drawImage(mediaElement, 0, 0, canvas.width, canvas.height);
+ } else {
+     return;
+ }
+
+ canvas.toBlob(function(blob) {
+     if (!blob) return;
+
+     var formData = new FormData();
+     formData.append("file", blob, "frame.jpg");
+     formData.append("drone_id", droneId || "drone1");
+
+     var contextPath = window.contextPath || '';
+
+     $.ajax({
+         url: contextPath + "/api/detectImage",
+         type: "POST",
+         data: formData,
+         processData: false,
+         contentType: false,
+         success: function(res) {
+             if (typeof res === 'string') {
+                 try { res = JSON.parse(res); } catch (e) {}
+             }
+
+             // UI 텍스트 업데이트
+             $('#modalPeopleCount').text((res.people_count || 0) + '명');
+             $('#modalDensity').text((res.density_percent || 0) + '%');
+             $('#modalDangerLevel').text(res.danger_level || '정상');
+
+             // 🎯 차트 갱신 함수 호출
+             updateDensityChart(res.density_percent);
+             updateAnimalChart(res.boxes);
+         }
+     });
+ }, "image/jpeg", 0.8);
+}
+
+//💡 페이지 로드 완료 시 차트 최초 1회 초기화
+$(document).ready(function() {
+ initRealtimeDensityChart();
+ initRealtimeAnimalChart();
+});
 
 // 3. 최근 위험 이벤트 실시간 갱신 로직
 function initRealtimeEvents() {
@@ -396,7 +487,7 @@ function initRealtimeEvents() {
     const zones = ['푸드존', '메인 무대', '산책로 A구역', '동문 입구', '주차장 B구역', '체험 부스'];
     const dngrTypes = ['인파 밀집', '멧돼지 출현', '고라니 포착', '동선 혼잡', '안전펜스 충돌'];
     const levels = [
-        { text: '심각', class: 'danger' },
+        { text: '위험', class: 'danger' },
         { text: '경계', class: 'warning' },
         { text: '주의', class: 'caution' }
     ];
@@ -431,7 +522,7 @@ function initRealtimeEvents() {
         if ($eventList.find('li').length > 4) {
             $eventList.find('li:last').remove();
         }
-    }, 4000);
+    }, 7000);
 }
 
 // 4. 대시보드 실시간 실행 및 초기화
@@ -464,6 +555,15 @@ window.startRealtimeDashboard = function() {
 setTimeout(function() {
     window.startRealtimeDashboard();
 }, 100);
+
+
+//💡 평소에도 차트가 1초마다 계속 움직이도록 만드는 배경 타이머
+if (window.chartIdleTimer) clearInterval(window.chartIdleTimer);
+
+window.chartIdleTimer = setInterval(function() {
+    if (typeof updateDensityChart === 'function') updateDensityChart(null);
+    if (typeof updateAnimalChart === 'function') updateAnimalChart([]);
+}, 1000);
 </script>
 
 

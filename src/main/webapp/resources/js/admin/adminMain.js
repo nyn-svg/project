@@ -280,13 +280,17 @@ function drawMainZones(zones, renderScaleX, renderScaleY) {
         ctx.beginPath();
         ctx.moveTo(points[0].x * renderScaleX, points[0].y * renderScaleY);
 
-        for (var i = 1;i < points.length;i++) {
+        for (var i = 1; i < points.length; i++) {
             ctx.lineTo(points[i].x * renderScaleX, points[i].y * renderScaleY);
         }
 
         ctx.closePath();
-        ctx.fillStyle = zone.fillColor || "rgba(56, 189, 248, 0.3)";
+        
+        // 💡 [수정] JSON의 zone.color 속성을 1순위로 읽어옵니다.
+        ctx.fillStyle = zone.color || zone.fillColor || "rgba(56, 189, 248, 0.3)";
         ctx.fill();
+        
+        // 테두리 색상 (strokeColor가 없으면 테두리용 기본 색상 사용)
         ctx.strokeStyle = zone.strokeColor || "#38bdf8";
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -386,16 +390,29 @@ window.initAdminMainSse = function() {
 
 
 // ==========================================
-// 1. 드론 비디오 모달 관련 함수 (전역)
+// 1. 드론 비디오 모달 관련 함수 (플로팅 관제창 + AI 분석 연동)
 // ==========================================
 window.closeDroneModal = function() {
     const modal = document.getElementById("droneVideoModal");
     const imgEl = document.getElementById("modalStreamImg");
     const videoEl = document.getElementById("modalStreamVideo");
-    
+    const aiCanvas = document.getElementById("aiOverlayCanvas");
+
+    // 💡 1. 실행 중인 AI 감지 타이머 정지
+    if (window.aiDetectTimer) {
+        clearInterval(window.aiDetectTimer);
+        window.aiDetectTimer = null;
+    }
+
+    // 💡 2. 모달 닫을 때 남아있는 AI 바운딩 박스 잔상 제거
+    if (aiCanvas) {
+        const ctx = aiCanvas.getContext("2d");
+        ctx.clearRect(0, 0, aiCanvas.width, aiCanvas.height);
+    }
+
     if (imgEl) {
         imgEl.src = "";
-        imgEl.removeAttribute("crossorigin"); // CORS 속성 리셋
+        imgEl.removeAttribute("crossorigin");
     }
     if (videoEl) { 
         videoEl.pause(); 
@@ -411,38 +428,81 @@ function openDroneModal(zone) {
     const videoEl = document.getElementById("modalStreamVideo");
     const noStreamEl = document.getElementById("modalNoStream");
 
-    // DB 필드명(zoneName)을 우선 참조하도록 수정
+    if (!modal) return;
+
+    // 💡 기존에 작동 중이던 AI 분석 타이머가 있다면 재설정을 위해 먼저 정지
+    if (window.aiDetectTimer) {
+        clearInterval(window.aiDetectTimer);
+        window.aiDetectTimer = null;
+    }
+
+    // DB 필드명 우선 참조
     const zoneTitle = zone.zoneName || zone.name || "구역";
     const droneId = zone.droneId || zone.drone_id || "미지정";
     const streamUrl = zone.streamUrl || zone.stream_url || "";
 
-    titleEl.textContent = `[${zoneTitle}] - 드론 관제 (${droneId})`;
+    if (titleEl) titleEl.textContent = `[${zoneTitle}] - 드론 관제 (${droneId})`;
 
-    imgEl.style.display = "none";
-    videoEl.style.display = "none";
-    noStreamEl.style.display = "none";
+    if (imgEl) imgEl.style.display = "none";
+    if (videoEl) videoEl.style.display = "none";
+    if (noStreamEl) noStreamEl.style.display = "none";
 
     if (!streamUrl) {
-        noStreamEl.style.display = "block";
+        if (noStreamEl) noStreamEl.style.display = "block";
     } else if (streamUrl.startsWith("http")) {
-        // ⚠️ [핵심] src 할당 '전에' crossOrigin 속성을 부여해야 Tainted 에러가 방지됨
-        imgEl.crossOrigin = "anonymous";
-        
-        // 브라우저의 기존 비-CORS 캐시 파기용 타임스탬프 추가
-        const cacheBuster = (streamUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-        imgEl.src = streamUrl + cacheBuster;
-        imgEl.style.display = "block";
+        if (imgEl) {
+            imgEl.crossOrigin = "anonymous";
+            const cacheBuster = (streamUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+            imgEl.src = streamUrl + cacheBuster;
+            imgEl.style.display = "block";
+        }
     } else if (streamUrl.endsWith(".mp4")) {
-        videoEl.src = streamUrl;
-        videoEl.style.display = "block";
-        videoEl.play();
+        if (videoEl) {
+            videoEl.src = streamUrl;
+            videoEl.style.display = "block";
+            videoEl.play();
+        }
     } else {
-        imgEl.crossOrigin = "anonymous";
-        imgEl.src = streamUrl;
-        imgEl.style.display = "block";
+        if (imgEl) {
+            imgEl.crossOrigin = "anonymous";
+            imgEl.src = streamUrl;
+            imgEl.style.display = "block";
+        }
     }
 
-    modal.style.display = "flex";
+    // [플로팅 창 전환 설정]
+    modal.style.display = "block";
+    modal.style.background = "transparent"; // 어두운 배경 제거
+    modal.style.pointerEvents = "none";     // 외부 영역 클릭을 뒤쪽 지도에 투과
+
+    // 내부 실제 영상 박스만 클릭 이벤트 복원
+    const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
+    if (modalContent) {
+        modalContent.style.pointerEvents = "auto";
+    }
+
+    // 💡 [핵심 추가] 모달이 켜지고 영상 DOM이 생성된 후 AI 프레임 캡처 및 바운딩 박스 연동 시작
+    if (streamUrl) {
+        setTimeout(function() {
+            var mediaEl = document.getElementById('modalStreamVideo');
+            if (!mediaEl || mediaEl.style.display === 'none' || !mediaEl.src) {
+                mediaEl = document.getElementById('modalStreamImg');
+            }
+
+            if (mediaEl && mediaEl.src) {
+                if (mediaEl.tagName === 'IMG') {
+                    mediaEl.crossOrigin = "anonymous";
+                }
+
+                // 1.5초 간격으로 AI 프레임 캡처 후 서버 전송 (drawBoundingBoxes 자동 실행)
+                window.aiDetectTimer = setInterval(function() {
+                    if (typeof captureAndSendAIFrame === 'function') {
+                        captureAndSendAIFrame(mediaEl, droneId);
+                    }
+                }, 1500);
+            }
+        }, 500);
+    }
 }
 
 // ==========================================

@@ -126,13 +126,7 @@ function initSafetyCheckPage() {
         };
     }
 
-    // 5. 출력 버튼 이벤트
-    const btnPrint = document.getElementById('btn-print');
-    if (btnPrint) {
-        btnPrint.onclick = function () {
-            window.print();
-        };
-    }
+    
 }
 
 // [핵심] 새로고침(동기)과 메뉴 이동(비동기) 모두를 감지하여 실행
@@ -142,3 +136,61 @@ if (document.readyState === 'loading') {
     // 이미 DOM이 준비된 상태 (비동기 라우팅)
     initSafetyCheckPage();
 }
+
+// 6. AI 법적 보고서 생성 버튼 이벤트
+    const btnGenerateReport = document.getElementById('btn-generate-report');
+    if (btnGenerateReport) {
+        btnGenerateReport.onclick = function () {
+            if (!confirm('최근 점검 내역을 바탕으로 AI 법적 보고서를 생성하시겠습니까?\n(약 10~20초 정도 소요될 수 있습니다.)')) {
+                return;
+            }
+
+            // 버튼 비활성화 및 로딩 상태 표시
+            btnGenerateReport.disabled = true;
+            btnGenerateReport.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI 보고서 작성 중...';
+
+            const basePath = (typeof contextPath !== 'undefined' && contextPath !== null) ? contextPath : '';
+            const reportUrl = basePath + '/admin/safetyCheck/generateReport';
+
+            fetch(reportUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
+                return response.text();
+            })
+			.then(reportContent => {
+			                // 모달 텍스트 영역에 보고서 내용 전달
+			                const contentEl = document.getElementById('aiReportContent');
+			                if (contentEl) {
+			                    contentEl.textContent = reportContent;
+			                }
+
+			                // AI 보고서 모달 표시
+			                const modalEl = document.getElementById('aiReportModal');
+			                if (modalEl) {
+			                    modalEl.style.display = 'flex';
+			                }
+			            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('보고서 생성 중 오류가 발생했습니다.');
+            })
+            .finally(() => {
+                // 버튼 상태 원복
+                btnGenerateReport.disabled = false;
+                btnGenerateReport.innerHTML = '<i class="fas fa-robot"></i> AI 법적 보고서 생성';
+            });
+        };
+    }
+	
+	// AI 보고서 모달 닫기
+	function closeAiReportModal() {
+	    const modalEl = document.getElementById('aiReportModal');
+	    if (modalEl) {
+	        modalEl.style.display = 'none';
+	    }
+	}

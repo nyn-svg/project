@@ -79,7 +79,15 @@ public class SituationServiceImpl implements SituationService {
 
 	@Override
 	public boolean modifySituation(SituationDTO situation) {
-		return situationMapper.updateSituation(situation) > 0;
+		// 1. DB에 저장되어 있는 이력 수정/갱신
+        int result = situationMapper.updateSituation(situation);
+        
+        // 2. DB 저장 성공 시 접속 중인 모든 화면으로 실시간 SSE 이벤트 발송
+        if (result > 0) {
+        	sseService.sendEvent("situation-update", situation);
+        }
+        
+		return result > 0;
 	}
 
 	@Override

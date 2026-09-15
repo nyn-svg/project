@@ -3,7 +3,7 @@
 <!-- 상단 헤더 -->
 <header class="app-header">
     <a href="${pageContext.request.contextPath}/" class="header-logo header-link">
-        <div class="logo-icon">🛡️</div>
+        <div class="logo-icon"><i class="fa-solid fa-display"></i></div>
         <span>2TEAM</span>
     </a>
 

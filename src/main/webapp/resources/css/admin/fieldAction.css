@@ -11,10 +11,16 @@
     font-size: 24px; 
     font-weight: bold; 
     margin-bottom: 20px; 
-    color: #ffffff; 
+    color: #e2e8f0;
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* 아이콘에 은은한 포인트 컬러 부여 */
+.page-title i {
+    color: #60a5fa; /* 부드러운 스카이 블루 */
+    margin-right: 8px;
 }
 
 /* 탭 메뉴 스타일 */

@@ -3,8 +3,8 @@
 <!-- 관리자 전용 상단 헤더 -->
 <header class="app-header admin-header">
     <a href="${pageContext.request.contextPath}/admin/main" class="header-logo header-link">
-        <div class="logo-icon">🛡️</div>
-        <span>2TEAM <span class="admin-badge">ADMIN</span></span>
+        <div class="logo-icon"><i class="fa-solid fa-display"></i></div>
+		<span>2TEAM <span class="admin-badge">ADMIN</span></span>
     </a>
 
     <nav class="header-nav">

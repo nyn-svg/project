@@ -267,8 +267,8 @@ function renderAdminDroneList() {
         type: 'GET',
         dataType: 'json',
         success: function(drones) {
-        	
-        	// 💡 [추가] KPI 카드의 비행중 드론 수 동적 업데이트
+            
+            // 💡 [추가] KPI 카드의 비행중 드론 수 동적 업데이트
             var $kpiDroneValue = $('.kpi-card:contains("비행중 드론") .kpi-value.primary');
             if ($kpiDroneValue.length) {
                 $kpiDroneValue.text(drones ? drones.length : 0);
@@ -306,40 +306,19 @@ function renderAdminDroneList() {
                     .on('mouseover', function() { $(this).css('background', 'rgba(255, 255, 255, 0.1)'); })
                     .on('mouseout', function() { $(this).css('background', 'rgba(255, 255, 255, 0.05)'); })
                     .on('click', function() {
-				    // 1. 기존 모달 오픈 처리
-				    if (typeof openDroneModalByData === 'function') {
-				        openDroneModalByData(drone);
-				    } else if (typeof openDroneModal === 'function') {
-				        openDroneModal({ droneId: droneId, streamUrl: streamUrl });
-				    }
-				
-				    // 2. 기존 실행 중인 AI 분석 타이머가 있다면 제거
-				    if (window.aiDetectTimer) {
-				        clearInterval(window.aiDetectTimer);
-				    }
-				
-				    // 3. 모달이 켜지고 영상 DOM이 생성될 때까지 약간의 유예시간(500ms) 후 캡처 시작
-				    setTimeout(function() {
-				        // ⭕ modalStreamVideo가 안 보이면 modalStreamImg를 타깃으로 설정
-				        var mediaEl = document.getElementById('modalStreamVideo');
-				        if (!mediaEl || mediaEl.style.display === 'none' || !mediaEl.src) {
-				            mediaEl = document.getElementById('modalStreamImg');
-				        }
+                        // 💡 [핵심 수정] 모달 오픈 및 AI 타이머 시작은 openDroneModal() 내부로 전담 (이중 실행 방지)
+                        var modalParam = {
+                            zoneName: drone.zoneName || "구역 미지정",
+                            droneId: droneId,
+                            streamUrl: streamUrl
+                        };
 
-				        if (mediaEl) {
-				            // 💡 [핵심 추가] 캡처 전 crossorigin 속성을 강제로 부여
-				            if (mediaEl.tagName === 'IMG') {
-				                mediaEl.crossOrigin = "anonymous";
-				            }
-
-				            if (mediaEl.src) {
-				                window.aiDetectTimer = setInterval(function() {
-				                    captureAndSendAIFrame(mediaEl, droneId);
-				                }, 1500);
-				            }
-				        }
-				    }, 500);
-				});
+                        if (typeof openDroneModal === 'function') {
+                            openDroneModal(modalParam);
+                        } else if (typeof openDroneModalByData === 'function') {
+                            openDroneModalByData(drone);
+                        }
+                    });
 
                 var html = 
                     '<div style="display: flex; justify-content: space-between; align-items: center;">' +
@@ -359,7 +338,7 @@ function renderAdminDroneList() {
             $container.append($ul);
         },
         error: function(xhr, status, error) {
-        	console.error("패널 드론 목록 로드 실패 - 상태코드:", xhr.status, "에러내용:", error);
+            console.error("패널 드론 목록 로드 실패 - 상태코드:", xhr.status, "에러내용:", error);
             $container.html('<div style="color: #f87171; font-size: 12px; padding: 10px 0;">목록을 불러오지 못했습니다.</div>');
         }
     });
@@ -471,20 +450,34 @@ function captureAndSendAIFrame(mediaElement, droneId) {
             success: function(res) {
                 console.log("[" + droneId + "] AI 감지 결과:", res);
 
-                // 응답 데이터 기반 모달 UI 실시간 갱신
-                $('#modalPeopleCount').text(res.people_count + '명');
-                $('#modalDensity').text(res.density_percent + '%');
-                $('#modalDangerLevel').text(res.danger_level);
+                // 1. 문자열 형태 응답 안전 파싱
+                if (typeof res === 'string') {
+                    try { res = JSON.parse(res); } catch (e) {}
+                }
+
+                // 2. 응답 데이터 기반 모달 UI 실시간 갱신
+                $('#modalPeopleCount').text((res.people_count || 0) + '명');
+                $('#modalDensity').text((res.density_percent || 0) + '%');
+                $('#modalDangerLevel').text(res.danger_level || '정상');
                 
-                // 야생동물이 감지된 경우 처리
+                // 3. 야생동물이 감지된 경우 처리
                 if (res.detected_animals && res.detected_animals.length > 0) {
                     $('#modalAnimalWarning').text('⚠️ 감지된 동물: ' + res.detected_animals.join(', ')).show();
                 } else {
                     $('#modalAnimalWarning').hide();
                 }
-       		    // 🎯 [추가] AI 바운딩 박스 Canvas 렌더링 호출
-                if (res.boxes) {
+
+                // 4. AI 바운딩 박스 Canvas 렌더링 호출
+                if (res.boxes && typeof drawBoundingBoxes === 'function') {
                     drawBoundingBoxes(res.boxes);
+                }
+
+                // 🎯 5. [추가] 실시간 차트 데이터 주입
+                if (typeof updateDensityChart === 'function') {
+                    updateDensityChart(res.density_percent);
+                }
+                if (typeof updateAnimalChart === 'function') {
+                    updateAnimalChart(res.boxes);
                 }
             }
         });

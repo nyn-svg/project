@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,20 +68,22 @@ public class SituationController {
         return "detection/detail"; 
     }
     
+    // (수동) 위험 감지 이력 등록
+    @GetMapping("/detection/regist")
+    public String getDetectionRegist(Model model, @RequestParam(value = "photo", required = false) MultipartFile photo) {
+    	return "detection/regist";
+    }
+    @PostMapping("/detection/regist")
+    public String postDetectionRegist(@RequestBody SituationDTO situation) {
+    	return "detection/regist_success";
+    }
+    
     /*
      * // 감지조치이력 목록 조회 (검색조건 포함)
      * 
      * @GetMapping("/detect/list")
      * 
      * @ResponseBody public List<SituationDTO> getSituationList() {
-     * 
-     * }
-     * 
-     * // (수동) 위험 감지 이력 등록
-     * 
-     * @PostMapping("/detect/regist")
-     * 
-     * @ResponseBody public Map<String, Object> registSituation() {
      * 
      * }
      * 

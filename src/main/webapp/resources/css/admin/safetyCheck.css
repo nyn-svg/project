@@ -280,6 +280,54 @@
     border-color: #0284c7;
 }
 
+@media print {
+    /* 1. 기본 웹페이지 화면 요소 전부 숨김 */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* 2. AI 보고서 모달 및 내부 내용만 보이도록 설정 */
+    #aiReportModal, #aiReportModal * {
+        visibility: visible !important;
+    }
+
+    /* 3. 모달 껍데기를 A4 종이 서식(흰 배경, 검은 글씨)으로 변환 */
+    #aiReportModal {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+    }
+
+    #aiReportModal > div {
+        background: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        color: #000000 !important;
+    }
+
+    /* 4. 인쇄 시 불필요한 버튼 및 ✕ 아이콘 숨김 */
+    #aiReportModal button {
+        display: none !important;
+    }
+
+    /* 5. 보고서 본문 텍스트 스타일 깔끔하게 정리 */
+    #aiReportContent {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: none !important;
+        font-size: 11pt !important;
+        line-height: 1.8 !important;
+        padding: 0 !important;
+        white-space: pre-wrap !important;
+    }
+}
 /* ==========================================
    다크 테마 커스텀 스크롤바 스타일
    ========================================== */
