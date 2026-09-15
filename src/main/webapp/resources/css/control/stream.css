@@ -84,31 +84,23 @@
     overflow: hidden;
 }
 
-#stream-video, #video-stream {
+#stream-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-/* 비디오 기본 컨트롤바 숨김 */
+/* 비디오 기본 컨트롤바 숨김 여부 */
 #stream-video::-webkit-media-controls-play-button,
 #stream-video::-webkit-media-controls-timeline,
 #stream-video::-webkit-media-controls-current-time-display,
 #stream-video::-webkit-media-controls-time-remaining-display,
 #stream-video::-webkit-media-controls-mute-button,
-#stream-video::-webkit-media-controls-volume-slider,
-#video-stream::-webkit-media-controls-play-button,
-#video-stream::-webkit-media-controls-timeline,
-#video-stream::-webkit-media-controls-current-time-display,
-#video-stream::-webkit-media-controls-time-remaining-display,
-#video-stream::-webkit-media-controls-mute-button,
-#video-stream::-webkit-media-controls-volume-slider {
+#stream-video::-webkit-media-controls-volume-slider {
     display: none;
 }
-
-#stream-video::-webkit-media-controls-fullscreen-button,
-#video-stream::-webkit-media-controls-fullscreen-button {
+#stream-video::-webkit-media-controls-fullscreen-button {
     display: block;
 }
 
@@ -140,16 +132,55 @@
 
 /* 브라우저 전체화면 상태일 때의 보정 */
 .stream-placeholder:fullscreen #stream-video,
-.stream-placeholder:fullscreen #video-stream,
-.stream-placeholder:-webkit-full-screen #stream-video,
-.stream-placeholder:-webkit-full-screen #video-stream {
+.stream-placeholder:-webkit-full-screen #stream-video{
     object-fit: contain;
     width: 100vw;
     height: 100vh;
 }
 
 /* ==========================================
-   2. 토스트 알림 메시지
+   2. 스트리밍 로딩 및 에러 안내 오버레이 박스
+   ========================================== */
+.stream-loading-box,
+.stream-notice-box {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    z-index: 2;
+    gap: 8px;
+}
+
+.stream-loading-box .fa-spinner {
+    font-size: 32px;
+    color: #0ea5e9;
+    filter: drop-shadow(0 0 8px #0ea5e9);
+}
+
+.stream-loading-box span {
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stream-notice-box.error i,
+.stream-notice-box.error svg {
+    font-size: 32px;
+    color: #fcd34d;
+    filter: drop-shadow(0 0 8px #f59e0b);
+}
+
+.stream-notice-box.error span {
+    color: #fcd34d;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   3. 토스트 알림 메시지
    ========================================== */
 #toast-container {
     position: absolute;
@@ -161,6 +192,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    pointer-events: none; /* 💡 메시지가 없을 때 클릭 이벤트 통과 */
 }
 
 .toast-message {
@@ -183,6 +215,7 @@
     opacity: 0;
     transform: translateY(-12px);
     transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: auto; /* 💡 메시지 본체만 클릭 수신 가능 */
 }
 
 .toast-message.show {
@@ -206,7 +239,7 @@
 }
 
 /* ==========================================
-   3. 스위치 토글
+   4. 스위치 토글
    ========================================== */
 .switch {
     position: relative;
@@ -251,7 +284,7 @@ input:checked + .slider:before {
 }
 
 /* ==========================================
-   4. 우측 관제 패널
+   5. 우측 관제 패널
    ========================================== */
 .stream-control-area {
     width: 320px;
@@ -303,13 +336,13 @@ input:checked + .slider:before {
     color: #38bdf8;
 }
 
-.info {
+.card-info {
     font-size: 14px;
     color: #94a3b8;
     margin-top: 3px;
 }
 
-.info-value {
+.card-info-value {
     color: #f8fafc;
     font-weight: 600;
 }
@@ -446,7 +479,7 @@ input:checked + .slider:before {
     overflow: hidden;
 }
 
-.report-list {
+#report-list {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
@@ -468,14 +501,14 @@ input:checked + .slider:before {
     text-align: center;
 }
 
-.report-list::-webkit-scrollbar {
+#report-list::-webkit-scrollbar {
     width: 4px;
 }
-.report-list::-webkit-scrollbar-thumb {
+#report-list::-webkit-scrollbar-thumb {
     background: rgba(56, 189, 248, 0.4);
     border-radius: 4px;
 }
-.report-list::-webkit-scrollbar-track {
+#report-list::-webkit-scrollbar-track {
     background: rgba(15, 23, 42, 0.5);
 }
 
@@ -542,7 +575,7 @@ input:checked + .slider:before {
 }
 
 /* ==========================================
-   5. 하단 감지 이력 섹션
+   6. 하단 감지 이력 섹션
    ========================================== */
 .detection-history {
     width: 100%;
@@ -598,7 +631,7 @@ input:checked + .slider:before {
     border-radius: 10px;
 }
 
-.register-btn {
+.regist-btn {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff;
     border: none;
@@ -613,7 +646,7 @@ input:checked + .slider:before {
     transition: all 0.2s ease;
 }
 
-.register-btn:hover {
+.regist-btn:hover {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
 
@@ -634,13 +667,13 @@ input:checked + .slider:before {
 }
 
 .history-table th:nth-child(1) { width: 14%; }
-.history-table th:nth-child(2) { width: 10%; }
-.history-table th:nth-child(3) { width: 17%; }
+.history-table th:nth-child(2) { width: 15%; }
+.history-table th:nth-child(3) { width: 14%; }
 .history-table th:nth-child(4) { width: 10%; }
-.history-table th:nth-child(5) { width: 21%; }
-.history-table th:nth-child(6) { width: 10%; }
-.history-table th:nth-child(7) { width: 12%; }
-.history-table th:nth-child(8) { width: 6%; }
+.history-table th:nth-child(5) { width: 15%; }
+.history-table th:nth-child(6) { width: 15%; }
+.history-table th:nth-child(7) { width: 10%; }
+.history-table th:nth-child(8) { width: 7%; }
 
 .history-table th,
 .history-table td {
@@ -653,7 +686,11 @@ input:checked + .slider:before {
 }
 
 .history-table th {
-    background: rgba(30, 41, 59, 0.8);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    
+    background: #1e293b;
     color: #94a3b8;
 }
 
@@ -698,14 +735,14 @@ input:checked + .slider:before {
 
 /* 조치 상태 */
 .status-pending {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
 }
 .status-in-progress {
-  background: rgba(234, 179, 8, 0.2);
-  color: #facc15;
-  border: 1px solid rgba(234, 179, 8, 0.4);
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.4);
 }
 .status-completed {
   background: rgba(16, 185, 129, 0.2);
@@ -769,44 +806,4 @@ input:checked + .slider:before {
     gap: 4px;
     white-space: nowrap;
     color: #cbd5e1;
-}
-
-/* ==========================================
-   6. 스트리밍 로딩 및 에러 안내 오버레이 박스
-   ========================================== */
-.stream-loading-box,
-.stream-notice-box {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #000;
-    z-index: 2;
-    gap: 8px;
-}
-
-.stream-loading-box .fa-spinner {
-    font-size: 32px;
-    color: #0ea5e9;
-    filter: drop-shadow(0 0 8px #0ea5e9);
-}
-
-.stream-loading-box span {
-    color: #94a3b8;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.stream-notice-box.error i {
-    font-size: 32px;
-    color: #fcd34d;
-    filter: drop-shadow(0 0 8px #f59e0b);
-}
-
-.stream-notice-box.error span {
-    color: #fcd34d;
-    font-size: 14px;
-    font-weight: 600;
 }

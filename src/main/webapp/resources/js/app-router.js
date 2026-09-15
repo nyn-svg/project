@@ -65,6 +65,11 @@ $(document).ready(function() {
 			 window.initRealtimePage();
 		}
 	}
+	if (currentPath.includes('/stream')) {
+		if (typeof window.initStreamPage === 'function') {
+			window.initStreamPage();
+		}
+	}
 	
 	// 사이드 바 비동기(AJAX) 이동 이벤트
     $(document).on('click', '.sidebar-link', function(e) {
@@ -93,7 +98,15 @@ $(document).ready(function() {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             success: function(response) {
-                $('#main-container').html(response);
+				// 💡 응답받은 전체 HTML에서 #main-container 내부 알맹이만 추출
+				var $parsed = $('<div>').html(response);
+				var newContent = $parsed.find('#main-container').html();
+				
+				if (newContent) {
+					$('#main-container').html(newContent);
+				} else {
+					$('#main-container').html(response);
+				}
 				
 				// 서버 요청 없이 주소창의 URL만 바꾸는 기능
                 history.pushState(null, null, url);
@@ -110,8 +123,12 @@ $(document).ready(function() {
                     initDetectionPage();
                 }
 				
-				if (typeof window.initStreamPage === 'function') {
-					window.initStreamPage();
+				if (typeof initRealtimePage === 'function') {
+					initRealtimePage();
+				}
+				
+				if (typeof initStreamPage === 'function') {
+					initStreamPage();
 				}
               
             },
