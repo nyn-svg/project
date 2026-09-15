@@ -39,5 +39,33 @@
             #{remark, jdbcType=VARCHAR}
         )
     </insert>
+    
+    <!-- 가장 최근 작성된 마스터 1건 조회 -->
+    <select id="selectLatestMaster" resultType="com.spring.dto.SafetyCheckMasterDTO">
+        SELECT *
+        FROM (
+            SELECT 
+                CHECK_ID AS checkId,
+                CHECK_DATE AS checkDate,
+                CHECK_ROUND AS checkRound,
+                INSPECTOR AS inspector
+            FROM SAFETY_CHECK_MASTER
+            ORDER BY CHECK_ID DESC
+        )
+        WHERE ROWNUM = 1
+    </select>
+
+    <!-- 특정 CHECK_ID에 해당하는 상세 20개 항목 조회 -->
+    <select id="selectDetailsByCheckId" parameterType="long" resultType="com.spring.dto.SafetyCheckDetailDTO">
+        SELECT 
+            DETAIL_ID AS detailId,
+            CHECK_ID AS checkId,
+            ITEM_NO AS itemNo,
+            STATUS_CODE AS statusCode,
+            REMARK AS remark
+        FROM SAFETY_CHECK_DETAIL
+        WHERE CHECK_ID = #{checkId}
+        ORDER BY DETAIL_ID ASC
+    </select>
 
 </mapper>

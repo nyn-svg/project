@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="<c:url value='/resources/css/admin/fieldAction.css'/>">
 
 <div class="action-container">
-    <div class="page-title">🛡️ 현장 조치 승인 및 관리</div>
+   <div class="page-title"><i class="fa-solid fa-clipboard-check"></i> 현장 조치 승인 및 관리</div>
 
     <!-- 탭 상단 메뉴 -->
     <div class="tab-menu">
