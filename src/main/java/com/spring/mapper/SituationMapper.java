@@ -46,9 +46,13 @@ public interface SituationMapper {
     // 종료이력 수
     int getEndSituationCount();
 
- // 1. 현장 조치 목록 조회 (XML의 id="getFieldActionList"와 매핑)
+    // 1. 현장 조치 목록 조회 (XML의 id="getFieldActionList"와 매핑)
     List<SituationDTO> getFieldActionList(String statusType);
 
     // 2. 현장 조치 승인/반려 처리 (XML의 id="processFieldAction"과 매핑)
     int processFieldAction(Map<String, Object> paramMap);
+    
+    // [안전요원 모바일 조치보고 리스트 - 무한 스크롤 페이징 기능 추가]
+    List<SituationDTO> getTaskListPaged(Map<String, Object> paramMap);
+    int getTaskListCount(Map<String, Object> paramMap);
 }

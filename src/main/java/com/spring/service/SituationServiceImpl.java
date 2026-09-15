@@ -120,4 +120,15 @@ public class SituationServiceImpl implements SituationService {
 	    int result = situationMapper.processFieldAction(paramMap);
 	    return result > 0;
 	}
+	
+	// [안전요원 모바일 조치보고 리스트 - 무한 스크롤 페이징 기능 추가]
+	@Override
+	public List<SituationDTO> getTaskListPaged(Map<String, Object> paramMap) {
+		return situationMapper.getTaskListPaged(paramMap);
+	}
+
+	@Override
+	public int getTaskListCount(Map<String, Object> paramMap) {
+		return situationMapper.getTaskListCount(paramMap);
+	}
 }

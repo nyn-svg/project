@@ -1,5 +1,5 @@
 let offset = 0;       
-let limit = 6;  // 💡 기존 4에서 6으로 늘려 스크롤 바가 확실히 생기도록 조정
+let limit = 6;  
 let isLoading = false; 
 let isEnd = false;    
 let currentStatus = "ALL";
@@ -9,21 +9,22 @@ document.addEventListener("DOMContentLoaded", function() {
     // 1. 첫 데이터 조회
     loadMoreTasks();
 
-    // 2. 스크롤 이벤트 타겟 수정 (.mobile-content 감지)
+    // 2. 스크롤 이벤트 타겟 감지 (.mobile-content 스크롤 유지)
     const scrollContainer = document.querySelector(".mobile-content");
     if (scrollContainer) {
         scrollContainer.addEventListener("scroll", handleScroll);
     }
     
-    // 3. 카드 클릭 시 상세 페이지 이동
+    // 3. 카드 클릭 시 상세 조치보고서 작성/편집 페이지로 이동
     const historyList = document.getElementById("historyList");
     if (historyList) {
         historyList.addEventListener("click", function(e) {
             var card = e.target.closest(".history-card");
             if (card) {
-                var taskId = card.getAttribute("data-id");
-                if (taskId) {
-                    location.href = contextPath + "/agent/taskEdit?id=" + taskId;
+                // 💡 중요: AGENT_TASK의 id 대신 SITUATIONS의 PK인 situNo를 가로챕니다.
+                var situNo = card.getAttribute("data-id");
+                if (situNo) {
+                    location.href = contextPath + "/agent/taskEdit?situNo=" + situNo;
                 }
             }
         });
@@ -49,14 +50,13 @@ document.addEventListener("DOMContentLoaded", function() {
     $("#navReport").on("click", function() { location.href = "history"; });
 });
 
-// 💡 .mobile-content 스크롤 감지 로직 수정
+// 스크롤 감지 로직
 function handleScroll() {
     if (isLoading || isEnd) return;
 
     const scrollContainer = document.querySelector(".mobile-content");
     if (!scrollContainer) return;
 
-    // 내부 스크롤 바닥 감지 (바닥 50px 전에 추가 로딩 실행)
     const isBottom = scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 50;
 
     if (isBottom) {
@@ -76,7 +76,7 @@ function resetAndReload() {
     loadMoreTasks();
 }
 
-// 데이터 Fetch
+// 데이터 Fetch (SituationDTO 반환 구조 대응)
 function loadMoreTasks() {
     if (isLoading || isEnd) return;
     isLoading = true;
@@ -133,59 +133,64 @@ function loadMoreTasks() {
         });
 }
 
-// 카드 HTML 생성
+// 💳 SituationDTO 구조 기반 카드 HTML 동적 렌더링
 function createCardHtml(task) {
-    var rawType = task.taskType || task.TASK_TYPE || '';
-    var taskTypeText = rawType;
+    // 1. 유형 배지 설정: 위험유형(task.dngrType) 기준 파스텔 배징 매핑
+    var rawType = task.dngrType || task.DNGR_TYPE || '기타';
     var badgeClass = "badge-patrol";
 
-    if (rawType === 'EMERGENCY' || rawType === '긴급') {
-        taskTypeText = '긴급'; badgeClass = "badge-emergency";
-    } else if (rawType === 'REPORT' || rawType === '상황') {
-        taskTypeText = '상황'; badgeClass = "badge-report";
-    } else if (rawType === 'PATROL' || rawType === '순찰') {
-        taskTypeText = '순찰'; badgeClass = "badge-patrol";
-    } else if (rawType === 'INSPECTION' || rawType === '점검') {
-        taskTypeText = '점검'; badgeClass = "badge-check";
-    } else if (rawType === 'SUPPORT' || rawType === '지원') {
-        taskTypeText = '지원'; badgeClass = "badge-support";
-    } else if (rawType === 'OTHER' || rawType === '기타') {
-        taskTypeText = '기타'; badgeClass = "badge-other";
+    if (rawType.includes('위험') || rawType.includes('인파') || rawType.includes('사고')) {
+        badgeClass = "badge-emergency"; // 긴급/위험은 레드 칩
+    } else if (rawType.includes('점검')) {
+        badgeClass = "badge-check";     // 점검은 그린 칩
+    } else if (rawType.includes('지원')) {
+        badgeClass = "badge-support";   // 지원은 퍼플 칩
+    } else {
+        badgeClass = "badge-other";     // 기타는 그레이 칩
     }
 
-    var actionStatus = task.actionStatus || task.ACTION_STATUS || '';
-    var statusText = '미조치';
-    var statusClass = 'status-end';
+    // 2. 조치 상태 칩 제어 (SITU_STATUS 분기)
+    var situStatus = task.situStatus || task.SITU_STATUS || '';
+    var statusText = '조치중';
+    var statusClass = 'status-progress';
     
-    // 1. 조치중/조치대기
-    if (actionStatus === 'PENDING' || actionStatus === '조치중' || actionStatus === '조치대기') {
-        statusText = '조치중';
-        statusClass = 'status-progress';
-    } 
-    // 2. 조치완료/완료
-    else if (actionStatus === 'COMPLETED' || actionStatus === '조치완료' || actionStatus === '완료') {
+    if (situStatus === '완료' || situStatus === '조치완료') {
         statusText = '완료';
         statusClass = 'status-complete';
-    }
-    // 3. 미조치종결/미조치 (텍스트는 '미조치' 그대로 보존)
-    else {
-        statusText = '미조치';
-        statusClass = 'status-end';
+    } else {
+        statusText = '조치중';
+        statusClass = 'status-progress'; // 알림창 수락 직후 기본 상태
     }
 
-    var taskTitle = task.taskTitle || task.TASK_TITLE || '제목 없음';
-    var taskArea = task.taskArea || task.TASK_AREA || '';
-    var startTime = task.startTime || task.START_TIME || '';
-    if(startTime && startTime.includes('T')) {
-        startTime = startTime.substring(0, 16).replace('T', ' '); 
+    // 3. 텍스트 바인딩 규칙 변환
+    var taskTitle = task.situContent || task.SITU_CONTENT || '내용 없음'; // 감지 내용 출력
+    var taskArea = task.zoneName || task.ZONE_NAME || '';                // 구역명 추출
+    
+    // 4. 시간 데이터 정돈 및 타입 변환 에러 안전 조치 (START_DATE 적용)
+    var startTime = task.startDate || task.START_DATE || '';
+    if (startTime) {
+        if (typeof startTime === 'number' || startTime instanceof Date) {
+            var d = new Date(startTime);
+            var pad = function(n) { return n < 10 ? '0' + n : n; };
+            startTime = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        } else {
+            startTime = String(startTime);
+            if (startTime.includes('T')) {
+                startTime = startTime.substring(0, 16).replace('T', ' '); 
+            }
+        }
+    } else {
+        startTime = '';
     }
 
-    var taskId = task.taskId || task.TASK_ID || task.id || '';
+    // 고유 식별 PK 키 변환
+    var situNo = task.situNo || task.SITU_NO || '';
 
-    return '<div class="history-card" data-id="' + taskId + '">' +
+    // 💡 [버그 수정] 깨짐 방지를 위해 history-title의 인라인 고정 너비 속성을 완전히 제거했습니다.
+    return '<div class="history-card" data-id="' + situNo + '">' +
                 '<div class="card-main">' +
                     '<div class="title-row">' +
-                        '<span class="badge ' + badgeClass + '">' + taskTypeText + '</span>' +
+                        '<span class="badge ' + badgeClass + '">' + rawType + '</span>' +
                         '<span class="history-title">' + taskTitle + '</span>' +
                     '</div>' +
                     '<div class="info-meta">' +

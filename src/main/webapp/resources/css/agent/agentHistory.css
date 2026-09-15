@@ -172,7 +172,7 @@ body {
 }
 
 /* ==================================================
-   6. 이력 리스트 및 메뉴 카드형 최적화 (터치 피드백 동기화)
+   6. 이력 리스트 및 메뉴 카드형 최적화 (버그 전면 수정)
 ================================================== */
 .history-list {
     display: flex;
@@ -184,16 +184,17 @@ body {
     display: none;
 }
 
-/* 💳 순찰 메뉴 카드 스타일을 고스란히 이식한 리스트 본체 */
+/* 💳 모바일 너비에 반응형으로 맞춘 레이아웃 구조 */
 .history-card {
     width: 100%;
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 20px; 
-    padding: 20px;
+    padding: 16px; /* 여백 최적화 */
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px; /* 좌측 내용과 우측 상태 배지 간 최소 보장 거리 */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
     position: relative;
     cursor: pointer;
@@ -204,19 +205,25 @@ body {
     transform: scale(0.98);
 }
 
+/* 좌측 텍스트 본문 전체 래퍼 */
 .card-main {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
+    min-width: 0; /* 중요: 내부 말줄임 처리를 위한 최저 공간 리셋 */
 }
 
+/* 유형 배지와 제목 정렬 행 */
 .title-row {
     display: flex;
     align-items: center;
     gap: 6px;
+    width: 100%;
+    min-width: 0;
 }
 
-/* 🎨 파스텔톤 앱 인라인 전용 유형 배지 */
+/* 🎨 파스텔톤 유형 배지 (압축 현상 차단) */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -226,6 +233,7 @@ body {
     font-size: 11px;
     font-weight: 700;
     border: 1px solid transparent;
+    flex-shrink: 0; /* 좁은 모바일에서도 유형 글자가 찌그러지지 않게 방지 */
 }
 
 .badge-emergency { background-color: #fef2f2; color: #ef4444; border-color: #fee2e2; } 
@@ -234,11 +242,17 @@ body {
 .badge-support   { background-color: #faf5ff; color: #7c3aed; border-color: #f3e8fd; } 
 .badge-other     { background-color: #f8fafc; color: #64748b; border-color: #e2e8f0; } 
 
+/* 📝 유연한 말줄임표(...) 레이아웃 완성 */
 .history-title {
     font-size: 15px;
     font-weight: 700;
     color: #1a1f2c;
     letter-spacing: -0.3px;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .info-meta {
@@ -249,7 +263,7 @@ body {
     margin-top: 2px;
 }
 
-/* 캡슐 알약 형태의 조치 처리상태 칩 기본 베이스 */
+/* 조치 처리상태 칩 기본 베이스 (고정 가로 보장) */
 .badge-status {
     padding: 6px 14px;
     border-radius: 12px;
@@ -258,22 +272,22 @@ body {
     border: 1px solid #e2e8f0;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* 가로가 좁아져도 상태 캡슐 형태를 완벽히 유지 */
+    white-space: nowrap;
 }
 
-/* 🚨 누락되어 적용되지 않던 동적 상태값 컬러링 스타일 명세 전면 보강 */
-/* 1. 조치완료 상태 */
+/* 동적 상태값 컬러링 */
 .status-complete {
     background-color: #f0fdf4 !important;
     color: #16a34a !important;
     border-color: #dcfce7 !important;
 }
-/* 2. 조치중 상태 */
 .status-progress {
     background-color: #fffbeb !important;
     color: #d97706 !important;
     border-color: #fef3c7 !important;
 }
-/* 3. 미조치 종결 상태 */
 .status-end {
     background-color: #f8fafc !important;
     color: #64748b !important;

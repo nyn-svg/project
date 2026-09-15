@@ -1,6 +1,7 @@
 package com.spring.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.spring.dto.SituationDTO;
 
@@ -50,5 +51,8 @@ public interface SituationService {
 
 	// 현장 조치 승인/반려 처리
 	boolean processFieldAction(String actionId, String status, String adminComment, String adminId);
-
+	
+	// [안전요원 모바일 조치보고 리스트 - 무한 스크롤 페이징 기능 추가]
+	List<SituationDTO> getTaskListPaged(Map<String, Object> paramMap);
+	int getTaskListCount(Map<String, Object> paramMap);
 }

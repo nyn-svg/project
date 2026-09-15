@@ -1,32 +1,113 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
-<!-- 1. 상단 알림창 디자인 (CSS) -->
+<!-- 1. 상단 알림창 디자인 (네이버페이 스타일 + 모바일 규격 최적화) -->
 <style>
+/* 💡 앱 고유의 [근무중] 그린 컬러와 완벽히 동기화된 상단 알림창 */
 .toast-popup-top {
     position: fixed;
     top: 16px;
-    left: 5%;
-    width: 90%;
-    background-color: #1e222b;
-    color: #ffffff;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 420px;
+    background-color: #ffffff; 
+    color: #1e293b;            
+    border-radius: 20px;       
+    border: 1px solid #e2f7ed; 
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02); 
+    padding: 18px;
+    z-index: 999999;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    animation: slideDownMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideDownMobile {
+    from { transform: translate(-50%, -120%); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* 💡 헤더 영역 - 근무중 버튼 고유의 청량한 그린 컬러 적용 */
+.toast-header {
+    font-size: 15px;            
+    font-weight: bold;           
+    margin-bottom: 12px;
+    color: rgb(0, 0, 30);            /* 💡 추출한 고유 색상 매칭 */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: -0.5px;     
+}
+
+/* 본문 영역 */
+.toast-body p {
+    margin: 6px 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #475569; 
+}
+.toast-body p strong {
+    color: #0f172a;
+    font-weight: 700;
+    margin-right: 6px;
+}
+
+/* 내용 박스 구역 */
+#toast-content {
+    display: block;
+    margin-top: 8px;
+    color: #008758;            /* 텍스트 가독성을 위해 본문 박스 글씨만 살짝 묵직하게 유지 */
+    font-size: 13.5px;
+    font-weight: 600;
+    background-color: #f0fdf4; 
+    padding: 12px 14px;
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    padding: 16px;
-    z-index: 99999;
-    border-left: 5px solid #ff4d4d;
-    animation: slideDown 0.3s ease-out;
+    border: 1px solid #d1fae5; 
+    line-height: 1.6;
 }
 
-@keyframes slideDown {
-    from { transform: translateY(-100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+/* 하단 버튼 영역 */
+.toast-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 18px;
+    gap: 10px;
 }
 
-.toast-header { font-size: 15px; font-weight: bold; margin-bottom: 8px; color: #ff4d4d; }
-.toast-body p { margin: 4px 0; font-size: 14px; color: #e2e8f0; }
-.toast-footer { display: flex; justify-content: space-between; margin-top: 14px; gap: 8px; }
-.btn-close { background-color: #4a505e; color: #fff; border: none; border-radius: 6px; padding: 10px 20px; flex: 1; font-size: 13px; cursor: pointer; }
-.btn-confirm { background-color: #ff4d4d; color: #fff; border: none; border-radius: 6px; padding: 10px 20px; flex: 1.5; font-size: 13px; font-weight: bold; cursor: pointer; }
+/* 닫기 버튼 */
+.btn-close {
+    background-color: #f1f5f9; 
+    color: #64748b;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 0;
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-close:hover {
+    background-color: #e2e8f0;
+}
+
+/* 💡 확인 버튼 - 근무중 버튼 고유의 청량한 그린 컬러 적용 */
+.btn-confirm {
+    background-color: #00B074; /* 💡 추출한 고유 색상 매칭 */
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 0;
+    flex: 1.4;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 176, 116, 0.18); /* 그림자 색상 동기화 */
+    transition: background 0.2s;
+}
+.btn-confirm:hover {
+    background-color: #009663; /* 터치 시 정갈하게 딥해지는 컬러 밸런스 */
+}
 </style>
 
 <!-- 2. 알림창 UI 뼈대 (HTML) -->
@@ -36,11 +117,11 @@
     </div>
     <div class="toast-body">
         <p><strong>유형:</strong> <span id="toast-type"></span> (<span id="toast-level"></span>)</p>
-        <p><strong>내용:</strong> <span id="toast-content"></span></p>
+        <p><span id="toast-content"></span></p>
     </div>
     <div class="toast-footer">
         <button id="btn-toast-close" class="btn-close">닫기</button>
-        <button id="btn-toast-confirm" class="btn-confirm">확인 (조치하기)</button>
+        <button id="btn-toast-confirm" class="btn-confirm">확인</button>
     </div>
 </div>
 

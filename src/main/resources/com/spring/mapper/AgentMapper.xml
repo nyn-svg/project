@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.mapper.AgentMapper">
+
+    <!-- 💡 [컬럼명 일치 확인] 안전요원 개인 정보 및 근무 상세 데이터 단건 통합 조회 -->
+    <select id="findAgentById" parameterType="string" resultType="com.spring.dto.AgentDTO">
+        SELECT 
+            U.USER_ID     AS userId,
+            U.USER_NAME   AS userName,
+            U.PHONE       AS phone,
+            U.EMAIL       AS email,
+            D.WORK_STATUS AS workStatus,  
+            D.WORK_AREA   AS workArea,    
+            D.WORK_TIME   AS workTime     
+        FROM USERS U
+        LEFT JOIN AGENT_DETAIL D ON U.USER_ID = D.USER_ID  
+        WHERE U.USER_ID = #{userId}
+    </select>
+
+    <!-- 💡 [컬럼명 일치 확인] 모바일 앱 내 실시간 출퇴근/근무 상태 스위칭 변경 -->
+    <update id="updateAgentStatus">
+        UPDATE AGENT_DETAIL
+        SET WORK_STATUS = #{workStatus}
+        WHERE USER_ID = #{userId}
+    </update>
+
+</mapper>

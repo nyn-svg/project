@@ -13,17 +13,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.spring.dto.AgentTaskDTO;
+import com.spring.dto.AgentDTO;
 import com.spring.dto.ChecklistItemDTO;
 import com.spring.dto.EmergencyContactDTO;
 import com.spring.dto.SafetyCheckDetailDTO;
 import com.spring.dto.SafetyCheckMasterDTO;
+import com.spring.dto.SituationDTO;
 import com.spring.dto.UserDTO;
-import com.spring.service.AgentTaskService;
+import com.spring.service.AgentService;
 import com.spring.service.ChecklistService;
 import com.spring.service.EmergencyContactService;
+import com.spring.service.SituationService;
+import com.spring.service.SseService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -31,20 +36,64 @@ import jakarta.servlet.http.HttpSession;
 public class AgentController {
 
 	@Autowired
-	private AgentTaskService agentTaskService;
+	private AgentService agentService;
 	@Autowired
 	private ChecklistService checklistService;
 	@Autowired
 	private EmergencyContactService emergencyContactService;
+	@Autowired
+	private SituationService situationService;
+	@Autowired
+	private SseService sseService;
+
+	/* ==========[공통 알림]============= */
+	@GetMapping(value = "/sse/connect", produces = "text/event-stream")
+	@ResponseBody 
+	public SseEmitter connectSse() {
+		return sseService.subscribe();
+	}
+
+	@PostMapping("/situation/accept")
+	@ResponseBody
+	public Map<String, Object> acceptSituation(@RequestParam("situNo") String situNo,
+			jakarta.servlet.http.HttpSession session) {
+		Map<String, Object> resultMap = new HashMap<>();
+		try {
+			String loginUserId = (String) session.getAttribute("userId");
+			if (loginUserId == null)
+				loginUserId = "agent01"; 
+
+			SituationDTO situation = situationService.getSituationBySituNo(situNo);
+			if (situation != null) {
+				situation.setSituStatus("조치");
+				situation.setWorker(loginUserId);
+				
+				situationService.modifySituation(situation);
+				situationService.setStart(situNo); 
+
+				resultMap.put("success", true);
+			} else {
+				resultMap.put("success", false);
+				resultMap.put("message", "존재하지 않는 이력입니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			resultMap.put("success", false);
+			resultMap.put("message", "서버 오류 발생");
+		}
+		return resultMap;
+	}
+	
 
 	/* ==========[메인 페이지]============= */
 	@GetMapping("/main")
 	public String agentMainPage(HttpSession session, Model model) {
 		String loginUserId = (String) session.getAttribute("userId");
-		if (loginUserId == null) loginUserId = "agent01";
+		if (loginUserId == null)
+			loginUserId = "agent01";
 
-		UserDTO user = agentTaskService.findByUserId(loginUserId);
-		model.addAttribute("user", user);
+		AgentDTO user = agentService.getAgentInfo(loginUserId);
+		model.addAttribute("user", user); 
 		return "agent/agentMain";
 	}
 
@@ -52,27 +101,30 @@ public class AgentController {
 	@GetMapping("/status/edit")
 	public String agentStatusEditPage(HttpSession session, Model model) {
 		String loginUserId = (String) session.getAttribute("userId");
-		if (loginUserId == null) loginUserId = "agent01";
+		if (loginUserId == null)
+			loginUserId = "agent01";
 
-		UserDTO user = agentTaskService.findByUserId(loginUserId);
+		AgentDTO user = agentService.getAgentInfo(loginUserId);
 		model.addAttribute("user", user);
 		return "agent/agentStatusEdit";
 	}
 
-	// 근무 상태 변경
+	// 근무 상태 변경 처리
 	@PostMapping("/status/edit")
 	public String updateWorkStatus(@RequestParam("workStatus") String workStatus, HttpSession session) {
 		String loginUserId = (String) session.getAttribute("userId");
-		if (loginUserId == null) loginUserId = "agent01";
-		agentTaskService.updateWorkStatus(loginUserId, workStatus);
+		if (loginUserId == null)
+			loginUserId = "agent01";
+
+		agentService.changeAgentStatus(loginUserId, workStatus);
 		return "redirect:/agent/main";
 	}
-	
+
 	// 비상연락망 목록 조회 API
 	@GetMapping("/emergency-contacts")
 	@ResponseBody
 	public List<EmergencyContactDTO> getEmergencyContacts() {
-	    return emergencyContactService.getContactList();
+		return emergencyContactService.getContactList();
 	}
 
 	@GetMapping("/logout")
@@ -87,7 +139,7 @@ public class AgentController {
 	    String loginUserId = (String) session.getAttribute("userId");
 	    if (loginUserId == null) loginUserId = "agent01";
 
-	    UserDTO user = agentTaskService.findByUserId(loginUserId);
+	    UserDTO user = agentService.findByUserId(loginUserId);
 	    model.addAttribute("user", user);
 
 	    String workArea = user.getWorkArea(); 
@@ -181,22 +233,25 @@ public class AgentController {
 	    return "agent/agentsafetyCheckComplete";
 	}
 
-	
 	/* ==========[조치보고 페이지]============= */
 	@GetMapping("/history/more")
 	@ResponseBody
-	public Map<String, Object> getMoreTasks(
-			@RequestParam(value = "offset", defaultValue = "0") int offset,
+	public Map<String, Object> getMoreTasks(@RequestParam(value = "offset", defaultValue = "0") int offset,
 			@RequestParam(value = "limit", defaultValue = "4") int limit,
-			@RequestParam(value = "actionStatus", required = false, defaultValue = "ALL") String actionStatus) {
+			@RequestParam(value = "actionStatus", required = false, defaultValue = "ALL") String actionStatus,
+			HttpSession session) { 
+
+		String loginUserId = (String) session.getAttribute("userId");
+		if (loginUserId == null) loginUserId = "agent01";
 
 		Map<String, Object> paramMap = new HashMap<>();
 		paramMap.put("offset", offset);
 		paramMap.put("limit", limit);
-		paramMap.put("actionStatus", actionStatus); // 상태 파라미터 전달
+		paramMap.put("actionStatus", actionStatus); 
+		paramMap.put("userId", loginUserId); 
 
-		List<AgentTaskDTO> taskList = agentTaskService.getTaskListPaged(paramMap);
-		int totalCount = agentTaskService.getTaskListCount(paramMap);
+		List<SituationDTO> taskList = situationService.getTaskListPaged(paramMap);
+		int totalCount = situationService.getTaskListCount(paramMap);
 
 		Map<String, Object> resultMap = new HashMap<>();
 		resultMap.put("tasks", taskList);
@@ -212,32 +267,71 @@ public class AgentController {
 
 	@GetMapping("/history")
 	public String agentHistoryPage(Model model) {
-		List<AgentTaskDTO> taskList = agentTaskService.getTaskList();
-		model.addAttribute("taskList", taskList);
 		return "agent/agentHistory";
 	}
 
-	@GetMapping("/task/register")
-	public String agentTaskRegisterPage() {
-		return "agent/agentTaskRegister";
-	}
-
-	@PostMapping("/task/register")
-	public String registerTask(AgentTaskDTO dto) {
-		agentTaskService.registerTask(dto);
-		return "redirect:/agent/history";
-	}
-
 	@GetMapping("/taskEdit")
-	public String agentTaskEditPage(@RequestParam("id") Long taskId, Model model) {
-		AgentTaskDTO task = agentTaskService.getTaskById(taskId);
-		model.addAttribute("task", task);
+	public String agentTaskEditPage(@RequestParam("situNo") String situNo, Model model) {
+		SituationDTO situation = situationService.getSituationBySituNo(situNo);
+		model.addAttribute("task", situation); 
+		
+		java.text.SimpleDateFormat cstSdf = new java.text.SimpleDateFormat("yyyy-MM-dd a hh:mm");
+		
+		if (situation != null && situation.getStartDate() != null) {
+			String customStartStr = cstSdf.format(situation.getStartDate());
+			model.addAttribute("customStartDate", customStartStr); 
+		} else {
+			model.addAttribute("customStartDate", "기록 없음");
+		}
+		
 		return "agent/agentTaskEdit";
 	}
 
 	@PostMapping("/taskEdit")
-	public String modifyTask(AgentTaskDTO dto) {
-		boolean result = agentTaskService.modifyTask(dto);
+	public String modifyTask(HttpServletRequest request, HttpSession session) {
+		try {
+			// 1. 파라미터 수동 제어 추출 (400 예러 원천 봉쇄)
+			String situNo = request.getParameter("situNo");
+			String situStatus = request.getParameter("situStatus");
+			String workContent = request.getParameter("workContent");
+			String rawEndDate = request.getParameter("endDate");
+			
+			String loginUserId = (String) session.getAttribute("userId");
+			if (loginUserId == null) loginUserId = "agent01";
+
+			// 2. 다른 팀원분들의 기존 설계 DTO에 바인딩
+			SituationDTO dto = new SituationDTO();
+			dto.setSituNo(situNo);
+			dto.setWorker(loginUserId);
+			dto.setWorkContent(workContent);
+
+			// 3. [탭 연동 정렬] 무한 스크롤 카운트 조건절 규칙인 '조치완료' 문자열 기호로 완벽 일치화
+			if ("COMPLETED".equals(situStatus) || "조치완료".equals(situStatus) || "완료".equals(situStatus)) {
+				dto.setSituStatus("조치완료"); 
+				situationService.setEnd(situNo); // 마감 완료 날짜 자동 연동 호출
+			} else {
+				dto.setSituStatus("조치");
+			}
+
+			// 4. 완료 시간 문자열 -> Date 객체 파싱 매핑
+			java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+			if (rawEndDate != null && !rawEndDate.trim().isEmpty()) {
+				dto.setEndDate(sdf.parse(rawEndDate)); 
+			}
+
+			dto.setWorkImage("");
+
+			// 5. 공통 서비스 호출 인터페이스 위임 실행
+			try {
+				situationService.modifySituation(dto); 
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		return "redirect:/agent/history";
 	}
 }
