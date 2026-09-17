@@ -26,6 +26,11 @@
             <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
             <span class="nav-label">시스템</span>
         </button>
+        <!-- 🎯 5) 사이드바 하단 고정 로그아웃 버튼 -->
+	    <button type="button" class="quick-nav-item btn-sidebar-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
+	        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+	        <span class="nav-label">로그아웃</span>
+	    </button>
     </nav>
 </aside>
 

@@ -26,7 +26,7 @@
         h2 {
             margin-top: 0;
             margin-bottom: 24px;
-            font-size: 22px;
+            font-size: 22px;s
             color: #ffffff;
             text-align: center;
         }

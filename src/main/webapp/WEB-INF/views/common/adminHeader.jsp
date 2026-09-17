@@ -16,8 +16,4 @@
     	<a href="${pageContext.request.contextPath}/admin/fieldAction" class="nav-link header-link">현장 조치</a>
     </nav>
     
-    <!-- 로그아웃 버튼 -->
-    <button type="button" class="btn-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
-    	로그아웃
-    </button>
 </header>

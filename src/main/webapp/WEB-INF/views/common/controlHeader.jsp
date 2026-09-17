@@ -15,8 +15,4 @@
     	<a href="${pageContext.request.contextPath}/actionLog" class="nav-link header-link">관제 보고</a>
     </nav>
     
-    <!-- 로그아웃 버튼 -->
-    <button type="button" class="btn-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
-    	로그아웃
-    </button>
 </header>

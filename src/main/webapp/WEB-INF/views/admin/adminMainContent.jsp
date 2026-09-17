@@ -11,16 +11,16 @@
         <div class="kpi-card">
             <div class="kpi-title">밀집도 위험구역</div>
             <div class="kpi-value-group">
-                <span class="kpi-value warning">5</span><span class="kpi-unit">개</span>
+                <span class="kpi-value warning">0</span><span class="kpi-unit">개</span>
             </div>
-            <div class="kpi-sub diff-up">↑ 2</div>
+            <div class="kpi-sub diff-up"></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">야생동물 위험</div>
             <div class="kpi-value-group">
-                <span class="kpi-value warning">3</span><span class="kpi-unit">건</span>
+                <span class="kpi-value warning">0</span><span class="kpi-unit">건</span>
             </div>
-            <div class="kpi-sub diff-up">↑ 1</div>
+            <div class="kpi-sub diff-up"></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">근무중 안전요원</div>
@@ -39,9 +39,9 @@
         <div class="kpi-card">
             <div class="kpi-title">미확인 긴급보고</div>
             <div class="kpi-value-group">
-                <span class="kpi-value danger">3</span><span class="kpi-unit">건</span>
+                <span class="kpi-value danger">0</span><span class="kpi-unit">건</span>
             </div>
-            <div class="kpi-sub diff-up">↑ 2</div>
+            <div class="kpi-sub diff-up"></div>
         </div>
     </section>
 
@@ -77,28 +77,23 @@
         <!-- 실시간 위험 대응 현황 -->
         <div class="dashboard-card status-card">
             <div class="card-header">
-                <span class="card-title">실시간 위험 대응 현황</span>
+                <span class="card-title">안전점검 제출 현황</span>
             </div>
             <div class="card-body">
                 <ul class="status-list">
                     <li class="status-item">
-                        <span class="status-label"><i class="fa-solid fa-triangle-exclamation color-danger"></i> 심각</span>
-                        <span class="status-count">2 건</span>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                    </li>
-                    <li class="status-item">
-                        <span class="status-label"><i class="fa-solid fa-circle-exclamation color-warning"></i> 경계</span>
-                        <span class="status-count">5 건</span>
+                        <span class="status-label"><i class="fa-solid fa-circle-exclamation color-warning"></i> 위험</span>
+                        <span class="status-count">0 건</span>
                         <i class="fa-solid fa-chevron-right arrow-icon"></i>
                     </li>
                     <li class="status-item">
                         <span class="status-label"><i class="fa-solid fa-triangle-exclamation color-caution"></i> 주의</span>
-                        <span class="status-count">8 건</span>
+                        <span class="status-count">1 건</span>
                         <i class="fa-solid fa-chevron-right arrow-icon"></i>
                     </li>
                     <li class="status-item">
-                        <span class="status-label"><i class="fa-solid fa-circle-info color-info"></i> 관심</span>
-                        <span class="status-count">21 건</span>
+                        <span class="status-label"><i class="fa-solid fa-circle-info color-info"></i> 양호</span>
+                        <span class="status-count">2 건</span>
                         <i class="fa-solid fa-chevron-right arrow-icon"></i>
                     </li>
                 </ul>
@@ -108,17 +103,17 @@
                 <ul class="status-list sub-list">
                     <li class="status-item">
                         <span class="status-label">미확인 긴급보고</span>
-                        <span class="status-count danger">3 건</span>
+                        <span class="status-count danger">0 건</span>
                         <i class="fa-solid fa-chevron-right arrow-icon"></i>
                     </li>
                     <li class="status-item">
                         <span class="status-label">조치필요 업무지시</span>
-                        <span class="status-count">5 건</span>
+                        <span class="status-count">0 건</span>
                         <i class="fa-solid fa-chevron-right arrow-icon"></i>
                     </li>
                     <li class="status-item">
                         <span class="status-label">조치중 업무지시</span>
-                        <span class="status-count">2 건</span>
+                        <span class="status-count">0 건</span>
                         <i class="fa-solid fa-chevron-right arrow-icon"></i>
                     </li>
                 </ul>

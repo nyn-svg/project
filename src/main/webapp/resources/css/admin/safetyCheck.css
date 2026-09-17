@@ -174,9 +174,11 @@
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     transition: all 0.2s;
     border: none;
+    white-space: nowrap;
 }
 
 /* 저장 버튼 차분한 파란색으로 톤다운 */

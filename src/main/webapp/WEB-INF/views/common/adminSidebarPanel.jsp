@@ -13,27 +13,36 @@
     </div>
 
     <nav class="quick-nav">
-        <!-- 1) 대시보드 요약 -->
-        <button class="quick-nav-item active" data-target="panel-admin-dashboard">
-            <span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>
-            <span class="nav-label">드론</span>
-        </button>
-        <!-- 2) 안전요원 관리 -->
-        <button class="quick-nav-item" data-target="panel-admin-agents">
-            <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
-            <span class="nav-label">요원</span>
-        </button>
-        <!-- 3)이력/보고서 -->
-        <button class="quick-nav-item" data-target="panel-admin-reports">
-            <span class="nav-icon"><i class="fa-solid fa-file-invoice"></i></span>
-            <span class="nav-label">이력</span>
-        </button>
-        <!-- 4) 비상연락망 관리 -->
-		<button class="quick-nav-item" data-target="panel-admin-emergency">
-		    <span class="nav-icon"><i class="fa-solid fa-address-book"></i></span>
-		    <span class="nav-label">연락망</span>
-		</button>
-    </nav>
+    <!-- 1) 대시보드 요약 -->
+    <button class="quick-nav-item active" data-target="panel-admin-dashboard">
+        <span class="nav-icon"><i class="fa-solid fa-mask-ventilator"></i></span>
+        <span class="nav-label">드론</span>
+    </button>
+
+    <!-- 2) 안전요원 관리 -->
+    <button class="quick-nav-item" data-target="panel-admin-agents">
+        <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
+        <span class="nav-label">요원</span>
+    </button>
+
+    <!-- 3) 이력/보고서 -->
+    <button class="quick-nav-item" data-target="panel-admin-reports">
+        <span class="nav-icon"><i class="fa-solid fa-file-invoice"></i></span>
+        <span class="nav-label">이력</span>
+    </button>
+
+    <!-- 4) 비상연락망 관리 -->
+    <button class="quick-nav-item" data-target="panel-admin-emergency">
+        <span class="nav-icon"><i class="fa-solid fa-address-book"></i></span>
+        <span class="nav-label">연락망</span>
+    </button>
+
+    <!-- 🎯 5) 사이드바 하단 고정 로그아웃 버튼 -->
+    <button type="button" class="quick-nav-item btn-sidebar-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
+        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+        <span class="nav-label">로그아웃</span>
+    </button>
+</nav>
 </aside>
 
 <!-- 2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
