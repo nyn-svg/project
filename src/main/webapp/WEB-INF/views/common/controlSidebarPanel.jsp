@@ -18,13 +18,15 @@
 		    <span class="nav-label">긴급보고</span>
 		    <span id="quick-agent-badge" class="quick-badge" style="display: none;">0</span>
 		</button>
-        <button class="quick-nav-item" data-target="panel-agent">
-            <span class="nav-icon">(?)</span>
+        <button class="quick-nav-item" data-target="panel-check">
+            <span class="nav-icon"><i class="fa-solid fa-clipboard-check"></i></span>
             <span class="nav-label">체크리스트</span>
+            <span id="check-badge" class="quick-badge" style="display: none;"></span>
         </button>
-        <button class="quick-nav-item" data-target="panel-system">
-            <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
+        <button class="quick-nav-item" data-target="panel-report">
+            <span class="nav-icon"><i class="fa-solid fa-laptop-file"></i></span>
             <span class="nav-label">전자문서</span>
+            <span id="report-badge" class="quick-badge" style="display: none;"></span>
         </button>
         <!-- 🎯 5) 사이드바 하단 고정 로그아웃 버튼 -->
 	    <button type="button" class="quick-nav-item btn-sidebar-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
@@ -41,7 +43,7 @@
 <div id="panel-drones" class="drawer-content active">
 <!-- 헤더 전체 높이를 40px로 고정하고 flex 수직 중앙 정렬 -->
 <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 목록</span>
+    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 관리</span>
     
     <!-- 버튼 우측 컨테이너 (높이 및 flex 유지) -->
     <div class="header-btn-group" style="display: flex; align-items: center; height: 100%;">
@@ -73,7 +75,7 @@
 
     <div id="panel-agent" class="drawer-content">
 		    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-		        <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">실시간 상황 보고</span>
+		        <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">실시간 긴급보고</span>
 		        <span id="situ-count-badge" style="color: #ff5252 !important; font-size: 13px !important; font-weight: 700 !important; -webkit-text-fill-color: #ff5252 !important;">(0건)</span>
 		    </div>
 		    
@@ -85,16 +87,16 @@
 		    </div>
 		</div>
 
-    <div id="panel-aaa" class="drawer-content">
-        <div class="drawer-header">(?)</div>
+    <div id="panel-check" class="drawer-content">
+        <div class="drawer-header">체크리스트 현황</div>
         <div class="drawer-body">
             <p>( 임시 )</p>
         </div>
     </div>
 
 
-    <div id="panel-system" class="drawer-content">
-        <div class="drawer-header">시스템</div>
+    <div id="panel-report" class="drawer-content">
+        <div class="drawer-header">전자문서</div>
         <div class="drawer-body">
             <p>( 임시 )</p>
         </div>
