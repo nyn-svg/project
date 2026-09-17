@@ -15,16 +15,16 @@
         </button>
         <button class="quick-nav-item" data-target="panel-agent" id="btn-nav-agent" style="position: relative;">
 		    <span class="nav-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-		    <span class="nav-label">상황보고</span>
+		    <span class="nav-label">긴급보고</span>
 		    <span id="quick-agent-badge" class="quick-badge" style="display: none;">0</span>
 		</button>
         <button class="quick-nav-item" data-target="panel-agent">
             <span class="nav-icon">(?)</span>
-            <span class="nav-label">(?)</span>
+            <span class="nav-label">체크리스트</span>
         </button>
         <button class="quick-nav-item" data-target="panel-system">
             <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
-            <span class="nav-label">시스템</span>
+            <span class="nav-label">전자문서</span>
         </button>
         <!-- 🎯 5) 사이드바 하단 고정 로그아웃 버튼 -->
 	    <button type="button" class="quick-nav-item btn-sidebar-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
