@@ -556,6 +556,32 @@ function openPopup(url, windowName, width = 630, height = 830) {
 
 //수동감지 등록 팝업
 function openRegistPop() {
+	// 1. 현재 화면의 구역명과 드론아이디 텍스트 가져오기
+    const zoneName = document.getElementById('drone-zone').innerText;
+    sessionStorage.setItem('regZoneName', zoneName);
+    const droneId = document.getElementById('drone-id').innerText;
+    sessionStorage.setItem('regDroneId', droneId);
+    
+ 	// 2. 현재 스트리밍 <img> 태그의 화면 캡처하기
+    const streamImg = document.getElementById('stream-video');
+    try {
+        const canvas = document.createElement('canvas');
+        // 원본 이미지 크기에 맞춤
+        canvas.width = streamImg.naturalWidth || 640; 
+        canvas.height = streamImg.naturalHeight || 480;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(streamImg, 0, 0, canvas.width, canvas.height);
+        
+        // Base64 문자열로 변환 (용량 최적화를 위해 JPEG, 80% 품질 설정)
+        const base64Data = canvas.toDataURL('image/jpeg', 0.8); 
+        sessionStorage.setItem('captureStreamImg', base64Data);
+    } catch (e) {
+        console.error('이미지 캡처 실패 (CORS 문제일 수 있음):', e);
+        sessionStorage.removeItem('captureStreamImg');
+    }
+
+    // 3. 팝업 열기
     openPopup(ctx + '/detection/regist', 'Regist');
 }
 

@@ -1,5 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
@@ -149,7 +148,7 @@
 			<div class="info-label">이력 번호 (NO)</div>
 			<div class="info-value">
 				<span class="text-skyblue">${situation.situNo}</span>
-				<span class="badge type-badge">${situation.situType != null ? situation.situType : '자동'}</span>
+				<span class="badge type-badge">${situation.situType}</span>
 			</div>
 		</div>
 
