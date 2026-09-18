@@ -1,10 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. URL 파라미터 읽기
+    // URL 파라미터 파싱
     var urlParams = new URLSearchParams(window.location.search);
-    var type = urlParams.get('type') || '인파 밀집';
-    var area = urlParams.get('area') || 'A구역';
+    
+    // 🚨 가짜 번호 대신, 서버가 전송해 준 진짜 DB 이력번호(SITU_로 시작하는 고유키) 매핑
+    var situNo = urlParams.get('situNo') || '발급 오류'; 
+    var dngrType = urlParams.get('dngrType') || '-';
+    var dngrLevel = urlParams.get('dngrLevel') || '-';
+    var zoneName = urlParams.get('zoneName') || '-';
 
-    // 2. 현재 시간 생성 (YYYY-MM-DD HH:mm)
+    // 실시간 날짜 포맷팅 (감지일시 자동입력 대변 시각 연동)
     var now = new Date();
     var year = now.getFullYear();
     var month = String(now.getMonth() + 1).padStart(2, '0');
@@ -13,16 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var minutes = String(now.getMinutes()).padStart(2, '0');
     var formattedTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
 
-    // 3. 랜덤 보고 번호 생성 (예: RPT-20260520-1234)
-    var randomNum = Math.floor(1000 + Math.random() * 9000);
-    var reportNo = 'RPT-' + year + month + day + '-' + randomNum;
-
-    // 4. 화면 요소에 값 채워넣기
-    var infoValues = document.querySelectorAll('.info-card .info-value');
-    if (infoValues.length >= 4) {
-        infoValues[0].innerText = type;        // 보고 유형
-        infoValues[1].innerText = area;        // 발생 구역
-        infoValues[2].innerText = formattedTime; // 등록 시간
-        infoValues[3].innerText = reportNo;      // 보고 번호
-    }
+    // 요약 카드 뷰 레이어에 바인딩
+    document.getElementById('resSituNo').innerText = situNo;
+    document.getElementById('resDngrType').innerText = dngrType;
+    document.getElementById('resDngrLevel').innerText = dngrLevel;
+    document.getElementById('resZoneName').innerText = zoneName;
+    document.getElementById('resFormattedTime').innerText = formattedTime;
 });

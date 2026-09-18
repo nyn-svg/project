@@ -96,57 +96,71 @@ public class SituationController {
      * }
      */
     
-    // 상황 보고(긴급 보고) AJAX 비동기 등록 API (파일 업로드 지원)
+ // 💡 SituationController.java 파일 내의 registerReport 메서드를 아래 코드로 완전히 교체하세요.
+
     @PostMapping("/agent/api/report")
     @ResponseBody
-    public ResponseEntity<String> registerReport(SituationDTO situation,
-                                                 @RequestParam(value = "photo", required = false) MultipartFile photo,
-                                                 HttpServletRequest request,
-                                                 Principal principal) {
+    public ResponseEntity<Map<String, Object>> registerReport(
+            SituationDTO situation,
+            @RequestParam(value = "photo", required = false) MultipartFile photo,
+            HttpServletRequest request,
+            Principal principal) {
         
+        Map<String, Object> result = new HashMap<>();
         try {
-            // 1. 사용자 아이디 설정
+            // 1. 로그인 사용자 아이디 설정 (발견인 : FINDER)
             if (principal != null) {
                 situation.setFinder(principal.getName());
             } else {
-                // 리다이렉트?
+                // 시큐리티 컨텍스트 세션이 없거나 비로그인 테스트 중일 때 방어용 기본값 설정
+                situation.setFinder("agent01"); 
             }
 
-            // 2. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
+            // 2. 비즈니스 약속 고정 항목 데이터 강제 주입
+            situation.setSituType("긴급보고");  // 감지유형 고정
+            situation.setSituStatus("감지");    // 초기 조치상태 고정
+            // ※ 감지일시(SITU_DATE)는 MyBatis XML단에서 SYSDATE로 들어가므로 Java단 설정 불필요 (수정불가)
+
+            // 3. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
             if (photo != null && !photo.isEmpty()) {
-                // 웹 프로젝트 내의 업로드 폴더 실제 경로 구하기 (/resources/upload/situation)
                 String uploadPath = request.getServletContext().getRealPath("/resources/upload/situation");
-                
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
-                    uploadDir.mkdirs(); // 폴더가 없으면 생성
+                    uploadDir.mkdirs();
                 }
 
-                // 파일명 중복 방지를 위한 UUID 파일명 생성
                 String originalFilename = photo.getOriginalFilename();
-                String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+                String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String savedFilename = UUID.randomUUID().toString() + ext; // 중복방지 깔끔한 파일명
 
-                // 서버 디렉토리에 파일 저장
                 File destFile = new File(uploadPath, savedFilename);
                 photo.transferTo(destFile);
 
-                // DTO에 저장된 파일명 세팅
-                situation.setSituImage(savedFilename);
+                situation.setSituImage(savedFilename); // DTO에 첨부파일명 매핑
             }
 
-            // 3. DB 저장 Service 호출
+            // 4. DB 저장 Service 호출
+            // (★ 중요: registerSituation 내부에서 mapper.insertSituation이 실행되면 
+            //  MyBatis의 <selectKey>에 의해 situation 객체의 situNo 필드에 진짜 DB 이력번호가 채워집니다!)
             boolean isSuccess = situationService.registerSituation(situation);
 
             if (isSuccess) {
-                return ResponseEntity.ok("SUCCESS");
+                result.put("success", true);
+                result.put("situNo", situation.getSituNo()); // 🚨 생성된 진짜 이력번호를 결과에 담아 전송!
+                return ResponseEntity.ok(result);
             } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("FAIL");
+                result.put("success", false);
+                result.put("message", "DB 데이터 삽입 실패");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
+            result.put("success", false);
+            result.put("message", "서버 오류: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
     }
+
     
     /*
      * // 감지 이력 수정 또는 조치 이력 입력

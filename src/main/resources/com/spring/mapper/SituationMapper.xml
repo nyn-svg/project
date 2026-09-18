@@ -145,7 +145,7 @@
             #{situContent},
             #{situImage, jdbcType=VARCHAR},
             #{zoneName, jdbcType=VARCHAR},
-            #{drone_Id, jdbcType=VARCHAR},
+            #{droneId, jdbcType=VARCHAR},
             #{finder, jdbcType=VARCHAR}
         )
     </insert>

@@ -88,17 +88,30 @@ $(document).ready(function() {
                     htmlContent = "<li style='text-align:center; padding:20px; color:#94a3b8;'>등록된 비상연락처가 없습니다.</li>";
                 } else {
                     list.forEach(function(item) {
-                        htmlContent += `
-	                        <li class="contact-item">
-	                            <div class="contact-info">
-	                                <span class="contact-category">\${item.category}</span>
-	                                <strong class="contact-title">\${item.title}</strong>
-	                            </div>
-	                            <a href="tel:\${item.phone}" class="call-btn">
-	                                <i class="fa-solid fa-phone"></i> \${item.phone}
-	                            </a>
-	                        </li>
-	                    `;
+                        let rawPhone = item.phone.replace(/[^0-9]/g, ''); 
+                        let formattedPhone = rawPhone;
+
+                        if (rawPhone.length === 8) {
+                            formattedPhone = rawPhone.replace(/(\d{4})(\d{4})/, '$1-$2');
+                        } else if (rawPhone.startsWith('02')) {
+                            if (rawPhone.length === 9) formattedPhone = rawPhone.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+                            else if (rawPhone.length === 10) formattedPhone = rawPhone.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                        } else {
+                            if (rawPhone.length === 10) formattedPhone = rawPhone.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                            else if (rawPhone.length === 11) formattedPhone = rawPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                        }
+
+
+                        htmlContent += '<li class="contact-item">' +
+                            '    <div class="contact-info">' +
+                            '        <span class="contact-category">' + item.category + '</span>' +
+                            '        <strong class="contact-title">' + item.title + '</strong>' +
+                            '    </div>' +
+
+                            '    <a href="tel:' + rawPhone + '" class="call-btn" onclick="event.stopPropagation();">' +
+                            '        <i class="fa-solid fa-phone"></i> ' + formattedPhone +
+                            '    </a>' +
+                            '</li>';
                     });
                 }
                 $("#contactListArea").html(htmlContent);
@@ -109,6 +122,7 @@ $(document).ready(function() {
             }
         });
     });
+
 
     // 비상연락망 모달 닫기 이벤트
     $("#btnCloseContactModal, #btnConfirmContactModal").on("click", function() {
