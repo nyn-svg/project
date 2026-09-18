@@ -468,12 +468,6 @@ function captureAndSendAIFrame(mediaElement, droneId) {
  }, "image/jpeg", 0.8);
 }
 
-//💡 페이지 로드 완료 시 차트 최초 1회 초기화
-$(document).ready(function() {
- initRealtimeDensityChart();
- initRealtimeAnimalChart();
-});
-
 // 3. 최근 위험 이벤트 실시간 갱신 로직
 function initRealtimeEvents() {
     const $eventList = $('.event-list');
@@ -564,14 +558,6 @@ window.chartIdleTimer = setInterval(function() {
 
 
 
-
-
-
-
-
-
-<!-- WEB-INF/views/admin/adminMain.jsp 파일 최하단 -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // adminMain.jsp HTML이 비동기로 꽂히는 즉시 지도 초기화 실행
     setTimeout(function() {

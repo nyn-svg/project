@@ -42,6 +42,8 @@
 		<commons.fileupload-version>1.6.0</commons.fileupload-version>
 		
 		<com.fasterxml.jackson.core-version>2.17.2</com.fasterxml.jackson.core-version>
+		
+		<eclipse.angus-mail-version>2.0.3</eclipse.angus-mail-version>
 	</properties>
 
 	<dependencies>
@@ -54,6 +56,12 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
+			<version>${org.springframework-version}</version>
+		</dependency>
+		<!-- 🎯 [추가] Spring Context Support (JavaMailSender 구동용) -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
 			<version>${org.springframework-version}</version>
 		</dependency>
 		<dependency>
@@ -70,6 +78,13 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 			<version>${org.springframework-version}</version>
+		</dependency>
+
+		<!-- 🎯 [추가] Jakarta Mail 구현체 (Angus Mail) -->
+		<dependency>
+			<groupId>org.eclipse.angus</groupId>
+			<artifactId>jakarta.mail</artifactId>
+			<version>${eclipse.angus-mail-version}</version>
 		</dependency>
 
 		<!-- ojdbc6 -->
@@ -183,7 +198,7 @@
 		<dependency>
 	    <groupId>org.projectlombok</groupId>
 	    <artifactId>lombok</artifactId>
-	    <version>1.18.46</version> <!-- 사용 중인 버전 입력 -->
+	    <version>1.18.46</version>
 	    <scope>provided</scope>
 		</dependency>
 		
@@ -204,8 +219,6 @@
 		    <version>6.2.0</version>
 		</dependency>
 
-			
-		
 	</dependencies>
 	
 

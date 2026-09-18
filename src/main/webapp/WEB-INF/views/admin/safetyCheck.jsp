@@ -44,7 +44,7 @@
         <div class="filter-bar">
             <div class="filter-group">
                 <label for="checkDate">점검일자</label>
-                <input type="date" id="checkDate" class="input-control" value="2025-09-01">
+                <input type="date" id="checkDate" class="input-control">
 
                 <label for="checkRound">점검용</label>
                 <select id="checkRound" class="select-control">
@@ -291,8 +291,28 @@
             <pre id="aiReportContent" style="white-space: pre-wrap; word-break: break-all; font-family: inherit; font-size: 13px; line-height: 1.6; color: #cbd5e1; margin: 0; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"></pre>
         </div>
 
+        <!-- 🎯 유관기관 이메일 발송 폼 (기본 숨김) -->
+        <div id="emailFormArea" style="display: none; margin-top: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 8px; padding: 12px; gap: 8px; align-items: center;">
+            <select id="agencySelect" onchange="onSelectAgency(this.value)" style="background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 7px 10px; border-radius: 6px; font-size: 12px; outline: none; width: 170px;">
+                <option value="">-- 유관기관 선택 --</option>
+                <option value="police@police.go.kr">관할 경찰서 (경비과)</option>
+                <option value="fire@korea.kr">119 종합상황실</option>
+                <option value="city@gu.go.kr">구청 재난안전과</option>
+                <option value="direct">직접 입력</option>
+            </select>
+            
+            <input type="email" id="targetEmailInput" placeholder="이메일 주소를 입력하세요" style="flex: 1; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 7px 10px; border-radius: 6px; font-size: 12px; outline: none;">
+            
+            <button type="button" onclick="sendReportEmail()" style="background: #9333ea; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                <i class="fa-solid fa-paper-plane"></i> 전송
+            </button>
+        </div>
+
         <!-- 푸터 -->
         <div style="margin-top: 18px; text-align: right; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="toggleEmailArea()" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.4); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                <i class="fa-solid fa-envelope"></i> 메일 발송
+            </button>
             <button type="button" onclick="window.print()" style="background: #0284c7; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">인쇄 / PDF 출력</button>
             <button type="button" onclick="closeAiReportModal()" style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px;">닫기</button>
         </div>

@@ -48,16 +48,39 @@
 <!-- 2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
 <div id="sub-drawer" class="sub-drawer">
     
-    <!-- 1) 대시보드 요약 패널 -->
-<div id="panel-admin-dashboard" class="drawer-content active">
-    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-        <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 목록</span>
-    </div>
-    <div class="drawer-body">
-        <!-- 💡 드론 리스트가 동적으로 생성될 영역 -->
-        <div id="adminDroneListContainer"></div>
+    <!-- 1) 대시보드 요약 및 드론 관제 패널 (통합 버전) -->
+    <div id="panel-admin-dashboard" class="drawer-content active">
+        <!-- 헤더: 타이틀과 설정/수정/신규 버튼군 배치 -->
+        <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
+            <span style="white-space: nowrap;">드론 목록</span>
+            
+            <!-- 버튼 우측 컨테이너 (편집 모드 토글) -->
+            <div class="header-btn-group" style="display: flex; align-items: center; height: 100%;">
+                <!-- 일반 모드 시 노출 (톱니바퀴 아이콘) -->
+                <div id="mode-default-btns" style="display: flex; align-items: center;">
+                    <button id="btn-edit-mode" class="mini-btn" title="편집 모드">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
+                
+                <!-- 편집 모드 전환 시 노출 (+신규, 취소 버튼) -->
+                <div id="mode-edit-btns" style="display: none; gap: 4px; align-items: center;">
+                    <button id="btn-open-add-modal" class="mini-btn primary">+ 신규</button>
+                    <button id="btn-cancel-edit" class="mini-btn danger">취소</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 바디: 동적 드론 리스트 영역 -->
+        <div class="drawer-body">
+            <div id="adminDroneListContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- JavaScript(drone-control.js)로 드론 목록이 렌더링됩니다 -->
+            </div>
+        </div>
     </div>
 </div>
+
+
 
     <!-- 2) 안전요원 관리 패널 -->
 <div id="panel-admin-agents" class="drawer-content">
@@ -122,6 +145,47 @@
 
 </div>
 
+<!-- 드론 등록 및 수정 모달 -->
+<div id="drone-modal" class="modal-overlay">
+    <div class="modal-content">
+        
+        <!-- 헤더 (구름 아이콘 + 제목) -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 18px;">
+            <i class="fa-solid fa-cloud" style="color: #ffffff; font-size: 15px; filter: drop-shadow(0 0 6px #38bdf8);"></i>
+            <span id="modal-title">신규 드론 등록</span>
+        </div>
+        
+        <!-- Hidden Inputs -->
+        <input type="hidden" id="modal-drone-id" />
+        <input type="hidden" id="modal-drone-active" />
+        <input type="hidden" id="modal-input-status" value="대기" />
+
+        <!-- 비행 구역 입력창 -->
+        <div class="modal-input-group" style="margin-bottom: 10px;">
+            <input type="text" id="modal-input-zone" class="modal-input" placeholder="비행 구역을 입력하세요" />
+        </div>
+
+        <!-- 스트리밍 URL 입력창 -->
+        <div class="modal-input-group" style="margin-bottom: 14px;">
+            <input type="text" id="modal-input-url" class="modal-input" placeholder="스트리밍 주소(URL)을 입력하세요" />
+        </div>
+
+        <!-- 상태 선택 (수정 모드 시 노출) -->
+        <div class="modal-input-group" style="margin-bottom: 14px; display: none;">
+            <div class="status-badge-group" style="display: flex; gap: 6px;">
+                <button type="button" class="status-select-btn ready" data-value="대기">대기</button>
+                <button type="button" class="status-select-btn flying" data-value="비행">비행</button>
+                <button type="button" class="status-select-btn error" data-value="고장">고장</button>
+            </div>
+        </div>
+
+        <!-- 우측 하단 저장/취소 버튼 -->
+        <div class="modal-btn-group" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+            <button type="button" id="btn-modal-save" class="mini-btn primary" style="padding: 6px 16px;">저장</button>
+            <button type="button" id="btn-modal-cancel" class="mini-btn" style="padding: 6px 16px;">취소</button>
+        </div>
+    </div>
+</div>
 
 
 <!-- 요원 상세 정보 모달 (딥 & 드림 오로라 테마) -->
@@ -255,103 +319,443 @@
 <script>
     window.contextPath = '${pageContext.request.contextPath}';
 </script>
-<script src="${pageContext.request.contextPath}/resources/js/drone-sidebar.js"></script>
+<!-- ⚠️ 만약 drone-sidebar.js 내부에도 동일한 코드(이벤트/렌더링)가 있다면 drone-sidebar.js 호출을 주석 처리하거나 제거하세요. -->
+<!-- <script src="${pageContext.request.contextPath}/resources/js/drone-sidebar.js"></script> -->
 
-
-
-
-
-<!-- ContextPath 전달 및 안전요원 목록 로드 스크립트 -->
 <script>
-
-//어드민 사이드바 패널에 드론 목록을 뿌려주는 함수
-function renderAdminDroneList() {
+$(document).ready(function() {
+    console.log("!!! 드론 관제 스크립트 정상 로드됨 !!!");
+    
+    var isEditMode = false;
     var ctx = window.contextPath || '';
-    var $container = $('#adminDroneListContainer');
+    var isSubmitting = false; // 중복 제출 방지 플래그
 
-    if (!$container.length) return;
+ // ==========================================
+ // 1. 드론 목록 조회 및 렌더링 (활성/비활성 분리 버전)
+ // ==========================================
+ function renderDroneList() {
+     var $container = $('#adminDroneListContainer').length ? $('#adminDroneListContainer') : $('#drone-list-container');
+     if (!$container.length) return;
 
-    $.ajax({
-        url: ctx + '/drone/api/list',
-        type: 'GET',
-        dataType: 'json',
-        success: function(drones) {
-            
-            // 💡 [추가] KPI 카드의 비행중 드론 수 동적 업데이트
-            var $kpiDroneValue = $('.kpi-card:contains("비행중 드론") .kpi-value.primary');
-            if ($kpiDroneValue.length) {
-                $kpiDroneValue.text(drones ? drones.length : 0);
-            }
+     $.ajax({
+         url: ctx + '/drone/api/list',
+         type: 'GET',
+         dataType: 'json',
+         success: function(drones) {
+             // 1. 활성 드론과 비활성 드론 배열로 데이터 분리
+             var activeDrones = [];
+             var inactiveDrones = [];
 
-            $container.empty();
+             if (drones && drones.length > 0) {
+                 drones.forEach(function(drone) {
+                     if (drone.activeStatus === 'N' || drone.activeStatus === '비활성화') {
+                         inactiveDrones.push(drone);
+                     } else {
+                         activeDrones.push(drone);
+                     }
+                 });
+             }
 
-            if (!drones || drones.length === 0) {
-                $container.html('<div style="color: #a0aec0; font-size: 12px; padding: 10px 0;">등록된 드론이 없습니다.</div>');
-                return;
-            }
+             // 비행 중 드론 수 KPI 업데이트 (활성화된 드론 중 비행 중인 드론만 계산)
+             var flyingCount = activeDrones.filter(function(d) { return d.droneStatus === '비행'; }).length;
+             var $kpiDroneValue = $('.kpi-card:contains("비행중 드론") .kpi-value.primary');
+             if ($kpiDroneValue.length) {
+                 $kpiDroneValue.text(flyingCount);
+             }
 
-            var $ul = $('<ul>').css({
-                'list-style': 'none',
-                'padding': '0',
-                'margin': '0'
-            });
+             $container.empty();
 
-            drones.forEach(function(drone, index) {
-                var droneId = drone.droneId || "드론 ID 없음";
-                var streamUrl = drone.url || "";
+             if (!drones || drones.length === 0) {
+                 $container.html('<div style="color: #a0aec0; font-size: 12px; padding: 10px 0; text-align: center;">등록된 드론이 없습니다.</div>');
+                 return;
+             }
 
-                var $li = $('<li>')
-                    .css({
-                        'background': 'rgba(255, 255, 255, 0.05)',
-                        'border': '1px solid rgba(255, 255, 255, 0.1)',
-                        'border-radius': '8px',
-                        'padding': '12px',
-                        'margin-bottom': '8px',
-                        'cursor': 'pointer',
-                        'transition': 'background 0.2s'
-                    })
-                    .attr('data-drone-id', droneId)
-                    .attr('data-stream-url', streamUrl)
-                    .on('mouseover', function() { $(this).css('background', 'rgba(255, 255, 255, 0.1)'); })
-                    .on('mouseout', function() { $(this).css('background', 'rgba(255, 255, 255, 0.05)'); })
-                    .on('click', function() {
-                        // 💡 [핵심 수정] 모달 오픈 및 AI 타이머 시작은 openDroneModal() 내부로 전담 (이중 실행 방지)
-                        var modalParam = {
-                            zoneName: drone.zoneName || "구역 미지정",
-                            droneId: droneId,
-                            streamUrl: streamUrl
-                        };
+             // 상태 우선순위 정렬 함수
+             var statusPriority = { '비행': 1, '대기': 2, '고장': 3 };
+             var sortFn = function(a, b) {
+                 var pA = statusPriority[a.droneStatus] || 99;
+                 var pB = statusPriority[b.droneStatus] || 99;
+                 if (pA !== pB) return pA - pB;
+                 return (a.droneId || '').localeCompare(b.droneId || '');
+             };
 
-                        if (typeof openDroneModal === 'function') {
-                            openDroneModal(modalParam);
-                        } else if (typeof openDroneModalByData === 'function') {
-                            openDroneModalByData(drone);
-                        }
-                    });
+             activeDrones.sort(sortFn);
+             inactiveDrones.sort(sortFn);
 
-                var html = 
-                    '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                        '<strong style="color: #fff; font-size: 14px;">' + droneId + '</strong>' +
-                        '<span style="font-size: 11px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">' +
-                            (streamUrl ? '연결됨' : '대기중') +
-                        '</span>' +
-                    '</div>' +
-                    '<div style="font-size: 12px; color: #a0aec0; margin-top: 6px;">' +
-                        
-                    '</div>';
+             var $ul = $('<ul>').css({ 'list-style': 'none', 'padding': '0', 'margin': '0' });
 
-                $li.html(html);
-                $ul.append($li);
-            });
+             // 드론 리스트 카드 HTML 생성 공통 함수
+             function buildDroneItem(drone, isActive) {
+                 var droneId = drone.droneId || "";
+                 var zoneName = drone.zoneName || "구역 미지정";
+                 var streamUrl = drone.url || "";
+                 var droneStatus = drone.droneStatus || "대기";
+                 var activeStatus = drone.activeStatus || (isActive ? "Y" : "N");
+                 
+                 // 뱃지 및 카드 스타일 설정
+                 var statusStyle = '';
+                 if (!isActive) {
+                     statusStyle = 'color: #64748b; border: 1px solid #475569; background: rgba(71, 85, 105, 0.2);';
+                 } else if (droneStatus === '비행') {
+                     statusStyle = 'color: #4ade80; border: 1px solid #4ade80; background: rgba(74, 222, 128, 0.1);';
+                 } else if (droneStatus === '고장') {
+                     statusStyle = 'color: #f87171; border: 1px solid #f87171; background: rgba(248, 113, 113, 0.1);';
+                 } else {
+                     statusStyle = 'color: #94a3b8; border: 1px solid #94a3b8; background: rgba(148, 163, 184, 0.1);';
+                 }
 
-            $container.append($ul);
-        },
-        error: function(xhr, status, error) {
-            console.error("패널 드론 목록 로드 실패 - 상태코드:", xhr.status, "에러내용:", error);
-            $container.html('<div style="color: #f87171; font-size: 12px; padding: 10px 0;">목록을 불러오지 못했습니다.</div>');
+                 var baseBg = isActive ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.02)';
+                 var hoverBg = isActive ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)';
+                 var opacityVal = isActive ? '1' : '0.45'; // 비활성 드론 투명도 적용
+
+                 var $li = $('<li>')
+                     .addClass('drone-item-wrapper')
+                     .attr('data-id', droneId) 
+                     .attr('data-zone', zoneName)
+                     .attr('data-url', streamUrl)
+                     .attr('data-status', droneStatus)
+                     .attr('data-active', activeStatus)
+                     .css({
+                         'background': baseBg,
+                         'border': isActive ? '1px solid rgba(255, 255, 255, 0.1)' : '1px dashed rgba(255, 255, 255, 0.15)',
+                         'border-radius': '8px',
+                         'padding': '12px',
+                         'margin-bottom': '8px',
+                         'cursor': isActive ? 'pointer' : 'default',
+                         'position': 'relative',
+                         'transition': 'all 0.2s',
+                         'opacity': opacityVal
+                     })
+                     .on('mouseover', function() { $(this).css('background', hoverBg); })
+                     .on('mouseout', function() { $(this).css('background', baseBg); });
+
+                 var displayStatusText = isActive ? droneStatus : '비활성';
+
+                 var html = 
+                     '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                         '<div style="display: flex; align-items: center;">' +
+                             '<span style="color: ' + (isActive ? '#fff' : '#64748b') + '; margin-right: 8px; font-size: 16px;"><i class="fa-solid fa-drone"></i></span>' +
+                             '<strong style="color: ' + (isActive ? '#fff' : '#94a3b8') + '; font-size: 14px;">' + droneId + '</strong>' +
+                         '</div>' +
+                         '<div style="display: flex; align-items: center; gap: 8px;">' +
+                             '<span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: bold; ' + statusStyle + '">' + displayStatusText + '</span>';
+                 
+                 if (isEditMode) {
+                     // 비활성 상태일 땐 '복구' 버튼, 활성 상태일 땐 '비활성화' 버튼 제공
+                     var actionBtnHtml = isActive 
+                         ? '<button class="dropdown-item delete btn-delete-drone" style="display: block; width: 100%; text-align: left; padding: 8px 12px; background: none; border: none; color: #f87171; cursor: pointer; font-size: 13px;">🗑️ 비활성화</button>'
+                         : '<button class="dropdown-item btn-activate-drone" style="display: block; width: 100%; text-align: left; padding: 8px 12px; background: none; border: none; color: #38bdf8; cursor: pointer; font-size: 13px;">🔄 복구</button>';
+
+                     html += '<button class="more-btn btn-drone-more" style="background: none; border: none; color: #a0aec0; cursor: pointer; padding: 0 4px;">⋮</button>' +
+                             '<div class="drone-menu-dropdown" style="display: none; position: absolute; right: 10px; top: 35px; z-index: 100; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 4px 0; min-width: 90px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">' +
+                                 '<button class="dropdown-item btn-edit-drone" style="display: block; width: 100%; text-align: left; padding: 8px 12px; background: none; border: none; color: #e2e8f0; cursor: pointer; font-size: 13px;">✏️ 수정</button>' +
+                                 actionBtnHtml +
+                             '</div>';
+                 }
+
+                 html += '</div></div>' +
+                         '<div style="font-size: 12px; color: #a0aec0; margin-top: 6px; padding-left: 24px;">' + zoneName + '</div>';
+
+                 $li.html(html);
+                 return $li;
+             }
+
+             // A. 활성 드론 리스트 렌더링
+             activeDrones.forEach(function(drone) {
+                 $ul.append(buildDroneItem(drone, true));
+             });
+
+             // B. 비활성 드론이 존재할 경우 하단에 구분선과 비활성 목록 렌더링
+             if (inactiveDrones.length > 0) {
+                 var $divider = $('<li>').css({
+                     'margin': '16px 0 10px 0',
+                     'padding-top': '12px',
+                     'border-top': '1px dashed rgba(255, 255, 255, 0.15)',
+                     'color': '#64748b',
+                     'font-size': '12px',
+                     'font-weight': '600',
+                     'display': 'flex',
+                     'align-items': 'center',
+                     'justify-content': 'space-between'
+                 }).html('<span>비활성화 드론</span><span style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 10px; font-size: 10px;">' + inactiveDrones.length + '대</span>');
+
+                 $ul.append($divider);
+
+                 inactiveDrones.forEach(function(drone) {
+                     $ul.append(buildDroneItem(drone, false));
+                 });
+             }
+
+             $container.append($ul);
+         },
+         error: function(err) {
+             console.error('드론 목록 조회 실패:', err);
+         }
+     });
+ }
+
+ renderDroneList();
+
+    // ==========================================
+    // 2. 비행 드론 클릭 이벤트 (영상 모달 열기)
+    // ==========================================
+    $(document).off('click', '.drone-item-wrapper').on('click', '.drone-item-wrapper', function(e) {
+        if ($(e.target).closest('.btn-drone-more, .drone-menu-dropdown').length) return;
+
+        var droneStatus = $(this).attr('data-status');
+        var droneId = $(this).attr('data-id');
+        var zoneName = $(this).attr('data-zone');
+        var streamUrl = $(this).attr('data-url');
+        
+        if (activeStatus === 'N' || activeStatus === '비활성화') {
+            return false;
+        }
+
+        if (droneStatus !== '비행') {
+            alert('현재 비행 중인 드론이 아니므로 영상을 확인할 수 없습니다.');
+            return;
+        }
+        
+
+        var modalParam = { zoneName: zoneName, droneId: droneId, streamUrl: streamUrl };
+        if (typeof openDroneModal === 'function') {
+            openDroneModal(modalParam);
+        } else if (typeof openDroneModalByData === 'function') {
+            openDroneModalByData({ droneId: droneId, zoneName: zoneName, url: streamUrl });
         }
     });
-}
+
+    // ==========================================
+    // 3. 편집 모드 제어
+    // ==========================================
+    $(document).off('click', '#btn-edit-mode').on('click', '#btn-edit-mode', function(e) {
+        e.preventDefault();
+        isEditMode = true;
+        $('#mode-default-btns').hide();
+        $('#mode-edit-btns').css('display', 'flex');
+        renderDroneList();
+    });
+
+    $(document).off('click', '#btn-cancel-edit').on('click', '#btn-cancel-edit', function(e) {
+        e.preventDefault();
+        isEditMode = false;
+        $('#mode-edit-btns').hide();
+        $('#mode-default-btns').show();
+        renderDroneList();
+    });
+
+    $(document).off('click', '.btn-drone-more').on('click', '.btn-drone-more', function(e) {
+        e.stopPropagation();
+        var $dropdown = $(this).next('.drone-menu-dropdown');
+        $('.drone-menu-dropdown').not($dropdown).hide();
+        $dropdown.toggle();
+    });
+
+    $(document).on('click', function() {
+        $('.drone-menu-dropdown').hide();
+    });
+
+    // ==========================================
+    // 4. 모달 데이터 바인딩 (신규 / 수정)
+    // ==========================================
+    // 신규 등록 모달 열기
+    $(document).off('click', '#btn-open-add-modal').on('click', '#btn-open-add-modal', function(e) {
+        e.preventDefault();
+        $('#modal-title').html('➕ 신규 드론 등록');
+        $('#modal-drone-id').val('');
+        $('#modal-drone-active').val('Y'); // 기본 활성화 상태 지정
+        $('#modal-input-zone').val('');
+        $('#modal-input-url').val('');
+        $('#modal-input-status').val('대기'); // 기본 상태 '대기'로 초기화
+
+        $('.status-badge-group').closest('.modal-input-group').hide();
+        $('#drone-modal').addClass('active').css('display', 'flex');
+    });
+
+    // 수정 모달 열기
+    $(document).off('click', '.btn-edit-drone').on('click', '.btn-edit-drone', function(e) {
+        e.stopPropagation();
+        var $wrapper = $(this).closest('.drone-item-wrapper');
+        
+        var droneId = $wrapper.attr('data-id');
+        var droneZone = $wrapper.attr('data-zone');
+        var droneUrl = $wrapper.attr('data-url');
+        var droneStatus = $wrapper.attr('data-status') || '대기';
+        var activeStatus = $wrapper.attr('data-active') || 'Y';
+
+        $('.status-badge-group').closest('.modal-input-group').show();
+        $('.status-select-btn').removeClass('active');
+        $('.status-select-btn[data-value="' + droneStatus + '"]').addClass('active');
+
+        $('#modal-title').html('✏️ 드론 정보 수정');
+        $('#modal-drone-id').val(droneId);
+        $('#modal-drone-active').val(activeStatus);
+        $('#modal-input-zone').val(droneZone);
+        $('#modal-input-url').val(droneUrl);
+        $('#modal-input-status').val(droneStatus);
+        
+        $('.drone-menu-dropdown').hide();
+        $('#drone-modal').addClass('active').css('display', 'flex');
+    });
+
+    // 상태 선택 버튼 동작
+    $(document).off('click', '.status-select-btn').on('click', '.status-select-btn', function() {
+        var selectedValue = $(this).data('value');
+        $('#modal-input-status').val(selectedValue);
+        $('.status-select-btn').removeClass('active');
+        $(this).addClass('active');
+    });
+
+    // 모달 닫기
+    $(document).off('click', '#btn-modal-cancel').on('click', '#btn-modal-cancel', function() {
+        $('#drone-modal').removeClass('active').hide();
+    });
+
+    // ==========================================
+    // 5. 드론 저장(등록/수정) 처리
+    // ==========================================
+    $(document).off('click', '#btn-modal-save').on('click', '#btn-modal-save', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $btn = $(this);
+
+        if (isSubmitting || $btn.prop('disabled')) return false;
+
+        var id = $('#modal-drone-id').val();
+        var zone = $('#modal-input-zone').val().trim();
+        var stream = $('#modal-input-url').val().trim();
+        var status = $('#modal-input-status').val() || '대기';
+        var active = $('#modal-drone-active').val() || 'Y';
+
+        if (!zone || !stream) {
+            alert('구역명과 스트리밍 주소를 모두 입력해 주세요.');
+            return false;
+        }
+
+        isSubmitting = true;
+        $btn.prop('disabled', true);
+
+        var url = id ? (ctx + '/drone/api/update') : (ctx + '/drone/api/add');
+        
+        // 💡 신규 등록이든 수정이든 필요한 필수 파라미터를 모두 세팅
+        var paramData = {
+            droneId: id,
+            zoneName: zone,
+            url: stream,
+            droneStatus: status,
+            activeStatus: active
+        };
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(paramData),
+            success: function(res) {
+                // 백엔드가 String "SUCCESS"를 주거나 JSON {result: "SUCCESS"}를 주는 경우 모두 처리
+                if (res === 'SUCCESS' || (res && res.result === 'SUCCESS')) {
+                    alert(id ? '드론 정보가 수정되었습니다.' : '신규 드론이 등록되었습니다.');
+                    $('#drone-modal').removeClass('active').hide();
+                    renderDroneList(); 
+                } else {
+                    alert((res && res.message) ? res.message : '처리 중 오류가 발생했습니다.');
+                }
+            },
+            error: function(xhr) {
+                console.error("Ajax 저장 에러:", xhr.responseText);
+                alert('요청 처리 실패: 백엔드 콘솔 로그를 확인하세요.');
+            },
+            complete: function() {
+                isSubmitting = false;
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
+    // ==========================================
+    // 6. 드론 비활성화 처리
+    // ==========================================
+    $(document).off('click', '.btn-delete-drone').on('click', '.btn-delete-drone', function(e) {
+        e.stopPropagation();
+        
+        var droneId = $(this).closest('.drone-item-wrapper').attr('data-id'); 
+        
+        if (!droneId) {
+            alert('대상을 찾을 수 없습니다.');
+            return;
+        }
+
+        if (confirm('[' + droneId + '] 드론을 정말 비활성화 하시겠습니까?')) {
+            $.ajax({
+                url: ctx + '/drone/api/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ droneId: droneId }),
+                success: function(res) {
+                    if (res === 'SUCCESS' || (res && res.result === 'SUCCESS')) {
+                        alert('비활성화되었습니다.');
+                        renderDroneList(); 
+                    } else {
+                        alert('삭제 실패: ' + ((res && res.message) ? res.message : '오류가 발생했습니다.'));
+                    }
+                },
+                error: function(xhr) {
+                    console.error("비활성화 실패 에러:", xhr.responseText);
+                    alert('서버 통신 실패: 비활성화 요청을 처리할 수 없습니다.');
+                }
+            });
+        }
+    });
+    
+ // ==========================================
+ // 6-2. 드론 활성화(복구) 처리
+ // ==========================================
+ $(document).off('click', '.btn-activate-drone').on('click', '.btn-activate-drone', function(e) {
+     e.stopPropagation();
+     
+     var droneId = $(this).closest('.drone-item-wrapper').attr('data-id'); 
+     if (!droneId) return;
+
+     if (confirm('[' + droneId + '] 드론을 다시 활성화하시겠습니까?')) {
+         $.ajax({
+             url: ctx + '/drone/api/activate',
+             type: 'POST',
+             contentType: 'application/json',
+             data: JSON.stringify({ droneId: droneId }),
+             success: function(res) {
+                 if (res === 'SUCCESS' || (res && res.result === 'SUCCESS')) {
+                     alert('성공적으로 복구되었습니다.');
+                     renderDroneList(); 
+                 } else {
+                     alert('복구 실패: ' + ((res && res.message) ? res.message : '오류가 발생했습니다.'));
+                 }
+             },
+             error: function(xhr) {
+                 console.error("복구 실패 에러:", xhr.responseText);
+                 alert('서버 통신 실패: 복구 요청을 처리할 수 없습니다.');
+             }
+         });
+     }
+ });
+
+    // ==========================================
+    // 7. 실시간 DB 동기화 (SSE)
+    // ==========================================
+    function initSSE() {
+        if (!window.EventSource) return;
+        var eventSource = new EventSource(ctx + '/api/sse/subscribe');
+        eventSource.addEventListener('drone_change', function() {
+            renderDroneList();
+        });
+        eventSource.onerror = function() {
+            eventSource.close();
+            setTimeout(initSSE, 5000);
+        };
+    }
+    initSSE();
+});
+
 
 function drawBoundingBoxes(boxes) {
     // <img>와 <video> 중 현재 화면에 보이고 있는 요소 선택
@@ -492,6 +896,8 @@ function captureAndSendAIFrame(mediaElement, droneId) {
         });
     }, "image/jpeg", 0.8);
 }
+
+
 
 
 function closeDroneModal() {
@@ -1114,6 +1520,97 @@ function deleteEmergencyContact(id) {
     });
 }
 
-
+//form 태그 제출 이벤트가 실행되지 않도록 강제 차단
+$(document).off('submit', '#drone-form').on('submit', '#drone-form', function(e) {
+    e.preventDefault();
+    return false;
+});
 </script>
+<!-- 드론 관제 전용 내장 스타일 -->
+<style>
+/* 1. 패널 헤더 & 모달 제목 (네온 그라데이션) */
+.drawer-header, #modal-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #ffffff 0%, #38bdf8 60%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 8px rgba(56, 189, 248, 0.4));
+}
+
+/* 2. 공통 버튼 스타일 */
+.mini-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+.mini-btn:hover { background: rgba(255, 255, 255, 0.15); }
+.mini-btn.primary { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; color: #38bdf8; }
+.mini-btn.primary:hover { background: rgba(56, 189, 248, 0.35); }
+.mini-btn.danger { background: rgba(239, 68, 68, 0.2); border-color: #f87171; color: #f87171; }
+.mini-btn.danger:hover { background: rgba(239, 68, 68, 0.35); }
+
+/* 3. 모달 오버레이 및 창 스타일 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex !important; }
+
+.modal-content {
+    background: #090e1a;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    width: 330px;
+    padding: 20px;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.modal-input {
+    width: 100%;
+    background: #121929;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.modal-input:focus { border-color: #38bdf8; }
+
+/* 4. 상태 선택 버튼 스타일 (활성화 시 네온 불빛) */
+.status-select-btn {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #121929;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+.status-select-btn.ready.active { color: #38bdf8; background: rgba(14, 165, 233, 0.15); border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+.status-select-btn.flying.active { color: #4ade80; background: rgba(34, 197, 94, 0.15); border-color: #4ade80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
+.status-select-btn.error.active { color: #f87171; background: rgba(239, 68, 68, 0.15); border-color: #f87171; box-shadow: 0 0 10px rgba(248, 113, 113, 0.3); }
+</style>
 

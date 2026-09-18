@@ -44,7 +44,7 @@ public class DroneController {
 			synchronized (droneList) {
 				// 더블 체크
 				if (droneList.isEmpty()) {
-					List<DroneDTO> list = droneService.getActiveDroneList(); // 활성화 된 드론만 조회
+					List<DroneDTO> list = droneService.getDroneList(); // 활성화 된 드론만 조회
 					droneList.addAll(list);
 				}
 			}
@@ -114,7 +114,7 @@ public class DroneController {
 			synchronized (droneList) {
 				droneList.clear(); // 기존 메모리 싹 비우고
 				
-				List<DroneDTO> list = droneService.getActiveDroneList(); // 활성화 된 드론만 조회
+				List<DroneDTO> list = droneService.getDroneList(); // 활성화 된 드론만 조회
 				droneList.addAll(list);
 			}
 			
@@ -124,6 +124,29 @@ public class DroneController {
 		}
 
 		return Map.of("result", "FAIL", "message", "존재하지 않는 드론입니다.");
+	}
+	
+	@PostMapping("/api/activate")
+	@ResponseBody
+	public Map<String, Object> activateDrone(@RequestBody DroneDTO drone) {
+	    String droneId = drone.getDroneId();
+	    DroneDTO getDrone = droneService.getDroneById(droneId);
+	    
+	    if (getDrone != null) {
+	        getDrone.setActiveStatus("활성화"); // DB 설계에 따라 "Y"로 설정
+	        droneService.modifyDrone(getDrone);
+	        
+	        synchronized (droneList) {
+	            droneList.clear();
+	            List<DroneDTO> list = droneService.getDroneList(); // 전체 목록 재조회
+	            droneList.addAll(list);
+	        }
+	        
+	        sseService.sendEvent("drone_change", "updated");
+	        return Map.of("result", "SUCCESS");
+	    }
+
+	    return Map.of("result", "FAIL", "message", "존재하지 않는 드론입니다.");
 	}
 	
 	/** 관리자 **/

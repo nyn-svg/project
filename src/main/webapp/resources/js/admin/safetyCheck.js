@@ -6,6 +6,17 @@ function initSafetyCheckPage() {
     const countNormalEl = document.getElementById('count-normal');
     const countWarningEl = document.getElementById('count-warning');
     const countDangerEl = document.getElementById('count-danger');
+	
+	// 🎯 오늘 날짜 자동 입력 (YYYY-MM-DD)
+	    const checkDateInput = document.getElementById('checkDate');
+	    if (checkDateInput && !checkDateInput.value) {
+	        const today = new Date();
+	        const year = today.getFullYear();
+	        const month = String(today.getMonth() + 1).padStart(2, '0');
+	        const day = String(today.getDate()).padStart(2, '0');
+	        
+	        checkDateInput.value = `${year}-${month}-${day}`;
+	    }
 
     // 엘리먼트가 존재하지 않으면 (페이지가 아직 로드되지 않은 상태) 실행 중단
     if (!countTotalEl) return;
@@ -57,7 +68,6 @@ function initSafetyCheckPage() {
     // 4. 저장 버튼 이벤트
     const btnSave = document.getElementById('btn-save');
     if (btnSave) {
-        // 중복 이벤트 방지를 위해 기존 이벤트 리스너 제거 효과 (cloneNode 사용 가능하나 일반 적용)
         btnSave.onclick = function () {
             const doneCount = parseInt(countDoneEl ? countDoneEl.textContent : '0', 10);
             
@@ -96,7 +106,6 @@ function initSafetyCheckPage() {
                 }
             });
 
-            // 전역 contextPath 확인 (없으면 빈값)
             const basePath = (typeof contextPath !== 'undefined' && contextPath !== null) ? contextPath : '';
             const saveUrl = basePath + '/admin/safetyCheck/save';
 
@@ -126,18 +135,7 @@ function initSafetyCheckPage() {
         };
     }
 
-    
-}
-
-// [핵심] 새로고침(동기)과 메뉴 이동(비동기) 모두를 감지하여 실행
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSafetyCheckPage);
-} else {
-    // 이미 DOM이 준비된 상태 (비동기 라우팅)
-    initSafetyCheckPage();
-}
-
-// 6. AI 법적 보고서 생성 버튼 이벤트
+    // 5. AI 법적 보고서 생성 버튼 이벤트 (초기화 함수 내부로 이동)
     const btnGenerateReport = document.getElementById('btn-generate-report');
     if (btnGenerateReport) {
         btnGenerateReport.onclick = function () {
@@ -145,7 +143,6 @@ if (document.readyState === 'loading') {
                 return;
             }
 
-            // 버튼 비활성화 및 로딩 상태 표시
             btnGenerateReport.disabled = true;
             btnGenerateReport.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI 보고서 작성 중...';
 
@@ -162,35 +159,114 @@ if (document.readyState === 'loading') {
                 if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
                 return response.text();
             })
-			.then(reportContent => {
-			                // 모달 텍스트 영역에 보고서 내용 전달
-			                const contentEl = document.getElementById('aiReportContent');
-			                if (contentEl) {
-			                    contentEl.textContent = reportContent;
-			                }
+            .then(reportContent => {
+                const contentEl = document.getElementById('aiReportContent');
+                if (contentEl) {
+                    contentEl.textContent = reportContent;
+                }
 
-			                // AI 보고서 모달 표시
-			                const modalEl = document.getElementById('aiReportModal');
-			                if (modalEl) {
-			                    modalEl.style.display = 'flex';
-			                }
-			            })
+                const modalEl = document.getElementById('aiReportModal');
+                if (modalEl) {
+                    modalEl.style.display = 'flex';
+                }
+            })
             .catch(error => {
                 console.error('Error:', error);
                 alert('보고서 생성 중 오류가 발생했습니다.');
             })
             .finally(() => {
-                // 버튼 상태 원복
                 btnGenerateReport.disabled = false;
                 btnGenerateReport.innerHTML = '<i class="fas fa-robot"></i> AI 법적 보고서 생성';
             });
         };
     }
-	
-	// AI 보고서 모달 닫기
-	function closeAiReportModal() {
-	    const modalEl = document.getElementById('aiReportModal');
-	    if (modalEl) {
-	        modalEl.style.display = 'none';
-	    }
-	}
+}
+
+// [핵심] 새로고침(동기)과 메뉴 이동(비동기) 모두를 감지하여 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSafetyCheckPage);
+} else {
+    initSafetyCheckPage();
+}
+
+// ==========================================
+// 전역 모달 핸들러 (HTML onclick 바인딩용)
+// ==========================================
+
+// 1. 메일 발송 영역 토글
+window.toggleEmailArea = function() {
+    const area = document.getElementById('emailFormArea');
+    if (!area) return;
+
+    if (area.style.display === 'none' || area.style.display === '') {
+        area.style.display = 'flex';
+        const input = document.getElementById('targetEmailInput');
+        if (input) input.focus();
+    } else {
+        area.style.display = 'none';
+    }
+};
+
+// 2. 유관기관 선택 시 이메일 자동 입력
+window.onSelectAgency = function(val) {
+    const input = document.getElementById('targetEmailInput');
+    if (!input) return;
+
+    if (val === 'direct' || val === '') {
+        input.value = '';
+        input.focus();
+    } else {
+        input.value = val;
+    }
+};
+
+// 3. 메일 전송 요청 (Pure Vanilla JS fetch 적용)
+window.sendReportEmail = function() {
+    const input = document.getElementById('targetEmailInput');
+    const contentEl = document.getElementById('aiReportContent');
+    const email = input ? input.value.trim() : '';
+    const reportText = contentEl ? contentEl.textContent : '';
+
+    if (!email) {
+        alert('수신할 이메일 주소를 입력해 주세요.');
+        if (input) input.focus();
+        return;
+    }
+
+    if (!confirm(email + ' 주소로 보고서를 발송하시겠습니까?')) {
+        return;
+    }
+
+    const basePath = (typeof contextPath !== 'undefined' && contextPath !== null) ? contextPath : '';
+
+    fetch(basePath + '/admin/safetyCheck/sendEmail', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            content: reportText
+        })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
+        return response.text();
+    })
+    .then(res => {
+        alert('이메일이 성공적으로 전송되었습니다.');
+        window.toggleEmailArea();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('메일 전송 실패: 서버 연결 상태를 확인해 주세요.');
+    });
+};
+
+// 4. AI 보고서 모달 닫기
+window.closeAiReportModal = function() {
+    const modalEl = document.getElementById('aiReportModal');
+    if (modalEl) {
+        modalEl.style.display = 'none';
+    }
+};
