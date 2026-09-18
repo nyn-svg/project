@@ -36,6 +36,12 @@
         <span class="nav-icon"><i class="fa-solid fa-address-book"></i></span>
         <span class="nav-label">연락망</span>
     </button>
+    
+    <button class="quick-nav-item" data-target="panel-agent" id="btn-nav-agent" style="position: relative;">
+		 <span class="nav-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+		 <span class="nav-label">긴급보고</span>
+		 <span id="quick-agent-badge" class="quick-badge" style="display: none;">0</span>
+	</button>
 
     <!-- 🎯 5) 사이드바 하단 고정 로그아웃 버튼 -->
     <button type="button" class="quick-nav-item btn-sidebar-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
@@ -78,7 +84,7 @@
             </div>
         </div>
     </div>
-</div>
+
 
 
 
@@ -142,7 +148,22 @@
 	        <div id="emergencyContactListContainer"></div>
 	    </div>
 	</div>
-
+	
+	<!-- 긴급보고 패널 -->
+	<div id="panel-agent" class="drawer-content">
+		    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
+		        <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">실시간 긴급보고</span>
+		        <span id="situ-count-badge" style="color: #ff5252 !important; font-size: 13px !important; font-weight: 700 !important; -webkit-text-fill-color: #ff5252 !important;">(0건)</span>
+		    </div>
+		    
+		    <div class="drawer-body">
+		        <!-- 실시간 카드 리스트 컨테이너 -->
+		        <div id="situation-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+		            <!-- JS가 SSE 이벤트를 받아 여기에 카드를 동적으로 추가합니다 -->
+		        </div>
+		    </div>
+	</div>
+	
 </div>
 
 <!-- 드론 등록 및 수정 모달 -->
@@ -309,9 +330,69 @@
 </div>
 
 
+<!-- 긴급보고 상세 모달 -->
+<div id="situation-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+    <div class="modal-content" style="background: #1e222d; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 24px; max-width: 460px; width: 90%; color: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 14px; margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">🚨</span>
+                <h3 id="situ-modal-title" style="color: #ffffff; font-size: 16px; margin: 0; font-weight: 700;">
+                    <span id="situ-modal-dngr-type"></span>
+                </h3>
+                <span id="situ-modal-dngr-level" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600;"></span>
+            </div>
+            <button id="btn-situ-modal-close" type="button" style="background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+        </div>
+        
+        <!-- Body -->
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: #cbd5e1;">
+            
+            <!-- 관리 정보 (이력번호 & 조치상태) -->
+            <div style="display: flex; justify-content: space-between; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                <span><strong>이력번호:</strong> <span id="situ-modal-no" style="color: #94a3b8;"></span></span>
+                <span><strong>조치상태:</strong> <span id="situ-modal-status" style="font-weight: 600;"></span></span>
+            </div>
 
+            <!-- 발생위치 & 보고자 -->
+            <div style="display: flex; justify-content: space-between;">
+                <span><strong>발생 구역:</strong> <span id="situ-modal-zone" style="color: #f87171; font-weight: 600;"></span></span>
+                <span><strong>보고자:</strong> <span id="situ-modal-user" style="color: #38bdf8;"></span></span>
+            </div>
 
+            <!-- 발생 시각 -->
+            <div>
+                <strong>보고 시각:</strong> <span id="situ-modal-time" style="color: #94a3b8;"></span>
+            </div>
+            
+            <!-- Situ Content -->
+            <div style="margin-top: 4px;">
+                <strong style="color: #f8fafc;">상황 내용:</strong>
+                <div id="situ-modal-content" style="background: #14161d; padding: 12px; border-radius: 6px; margin-top: 6px; min-height: 60px; max-height: 120px; overflow-y: auto; white-space: pre-wrap; color: #e2e8f0; border: 1px solid #2c303e; font-size: 12px; line-height: 1.5;"></div>
+            </div>
 
+            <!-- Work Content (조치내용이 있을 경우만 dynamic 노출) -->
+            <div id="situ-modal-work-wrapper" style="margin-top: 4px; display: none;">
+                <strong style="color: #f8fafc;">조치 내용:</strong>
+                <div id="situ-modal-work-content" style="background: #14161d; padding: 12px; border-radius: 6px; margin-top: 6px; min-height: 50px; white-space: pre-wrap; color: #4ade80; border: 1px solid #2c303e; font-size: 12px; line-height: 1.5;"></div>
+            </div>
+            
+            <!-- 첨부 사진 -->
+            <div id="situ-modal-img-wrapper" style="margin-top: 4px; display: none;">
+                <strong style="color: #f8fafc;">첨부 사진:</strong>
+                <div style="margin-top: 6px; text-align: center; background: #000; border-radius: 6px; overflow: hidden; border: 1px solid #2c303e;">
+                    <img id="situ-modal-img" src="" alt="상황 사진" style="max-width: 100%; max-height: 220px; object-fit: contain; display: block; margin: 0 auto;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="btn-situ-modal-confirm" type="button" class="mini-btn primary" style="padding: 8px 20px; background: #3b82f6; border: none; color: #fff; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">확인</button>
+        </div>
+    </div>
+</div>
 
 
 
@@ -506,6 +587,7 @@ $(document).ready(function() {
         var droneId = $(this).attr('data-id');
         var zoneName = $(this).attr('data-zone');
         var streamUrl = $(this).attr('data-url');
+        var activeStatus = $(this).attr('data-active');
         
         if (activeStatus === 'N' || activeStatus === '비활성화') {
             return false;
@@ -1525,6 +1607,270 @@ $(document).off('submit', '#drone-form').on('submit', '#drone-form', function(e)
     e.preventDefault();
     return false;
 });
+
+
+
+
+
+//==========================================
+//실시간 긴급보고 목록 조회 및 모달 제어
+//==========================================
+
+//1. 긴급보고 목록 조회 및 카드 렌더링
+function renderSituationList() {
+    $.ajax({
+        url: ctx + '/total/api/list',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            var $container = $('#situation-list-container');
+            $container.empty();
+
+            if (!data || data.length === 0) {
+                $('#situ-count-badge').text('(0건)');
+                $container.html('<div style="text-align:center; padding: 30px 0; color: #64748b; font-size: 13px;">등록된 데이터가 없습니다.</div>');
+                return;
+            }
+
+            // situType 이 '긴급보고' 인 데이터만 필터링
+            var urgentList = data.filter(function(item) {
+                return item.situType && item.situType.trim() === '긴급보고';
+            });
+
+            $('#situ-count-badge').text('(' + urgentList.length + '건)');
+
+            if (urgentList.length === 0) {
+                $container.html('<div style="text-align:center; padding: 30px 0; color: #64748b; font-size: 13px;">긴급보고 내역이 없습니다.</div>');
+                return;
+            }
+
+            var html = '';
+            urgentList.forEach(function(item) {
+                var dngrType = item.dngrType || '위험상황';
+                var dngrLevel = item.dngrLevel || '미지정';
+                var zoneName = item.zoneName || '구역 미지정';
+                var finder = item.finder || '요원';
+                var situNo = item.situNo || '';
+                
+                // Timestamp -> 시간 포맷
+                var dateStr = '-';
+                if (item.situDate) {
+                    var d = new Date(Number(item.situDate));
+                    if (!isNaN(d.getTime())) {
+                        dateStr = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+                    }
+                }
+
+                // 위험단계별 배지 색상
+                var levelColor = '#38bdf8';
+                if (dngrLevel === '주의') levelColor = '#facc15';
+                else if (dngrLevel === '경계') levelColor = '#fb923c';
+                else if (dngrLevel === '심각') levelColor = '#f87171';
+
+                // JSP EL 충돌 방지를 위한 '+' 연결 방식
+                html += '<div class="situ-card-item" data-no="' + situNo + '" '
+                     + 'style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 8px;" '
+                     + 'onmouseover="this.style.borderColor=\'#ef4444\'; this.style.background=\'rgba(239, 68, 68, 0.08)\';" '
+                     + 'onmouseout="this.style.borderColor=\'rgba(255, 255, 255, 0.08)\'; this.style.background=\'rgba(15, 23, 42, 0.6)\';">'
+                     + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">'
+                     + '<span style="font-weight: 700; color: #f8fafc; font-size: 13px;">🚨 ' + dngrType + '</span>'
+                     + '<span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: ' + levelColor + '; border: 1px solid ' + levelColor + '; background: rgba(0,0,0,0.3);">' + dngrLevel + '</span>'
+                     + '</div>'
+                     + '<div style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: flex; justify-content: space-between;">'
+                     + '<span>📍 ' + zoneName + '</span>'
+                     + '<span>👤 ' + finder + '</span>'
+                     + '</div>'
+                     + '<div style="font-size: 11px; color: #64748b; text-align: right;">'
+                     + '<i class="fa-regular fa-clock"></i> ' + dateStr
+                     + '</div>'
+                     + '</div>';
+            });
+
+            $container.html(html);
+            window.currentUrgentData = urgentList;
+        },
+        error: function(xhr, status, error) {
+            console.error("긴급보고 목록 조회 실패:", error);
+            $('#situation-list-container').html('<div style="text-align:center; padding: 20px 0; color: #f87171;">목록을 불러오지 못했습니다.</div>');
+        }
+    });
+}
+
+//긴급보고 카드 클릭 시 모달 데이터 동적 바인딩
+$(document).off('click', '.situ-card-item').on('click', '.situ-card-item', function() {
+    var situNo = $(this).attr('data-no');
+    if (!situNo || !window.currentUrgentData) return;
+
+    var item = window.currentUrgentData.find(d => String(d.situNo) === String(situNo));
+    if (!item) return;
+
+    // 1. 기본 텍스트 채우기
+    $('#situ-modal-no').text(item.situNo || '-');
+    $('#situ-modal-dngr-type').text(item.dngrType || '위험 상황');
+    $('#situ-modal-zone').text(item.zoneName || '구역 미지정');
+    $('#situ-modal-user').text(item.finder || '알 수 없음');
+    $('#situ-modal-content').text(item.situContent || '등록된 상세 내용이 없습니다.');
+
+    // 2. 위험단계 스타일 지정
+    var $level = $('#situ-modal-dngr-level');
+    var level = item.dngrLevel || '관심';
+    $level.text(level);
+    if (level === '심각') {
+        $level.css({ 'background': 'rgba(239, 68, 68, 0.2)', 'color': '#f87171', 'border': '1px solid #f87171' });
+    } else if (level === '경계') {
+        $level.css({ 'background': 'rgba(249, 115, 22, 0.2)', 'color': '#fb923c', 'border': '1px solid #fb923c' });
+    } else if (level === '주의') {
+        $level.css({ 'background': 'rgba(234, 179, 8, 0.2)', 'color': '#facc15', 'border': '1px solid #facc15' });
+    } else {
+        $level.css({ 'background': 'rgba(56, 189, 248, 0.2)', 'color': '#38bdf8', 'border': '1px solid #38bdf8' });
+    }
+
+    // 3. 조치상태 스타일 지정
+    var $status = $('#situ-modal-status');
+    var status = item.situStatus || '감지';
+    $status.text(status);
+    if (status === '완료') $status.css('color', '#4ade80');
+    else if (status === '조치') $status.css('color', '#60a5fa');
+    else if (status === '취소' || status === '미해결') $status.css('color', '#f87171');
+    else $status.css('color', '#facc15');
+
+    // 4. 날짜 포맷팅
+    var dateStr = '-';
+    if (item.situDate) {
+        var d = new Date(item.situDate);
+        dateStr = d.getFullYear() + '-' + 
+                  String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+                  String(d.getDate()).padStart(2, '0') + ' ' + 
+                  String(d.getHours()).padStart(2, '0') + ':' + 
+                  String(d.getMinutes()).padStart(2, '0') + ':' + 
+                  String(d.getSeconds()).padStart(2, '0');
+    }
+    $('#situ-modal-time').text(dateStr);
+
+    // 5. 조치내용(workContent) 존재 시 표시
+    if (item.workContent && item.workContent.trim() !== '') {
+        $('#situ-modal-work-content').text(item.workContent);
+        $('#situ-modal-work-wrapper').show();
+    } else {
+        $('#situ-modal-work-wrapper').hide();
+    }
+
+    // 6. 첨부 이미지 노출 로직
+    if (item.situImage && item.situImage.trim() !== '') {
+        var imgUrl = ctx + '/resources/upload/situation/' + item.situImage;
+        $('#situ-modal-img').attr('src', imgUrl);
+        $('#situ-modal-img-wrapper').show();
+    } else {
+        $('#situ-modal-img-wrapper').hide();
+        $('#situ-modal-img').attr('src', '');
+    }
+
+    // 모달 활성화
+    $('#situation-modal').css('display', 'flex').addClass('active');
+});
+
+//긴급보고 사이드바 탭 클릭 시 자동 목록 조회
+$(document).on('click', '.quick-nav-item', function() {
+    // 클릭한 탭의 target이나 panel ID 확인 후 실행
+    var target = $(this).data('target') || $(this).attr('href');
+    
+    if (target === '#panel-agent' || target === 'panel-agent') {
+        renderSituationList();
+    }
+});
+
+
+//==========================================
+//1. 모달 닫기 공통 함수 및 ESC / 배경 클릭 이벤트
+//==========================================
+
+//모달 닫기 함수
+function closeSituationModal() {
+ $('#situation-modal').fadeOut(150, function() {
+     $(this).removeClass('active');
+     // 모달 위치 초기화 (다음 열릴 때 중앙으로)
+     if (typeof resetModalPosition === 'function') {
+         resetModalPosition();
+     }
+ });
+}
+
+//ESC 키 입력 시 모달 닫기
+$(document).on('keydown', function(e) {
+ if (e.key === 'Escape' || e.keyCode === 27) {
+     if ($('#situation-modal').is(':visible')) {
+         closeSituationModal();
+     }
+ }
+});
+
+//X 버튼 & 확인 버튼 클릭 시 닫기
+$(document).off('click', '#btn-situ-modal-close, #btn-situ-modal-confirm')
+       .on('click', '#btn-situ-modal-close, #btn-situ-modal-confirm', function() {
+ closeSituationModal();
+});
+
+//모달 바깥 어두운 배경 클릭 시 닫기
+$('#situation-modal').on('click', function(e) {
+ if ($(e.target).is('#situation-modal')) {
+     closeSituationModal();
+ }
+});
+
+
+//==========================================
+//2. 모달 드래그(Drag & Drop) 이동 기능
+//==========================================
+(function initModalDrag() {
+ var $modalContent = $('#situation-modal .modal-content');
+ var isDragging = false;
+ var startX, startY;
+ var initialX = 0, initialY = 0;
+
+ // 헤더 부분에 커서 상징 추가 (드래그 가능 표시)
+ $('#situ-modal-title').parent().css({
+     'cursor': 'move',
+     'user-select': 'none'
+ });
+
+ // 드래그 시작 (모달 내부 클릭)
+ $modalContent.on('mousedown', function(e) {
+     // 버튼, 닫기 X표시, 이미지 등 제어 요소 클릭 시 드래그 방지
+     if ($(e.target).closest('button, input, textarea, img').length > 0) {
+         return;
+     }
+
+     isDragging = true;
+     startX = e.clientX - initialX;
+     startY = e.clientY - initialY;
+
+     // 마우스 이동 이벤트
+     $(document).on('mousemove.modalDrag', function(e) {
+         if (!isDragging) return;
+         e.preventDefault();
+
+         initialX = e.clientX - startX;
+         initialY = e.clientY - startY;
+
+         // transform을 이용하여 부드럽게 이동
+         $modalContent.css('transform', 'translate(' + initialX + 'px, ' + initialY + 'px)');
+     });
+
+     // 마우스 뗌 이벤트
+     $(document).on('mouseup.modalDrag', function() {
+         isDragging = false;
+         $(document).off('mousemove.modalDrag mouseup.modalDrag');
+     });
+ });
+
+ // 위치 리셋 함수 (모달 닫힐 때 호출)
+ window.resetModalPosition = function() {
+     initialX = 0;
+     initialY = 0;
+     $modalContent.css('transform', 'translate(0px, 0px)');
+ };
+})();
+
 </script>
 <!-- 드론 관제 전용 내장 스타일 -->
 <style>
@@ -1612,5 +1958,6 @@ $(document).off('submit', '#drone-form').on('submit', '#drone-form', function(e)
 .status-select-btn.ready.active { color: #38bdf8; background: rgba(14, 165, 233, 0.15); border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
 .status-select-btn.flying.active { color: #4ade80; background: rgba(34, 197, 94, 0.15); border-color: #4ade80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
 .status-select-btn.error.active { color: #f87171; background: rgba(239, 68, 68, 0.15); border-color: #f87171; box-shadow: 0 0 10px rgba(248, 113, 113, 0.3); }
+
 </style>
 
