@@ -15,4 +15,11 @@ public class GuideController {
         // WEB-INF/views/guideMain.jsp (또는 설정된 ViewResolver 경로)
         return "guideMain";
     }
+    
+    // 요청 처리 성공 페이지
+    @GetMapping("/regist_success")
+    public String showRegistSuccessPage() {
+        // 실제 성공 화면인 JSP 파일의 경로를 리턴
+        return "status/regist_success"; 
+    }
 }

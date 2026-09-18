@@ -23,7 +23,7 @@
 	                    <span>스트리밍 연결 중...</span>
 	                </div>
 	                
-	                <img id="stream-video" src="${drone.url}" data-drone-id="${droneId}" onerror="handleStreamError(this, this.getAttribute('data-drone-id'))" alt="실시간 스트리밍" />
+	                <img id="stream-video" src="${drone.url}" data-drone-id="${droneId}" crossorigin="anonymous" onerror="handleStreamError(this, this.getAttribute('data-drone-id'))" alt="실시간 스트리밍" />
 	            	
 	            	<!-- 전체화면 토글 버튼 -->
 				    <button type="button" class="btn-fullscreen" id="btnFullscreen" title="전체화면">

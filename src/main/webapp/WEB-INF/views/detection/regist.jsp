@@ -26,17 +26,24 @@
 		<div class="info-box">
 			<div class="info-label">구역명 | 발견인</div>
 			<div class="info-value">
-				<input type="text" name="zoneName" id="zoneName" class="form-control" readonly> | 
-				<input type="text" name="finder" class="form-control" readonly>
-				<input type="hidden" name="droneId" class="form-control">
+				<!-- 폼 전송용 hidden input -->
+			    <input type="hidden" name="zoneName" id="zoneName">
+			    <input type="hidden" name="finder" value="${sessionScope.userId}">
+			    
+			    <!-- 화면 출력용 텍스트 -->
+			    <span id="displayZoneName"></span> | <span>${sessionScope.userId}</span>
 			</div>
 		</div>
 		
 		<div class="info-box">
+			<!-- 현재 시각 객체 생성 및 포맷팅 (날짜와 시간 사이에 'T' 필수) -->
+			<jsp:useBean id="now" class="java.util.Date" />
+			<fmt:formatDate value="${now}" pattern="yyyy-MM-dd'T'HH:mm:ss" var="currentDatetime" />
+			
 			<div class="info-label">발생 일시</div>
 			<div class="info-value">
-				<fmt:formatDate value="현시각" pattern="yyyy-MM-dd HH:mm:ss" />
-				<input type="datetime-local" id='currentDatetime'/><!-- 어떻게 넘겨주지? -->
+				<!-- input 태그 세팅 -->
+				<input type="datetime-local" name="situDate" id="situDate" step="1" value="${currentDatetime}" readonly>
 			</div>
 		</div>
 
@@ -80,14 +87,15 @@
 
 		<!-- 첨부 사진 영역 -->
 		<div class="info-box full-width">
-			<div class="info-label">관제 화면 스냅샷</div>
+			<div class="info-label">스냅샷 첨부</div>
 			<div style="width:100%;">
 				<div class="img-preview-box" id="previewContainer">
-					<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 캡처된 영상이 없습니다.</span>
+					<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 영상 캡처에 실패했습니다.</span>
 					<img id="previewImg" src="" style="display:none;">
 				</div>
 				<div style="font-size: 11px; color: #94a3b8; text-align: right;">
-					<i class="fa-solid fa-check text-skyblue"></i> 등록 버튼 클릭 시 영상 캡처본이 자동 첨부됩니다.
+					드론 정보: <span id="displayDroneId"></span>
+					<input type="hidden" name="droneId" class="form-control">
 				</div>
 				<input type="file" name="uploadImage" id="realFileInput" style="display:none;">
 			</div>
@@ -131,12 +139,18 @@
 		}
 
 		document.addEventListener("DOMContentLoaded", function() {
-			const zoneName = sessionStorage.getItem('manualZoneName');
-			const base64Img = sessionStorage.getItem('manualCaptureImg');
+			const zoneName = sessionStorage.getItem('regZoneName');
+		    const droneId = sessionStorage.getItem('regDroneId'); 
+		    const base64Img = sessionStorage.getItem('captureStreamImg');
 
-			if (zoneName) {
-				document.getElementById('regZoneName').value = zoneName;
-			}
+		    if (zoneName) {
+		    	document.getElementById('zoneName').value = zoneName; // 폼 전송용 값 세팅
+		        document.getElementById('displayZoneName').innerText = zoneName; // 화면 출력용 텍스트 세팅
+		    }
+		    if (droneId) {
+		        document.querySelector('input[name="droneId"]').value = droneId;
+		        document.getElementById('displayDroneId').innerText = droneId;
+		    }
 
 			if (base64Img) {
 				const imgEl = document.getElementById('previewImg');
@@ -156,8 +170,9 @@
 				document.getElementById('noImgText').style.display = 'block';
 			}
 
-			sessionStorage.removeItem('manualZoneName');
-			sessionStorage.removeItem('manualCaptureImg');
+			sessionStorage.removeItem('regZoneName');
+			sessionStorage.removeItem('regDroneId');
+			sessionStorage.removeItem('captureStreamImg');
 		});
 
 		function updateTransform() {

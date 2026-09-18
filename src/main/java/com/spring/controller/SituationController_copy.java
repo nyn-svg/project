@@ -27,7 +27,7 @@ import com.spring.service.SituationService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
-public class SituationController {
+public class SituationController_copy {
 
     @Autowired
     private SituationService situationService;

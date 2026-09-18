@@ -56,7 +56,7 @@ public class ControlController {
         return "control/controlMain";
     }
     
-    // 감지 이력 현황 페이지 이동
+    // 위험 감지 관리 페이지 이동
     @GetMapping("/detection")
     public String detectionStatusPage(Model model) {
         
@@ -67,15 +67,6 @@ public class ControlController {
         model.addAttribute("currentMenu", "detection");
 
         // 메인 레이아웃 JSP 파일명을 리턴 (예: main, index, layout 등 프로젝트 설정명에 맞게 지정)
-        return "control/controlMain"; 
-    }
-    
-    // 조치록 메인/목록 페이지 이동 
-    @GetMapping("/actionLog")
-    public String actionLogPage(Model model) {
-        // 메인 컨텐츠 영역에 들어갈 조치록 JSP 경로 설정
-        model.addAttribute("contentPage", "/WEB-INF/views/report/actionLog.jsp");
-        model.addAttribute("currentMenu", "actionLog");
         return "control/controlMain"; 
     }
     
