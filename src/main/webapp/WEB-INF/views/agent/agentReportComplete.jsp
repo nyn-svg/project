@@ -28,31 +28,36 @@
                     <i class="fa-solid fa-check"></i>
                 </div>
                 <h2 class="complete-title">보고가 등록되었습니다.</h2>
-                <p class="complete-sub">관제실로 전송되었습니다.</p>
+                <p class="complete-sub">행사장 안전 관제 DB 시스템에 저장 완료되었습니다.</p>
             </div>
 
-            <!-- 보고 정보 요약 카드 -->
+            <!-- 요약 정보 테이블 카드 -->
             <div class="info-card">
-                <h3 class="card-title">보고 정보</h3>
+                <h3 class="card-title">등록 완료 상세 정보</h3>
                 <div class="info-row">
-                    <span class="info-label">보고 유형</span>
-                    <span class="info-value">인파 밀집</span>
+                    <span class="info-label">보고 번호 (이력번호)</span>
+                    <!-- 🚨 진짜 DB 번호가 찍히는 영역 -->
+                    <span class="info-value" id="resSituNo" style="color: #ef4444; font-weight: 800;">조회중...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">위험 유형</span>
+                    <span class="info-value" id="resDngrType">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">위험 단계</span>
+                    <span class="info-value" id="resDngrLevel">-</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">발생 구역</span>
-                    <span class="info-value">A구역</span>
+                    <span class="info-value" id="resZoneName">-</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">등록 시간</span>
-                    <span class="info-value">2026-05-20 14:35</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">보고 번호</span>
-                    <span class="info-value">RPT-20260520-0015</span>
+                    <span class="info-label">감지 일시</span>
+                    <span class="info-value" id="resFormattedTime">-</span>
                 </div>
             </div>
 
-            <!-- 하단 이동 버튼 그룹 -->
+            <!-- 하단 이동 버튼 그룹 (점검완료 템플릿과 디자인 통일 완료) -->
             <div class="action-btn-group">
                 <button type="button" class="btn-history" onclick="location.href='${pageContext.request.contextPath}/agent/history'">업무 이력 조회</button>
                 <button type="button" class="btn-home" onclick="location.href='${pageContext.request.contextPath}/agent/main'">홈으로 이동</button>
