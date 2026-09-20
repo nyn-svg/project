@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -25,25 +26,26 @@
 	<div class="grid-container">
 		<div class="info-box">
 			<div class="info-label">구역명 | 발견인</div>
-			<div class="info-value">
+			<div class="info-value justify-start">
 				<!-- 폼 전송용 hidden input -->
 			    <input type="hidden" name="zoneName" id="zoneName">
-			    <input type="hidden" name="finder" value="${sessionScope.userId}">
 			    
 			    <!-- 화면 출력용 텍스트 -->
-			    <span id="displayZoneName"></span> | <span>${sessionScope.userId}</span>
+			    <span id="displayZoneName"></span>
+			    <span>|</span> 
+			    <span id="finder"><sec:authentication property="principal.username" /></span>
 			</div>
 		</div>
 		
 		<div class="info-box">
 			<!-- 현재 시각 객체 생성 및 포맷팅 (날짜와 시간 사이에 'T' 필수) -->
 			<jsp:useBean id="now" class="java.util.Date" />
-			<fmt:formatDate value="${now}" pattern="yyyy-MM-dd'T'HH:mm:ss" var="currentDatetime" />
+			<fmt:formatDate value="${now}" pattern="yyyy-MM-dd HH:mm:ss" var="currentDatetime" />
 			
 			<div class="info-label">발생 일시</div>
 			<div class="info-value">
 				<!-- input 태그 세팅 -->
-				<input type="datetime-local" name="situDate" id="situDate" step="1" value="${currentDatetime}" readonly>
+				<input type="text" name="situDate" id="situDate" class="info-value-date" value="${currentDatetime}" readonly>
 			</div>
 		</div>
 
@@ -97,7 +99,7 @@
 					드론 정보: <span id="displayDroneId"></span>
 					<input type="hidden" name="droneId" class="form-control">
 				</div>
-				<input type="file" name="uploadImage" id="realFileInput" style="display:none;">
+				<input type="file" name="photo" id="realFileInput" style="display:none;">
 			</div>
 		</div>
 

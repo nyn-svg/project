@@ -18,14 +18,14 @@ public class SituationDTO {
     private String dngrLevel;   // 위험단계 (관심, 주의, 경계, 심각, 판단불가)
     private String situStatus;  // 조치상태 (감지, 조치, 완료, 미해결, 취소)
     private String situContent; // 감지내용
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date situDate;      // 감지일시 (감지 - 이력 최초 생성)
     private String situImage;   // 감지첨부파일명 (1장)
     
     private String workContent; // 조치내용
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;     // 시작일시 (조치 - 안전요원이 수락한 일시)
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;		// 종료일시 (완료 - 완료, 미해결, 취소 상태로 변경된 일시, 이후로 수정 불가능)
     private String workImage;   // 조치첨부파일명 (1장)
     

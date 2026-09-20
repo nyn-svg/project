@@ -74,8 +74,15 @@ public class SituationController {
     	return "detection/regist";
     }
     @PostMapping("/detection/regist")
-    public String postDetectionRegist(SituationDTO situation, @RequestParam(value = "photo", required = false) MultipartFile photo, HttpServletRequest request) {
+    public String postDetectionRegist(SituationDTO situation, @RequestParam(value = "photo", required = false) MultipartFile photo, HttpServletRequest request, Principal principal) {
     	try {
+    		if (principal != null) {
+                situation.setFinder(principal.getName());
+            } else {
+                // 세션이 만료되었거나 로그인 정보가 없는 경우에도 실패 화면으로 처리
+                return "status/regist_fail"; 
+            }
+    		
             // 1. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
             if (photo != null && !photo.isEmpty()) {
                 // 웹 프로젝트 내의 업로드 폴더 실제 경로 구하기 (/resources/upload/situation)
@@ -97,7 +104,8 @@ public class SituationController {
                 // DTO에 저장된 파일명 세팅
                 situation.setSituImage(savedFilename);
             }
-
+            
+            situation.setSituType("수동감지");
             // 3. DB 저장 Service 호출
             boolean isSuccess = situationService.registerSituation(situation);
 
