@@ -13,108 +13,109 @@
 </head>
 <body>
 	<form action="${pageContext.request.contextPath}/detection/regist" method="post" enctype="multipart/form-data">
-	<!-- 1. 팝업 헤더 -->
-	<div class="popup-header">
-		<div class="popup-title">
-			<i class="fa-solid fa-pen-to-square"></i>
-			<span>수동 감지 등록</span>
-		</div>
-		<span class="badge status-pending">감지</span>
-	</div>
-
-	<!-- 2. 본문 그리드 영역 -->
-	<div class="grid-container">
-		<div class="info-box">
-			<div class="info-label">구역명 | 발견인</div>
-			<div class="info-value justify-start">
-				<!-- 폼 전송용 hidden input -->
-			    <input type="hidden" name="zoneName" id="zoneName">
-			    
-			    <!-- 화면 출력용 텍스트 -->
-			    <span id="displayZoneName"></span>
-			    <span>|</span> 
-			    <span id="finder"><sec:authentication property="principal.username" /></span>
+		<!-- 1. 팝업 헤더 -->
+		<div class="popup-header">
+			<div class="popup-title">
+				<i class="fa-solid fa-pen-to-square"></i>
+				<span>수동 감지 등록</span>
 			</div>
+			<span class="badge status-pending">감지</span>
 		</div>
-		
-		<div class="info-box">
-			<!-- 현재 시각 객체 생성 및 포맷팅 (날짜와 시간 사이에 'T' 필수) -->
-			<jsp:useBean id="now" class="java.util.Date" />
-			<fmt:formatDate value="${now}" pattern="yyyy-MM-dd HH:mm:ss" var="currentDatetime" />
-			
-			<div class="info-label">발생 일시</div>
-			<div class="info-value">
-				<!-- input 태그 세팅 -->
-				<input type="text" name="situDate" id="situDate" class="info-value-date" value="${currentDatetime}" readonly>
-			</div>
-		</div>
-
-		<!-- 위험 유형 + 위험 단계 배지 -->
-		<div class="info-box">
-			<div class="info-label">위험 유형</div>
-			<div class="info-value form-inline">
-				<select name="dngrType" class="form-control" required>
-					<option value="">위험 유형 선택</option>
-					<option value="인파위험">인파위험</option>
-					<option value="야생동물">야생동물</option>
-					<option value="인명사고">인명사고</option>
-					<option value="시설고장/파손">시설고장/파손</option>
-					<option value="시설점검">시설점검</option>
-					<option value="연계필요">연계필요</option>
-					<option value="기타">기타</option>
-				</select>
-			</div>
-		</div>
-		<div class="info-box">
-			<div class="info-label">위험 단계</div>
-			<div class="info-value form-inline">
-				<select name="dngrLevel" class="form-control" required>
-					<option value="">위험 단계 선택</option>
-					<option value="관심">관심</option>
-					<option value="주의">주의</option>
-					<option value="경계">경계</option>
-					<option value="심각">심각</option>
-					<option value="판단불가">판단불가</option>
-				</select>
-			</div>
-		</div>
-
-		<!-- 발생 내용 -->
-		<div class="info-box full-width">
-			<div class="info-label">발생 내용</div>
-			<div class="info-value">
-				<textarea name="situContent" class="form-control" placeholder="발생 상황에 대해 상세히 적어주세요." required></textarea>
-			</div>
-		</div>
-
-		<!-- 첨부 사진 영역 -->
-		<div class="info-box full-width">
-			<div class="info-label">스냅샷 첨부</div>
-			<div style="width:100%;">
-				<div class="img-preview-box" id="previewContainer">
-					<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 영상 캡처에 실패했습니다.</span>
-					<img id="previewImg" src="" style="display:none;">
+	
+		<!-- 2. 본문 그리드 영역 -->
+		<div class="grid-container">	
+			<div class="info-box">
+				<div class="info-label">발생 일시</div>
+				<div class="info-value">
+					<!-- 현재 시각 객체 생성 및 포맷팅 -->
+					<jsp:useBean id="now" class="java.util.Date" />
+					<fmt:formatDate value="${now}" pattern="yyyy-MM-dd HH:mm:ss" var="currentDatetime" />
+					
+					<!-- 화면에 표시 -->
+					${currentDatetime}
+					
+					<!-- input 태그 세팅 -->
+					<input type="hidden" name="situDate" id="situDate" class="info-value-date" value="${currentDatetime}" readonly>
 				</div>
-				<div style="font-size: 11px; color: #94a3b8; text-align: right;">
-					드론 정보: <span id="displayDroneId"></span>
+			</div>
+			
+			<div class="info-box">
+				<div class="info-label">구역명 | 발견인</div>
+				<div class="info-value justify-start">
+					<!-- 폼 전송용 hidden input -->
+				    <input type="hidden" name="zoneName" id="zoneName">
+				    
+				    <!-- 화면 출력용 텍스트 -->
+				    <span id="displayZoneName"></span>
+				    <span>|</span> 
+				    <span id="finder"><sec:authentication property="principal.username" /></span>
+				</div>
+			</div>
+	
+			<!-- 위험 유형 + 위험 단계 배지 -->
+			<div class="info-box">
+				<div class="info-label">위험 유형</div>
+				<div class="info-value form-inline">
+					<select name="dngrType" class="form-control" required>
+						<option value="">위험 유형 선택</option>
+						<option value="인파위험">인파위험</option>
+						<option value="야생동물">야생동물</option>
+						<option value="인명사고">인명사고</option>
+						<option value="시설고장/파손">시설고장/파손</option>
+						<option value="시설점검">시설점검</option>
+						<option value="연계필요">연계필요</option>
+						<option value="기타">기타</option>
+					</select>
+				</div>
+			</div>
+			<div class="info-box">
+				<div class="info-label">위험 단계</div>
+				<div class="info-value form-inline">
+					<select name="dngrLevel" class="form-control" required>
+						<option value="">위험 단계 선택</option>
+						<option value="관심">관심</option>
+						<option value="주의">주의</option>
+						<option value="경계">경계</option>
+						<option value="심각">심각</option>
+						<option value="판단불가">판단불가</option>
+					</select>
+				</div>
+			</div>
+	
+			<!-- 발생 내용 -->
+			<div class="info-box full-width">
+				<div class="info-label">발생 내용</div>
+				<div class="info-value">
+					<textarea name="situContent" class="form-control" placeholder="발생 상황에 대해 상세히 적어주세요." required></textarea>
+				</div>
+			</div>
+	
+			<!-- 첨부 사진 영역 -->
+			<div class="info-box full-width">
+				<div class="info-label">스냅샷 첨부</div>
+				<div class="img-container img-preview-box" id="previewContainer">
+					<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 영상 캡처에 실패했습니다.</span>
+					<img id="previewImg" src="" style="display:none;" onclick="openImageModal(this.src)" title="클릭하여 크게 보기">
+				</div>
+				<div class="img-action-bar">
+					<p>드론 정보: <span id="displayDroneId"></span></p>
 					<input type="hidden" name="droneId" class="form-control">
 				</div>
 				<input type="file" name="photo" id="realFileInput" style="display:none;">
 			</div>
+	
+			<!-- 전체화면 이미지 모달 레이어 -->
+			<div id="imageModal" class="img-modal" onclick="closeImageModal()">
+				<span class="modal-close">&times;</span>
+				<img class="modal-content" id="modalTargetImg">
+			</div>
 		</div>
-
-		<!-- 전체화면 이미지 모달 레이어 -->
-		<div id="imageModal" class="img-modal" onclick="closeImageModal()">
-			<span class="modal-close">&times;</span>
-			<img class="modal-content" id="modalTargetImg">
+	
+		<!-- 4. 하단 버튼 -->
+		<div class="btn-group">
+			<button type="submit" class="btn btn-submit">등록</button>
+			<button type="button" class="btn" onclick="window.close()">취소</button>
 		</div>
-	</div>
-
-	<!-- 4. 하단 버튼 -->
-	<div class="btn-group">
-		<button type="button" class="btn" style="margin-right: 8px;" onclick="window.close()">취소</button>
-		<button type="submit" class="btn btn-primary">등록하기</button>
-	</div>
 	</form>
 	
 	<script>

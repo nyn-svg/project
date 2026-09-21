@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/detection/detection-popup.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 	<!-- 1. 팝업 헤더 -->
@@ -154,7 +155,11 @@
 
 		<div class="info-box">
 			<div class="info-label">구역명 | 발견인</div>
-			<div class="info-value">${situation.zoneName != null ? situation.zoneName : '인식불가'} | ${not empty situation.finder ? situation.finder : situation.droneId}</div>
+			<div class="info-value justify-start">
+				<span>${situation.zoneName != null ? situation.zoneName : '인식불가'}</span>
+				<span>|</span> 
+				<span>${not empty situation.finder ? situation.finder : situation.droneId}</span>
+			</div>
 		</div>
 
 		<!-- 위험 유형 + 위험 단계 배지 -->
@@ -183,7 +188,7 @@
 		</div>
 
 		<div class="info-box">
-			<div class="info-label">최초 발생 일시</div>
+			<div class="info-label">발생 일시</div>
 			<div class="info-value">
 				<fmt:formatDate value="${situation.situDate}" pattern="yyyy-MM-dd HH:mm:ss" />
 			</div>
@@ -198,12 +203,13 @@
 		<!-- 첨부 사진 영역 -->
 		<c:if test="${not empty situation.situImage}">
 			<div class="info-box full-width">
-				<div class="info-label">첨부 사진</div>
+				<div class="info-label">감지 사진</div>
 				<div class="img-container">
-					<img src="${pageContext.request.contextPath}/resources/upload/situation/${situation.situImage}" alt="감지 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기">
+					<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
+					<img id="viewImg" src="${pageContext.request.contextPath}/upload/${situation.situImage}" alt="${situation.droneId} 감지 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleImageError(this)">
 				</div>
 				<div class="img-action-bar">
-					<a href="${pageContext.request.contextPath}/resources/upload/situation/${situation.situImage}" download="${situation.situImage}" class="btn-download"> 
+					<a href="${pageContext.request.contextPath}/upload/${situation.situImage}" download="${situation.situNo}" class="btn-download"> 
 						<i class="fa-solid fa-floppy-disk"></i> 이미지 다운로드
 					</a>
 				</div>
@@ -227,6 +233,10 @@
 
 	<!-- 4. 하단 버튼 -->
 	<div class="btn-group">
+		<button type="button" class="btn btn-submit" onclick="location.href='${pageContext.request.contextPath}/detection/modify?no=${situation.situNo}'">수정</button>
+		<c:if test="${situation.situStatus eq '감지' or situation.situStatus eq '조치'}">
+	        <button type="button" class="btn btn-danger" onclick="openRemovePopup()">삭제</button>
+	    </c:if>
 		<button type="button" class="btn" onclick="window.close()">창닫기</button>
 	</div>
 
@@ -239,6 +249,13 @@
 		let isDragging = false;
 		let wheelTimer = null;
 
+		function handleImageError(img) {
+		    const $box = $(img).closest('.info-box');
+		    $box.find('#viewImg').hide();
+		    $box.find('.img-action-bar').hide();
+		    $box.find('#noImgText').show();
+		}
+		
 		function updateTransform() {
 			const modalImg = document.getElementById("modalTargetImg");
 			if (modalImg) {
@@ -334,6 +351,22 @@
 				passive : false
 			});
 		});
+		
+		function openRemovePopup() {
+		    const url = '${pageContext.request.contextPath}/detection/remove?no=${situation.situNo}';
+		    const width = 630;
+		    const height = 340;
+		    
+		    // 모니터 해상도 기준 정중앙 좌표 계산
+		    const left = (window.screen.width / 2) - (width / 2);
+    		const top = (window.screen.height / 2) - (height / 2);
+    		const windowOption = 'width=' + width + ', height=' + height + ', top=' + top + ', left=' + left + ', scrollbars=no, resizable=no';
+		    
+		    window.open(url, 'removePopup', windowOption);
+		    
+		    // 현재 상세페이지 닫기
+		    window.close();
+		}
 	</script>
 </body>
 </html>

@@ -59,8 +59,8 @@ public class SituationServiceImpl implements SituationService {
         		sseService.sendEvent("situation-report", situation);
         		
         	} else { // 자동감지, 수동감지
-        		// 이벤트명: "situation-alert", 데이터: 저장된 SituationDTO 객체
-        		sseService.sendEvent("situation-alert", situation);
+        		// 이벤트명: "situation-insert", 데이터: 저장된 SituationDTO 객체
+        		sseService.sendEvent("situation-insert", "NEW_DATA");
         	}
         }
         
@@ -73,8 +73,14 @@ public class SituationServiceImpl implements SituationService {
 	}
     
     @Override
-    public boolean setEnd(String situNo) {
-		return situationMapper.endSituation(situNo) > 0;
+    public boolean setEnd(SituationDTO situation) {
+    	int result = situationMapper.endSituation(situation);
+    	
+    	if (result > 0) {
+        	sseService.sendEvent("situation-end", "END_STATUS");
+        }
+    	
+    	return result > 0;
 	}
 
 	@Override
@@ -87,6 +93,17 @@ public class SituationServiceImpl implements SituationService {
         	sseService.sendEvent("situation-update", situation);
         }
         
+		return result > 0;
+	}
+	
+	@Override
+	public boolean removeSituation(String situNo) {
+		int result = situationMapper.deleteSituation(situNo);
+		
+		if (result > 0) {
+			sseService.sendEvent("situation-delete", "DEL_DATA");
+		}
+				
 		return result > 0;
 	}
 

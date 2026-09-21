@@ -17,9 +17,9 @@ public class GuideController {
     }
     
     // 요청 처리 성공 페이지
-    @GetMapping("/regist_success")
+    @GetMapping("/success")
     public String showRegistSuccessPage() {
         // 실제 성공 화면인 JSP 파일의 경로를 리턴
-        return "status/regist_success"; 
+        return "status/success"; 
     }
 }

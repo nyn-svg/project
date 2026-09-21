@@ -202,7 +202,6 @@ body {
 	border-color: #f87171;
 	color: #f87171;
 }
-
 .timeline-step.failed .step-label {
 	color: #f87171;
 }
@@ -252,14 +251,8 @@ body {
 	min-height: 24px;
 	line-height: 1;
 }
-.info-value.justify-start span:nth-child(3) {
+.info-value.justify-start span:nth-of-type(2) {
 	color: #94a3b8;
-}
-
-.info-value-date {
-    border: none;
-    color: #f1f5f9;
-    background: rgba(30, 41, 59, 0.7);
 }
 
 /* 좌측 정렬 및 요소 간격 조절 */
@@ -287,9 +280,11 @@ body {
 .text-skyblue {
 	color: #38bdf8;
 }
-
 .text-orange {
 	color: #fb923c;
+}
+.text-red {
+	color: #f87171;
 }
 
 /* 이미지 박스 */
@@ -327,10 +322,15 @@ body {
 	justify-content: flex-end;
 	margin-top: 8px;
 }
+.img-action-bar p {
+	font-size: 11px;
+	color: #94a3b8;
+	text-align: right;
+}
 
 .btn-download {
 	background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-	color: #ffffff !important;
+	color: #ffffff;
 	border: none;
 	border-radius: 6px;
 	padding: 5px 12px;
@@ -339,16 +339,13 @@ body {
 	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: 5px;
 	text-decoration: none;
 	transition: all 0.2s ease;
-	box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
 .btn-download:hover {
 	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-	color: #ffffff !important;
-	box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
 }
 
 /* FontAwesome 아이콘 색상 및 크기 고정 */
@@ -411,6 +408,7 @@ body {
 .btn-group {
 	display: flex;
 	justify-content: flex-end;
+	gap: 8px;
 }
 
 .btn {
@@ -422,9 +420,25 @@ body {
 	background: #334155;
 	color: #f8fafc;
 }
-
 .btn:hover {
 	background: #475569;
+}
+
+.btn-submit {
+	background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+	color: #ffffff;
+	transition: all 0.2s ease;
+}
+.btn-submit:hover {
+	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+.btn-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+.btn-danger:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 /* --- 추가: 폼 요소(Input, Select, Textarea) 전용 스타일 --- */
@@ -460,4 +474,25 @@ textarea.form-control {
     min-height: 80px;
     resize: vertical; /* 세로로만 크기 조절 가능하게 설정 */
     line-height: 1.4;
+}
+
+/* 추가: 삭제(취소) 안내 페이지 */
+.target-summary {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-row .label {
+    color: #94a3b8;
 }

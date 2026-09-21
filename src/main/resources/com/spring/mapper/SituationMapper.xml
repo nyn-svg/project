@@ -45,7 +45,9 @@
 			FINDER			AS finder,
 			WORKER			AS worker
 		FROM SITUATIONS
-		ORDER BY SITU_NO DESC
+		ORDER BY 
+		    COALESCE(END_DATE, START_DATE, SITU_DATE) DESC,
+		    SITU_NO DESC
 	</select>
 	
 	<!-- 감지이력 목록 조회 -->
@@ -159,14 +161,18 @@
     <!-- 조치 시작일시 기록 -->
     <update id="startSituation" parameterType="string">
     	UPDATE SITUATIONS
-    	SET START_DATE = SYSDATE
+    	SET
+    		SITU_STATUS = '조치',
+    		START_DATE = SYSDATE
     	WHERE SITU_NO = #{situNo}
     </update>
     
     <!-- 조치 종료일시 기록 -->
-    <update id="endSituation" parameterType="string">
+    <update id="endSituation" parameterType="com.spring.dto.SituationDTO">
     	UPDATE SITUATIONS
-    	SET END_DATE = SYSDATE
+    	SET 
+    		SITU_STATUS = '#{situStatus}',
+    		END_DATE = SYSDATE
     	WHERE SITU_NO = #{situNo}
     </update>
 	
@@ -176,7 +182,6 @@
         SET 
             DNGR_TYPE		= #{dngrType},
             DNGR_LEVEL		= #{dngrLevel},
-            SITU_STATUS		= #{situStatus},
             SITU_CONTENT	= #{situContent},
             SITU_IMAGE		= #{situImage, jdbcType=VARCHAR},
             WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
@@ -185,6 +190,12 @@
             WORKER			= #{worker, jdbcType=VARCHAR}
         WHERE SITU_NO = #{situNo}
 	</update>
+	
+	<!-- 감지조치이력 삭제 -->
+	<delete id="deleteSituation" parameterType="string">
+		DELETE FROM SITUATIONS
+		WHERE SITU_NO = #{situNo}
+	</delete>
 	
 	<!-- 전체 감지조치이력 수 -->
     <select id="getTotalSituationCount" resultType="int">

@@ -474,16 +474,29 @@ function initSSE() {
 	eventSource = new EventSource(ctx + '/api/sse/subscribe');
 
 	// SSE로 하단 실시간 목록 갱신
- 	// 'situation-alert(자동감지, 수동감지 등록)' 이벤트를 수신하면 목록 자동 갱신
- 	eventSource.addEventListener('situation-alert', function(e) {
-		getSituationList();
+ 	// 'situation-insert(자동감지, 수동감지 등록)' 이벤트를 수신하면 목록 자동 갱신
+ 	eventSource.addEventListener('situation-insert', function(e) {
+ 		console.log("새로운 감지 이벤트 도착!", e.data);
+        getSituationList();
 	});
  	// 'situation-report(긴급보고 등록)' 이벤트를 수신하면 목록 자동 갱신
 	eventSource.addEventListener('situation-report', function(e) {
+		console.log("긴급보고 등록!", e.data);
 		getSituationList();
 	});
 	// 'situation-update(이력 수정/갱신)' 이벤트를 수신하면 목록 자동 갱신
 	eventSource.addEventListener('situation-update', function(e) {
+		console.log("수정 및 조치 갱신!", e.data);
+		getSituationList();
+	});
+	// 'situation-end(이력 종료)' 이벤트를 수신하면 목록 자동 갱신
+	eventSource.addEventListener('situation-end', function(e) {
+		console.log("이력 상태 종료!", e.data);
+		getSituationList();
+	});
+	// 'situation-delete(이력 삭제)' 이벤트를 수신하면 목록 자동 갱신
+	eventSource.addEventListener('situation-delete', function(e) {
+		console.log("이력 삭제!", e.data);
 		getSituationList();
 	});
 
