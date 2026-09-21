@@ -275,12 +275,22 @@ function initAreaManagement() {
 			    }
 			});
 
-			// 우측 상세 정보 폼에 구역 데이터 채우기
+			// 1. 우측 상세 정보 폼에 구역(ZONE) 데이터 채우기
 			function openZoneDetailForm(zone) {
 			    if (emptyDetailMsg) emptyDetailMsg.style.display = "none";
 			    if (elementDetailForm) elementDetailForm.style.display = "block";
 
-			    // 공통 입력창 데이터 바인딩
+			    // 💡 [핵심 1] 시설물 클릭 시 숨겨졌던 모든 개별 form-group 및 버튼 인라인 스타일 깔끔하게 초기화
+			    if (elementDetailForm) {
+			        elementDetailForm.querySelectorAll('.form-group').forEach(function(el) {
+			            el.style.display = ""; // CSS 기본값으로 원복
+			        });
+			    }
+			    const applyBtn = document.getElementById("btnApply") 
+			                  || (elementDetailForm && elementDetailForm.querySelector("button[type='button'], button[type='submit']"));
+			    if (applyBtn) applyBtn.style.display = "";
+
+			    // 공통 데이터 바인딩
 			    if (selectedElementId) selectedElementId.value = zone.id;
 			    if (selectedElementType) selectedElementType.value = "ZONE";
 			    if (elemTypeDisplay) elemTypeDisplay.value = "구역 (Zone)";
@@ -289,23 +299,35 @@ function initAreaManagement() {
 			    const elemDesc = document.getElementById("elemDesc");
 			    if (elemDesc) elemDesc.value = zone.description || "";
 
-			    // 구역 색상
 			    if (elemColor) elemColor.value = rgbaToHex(zone.color) || "#38bdf8";
 
-			    // [추가] 드롭다운 옵션을 활성화된 요원 목록으로 먼저 갱신
+			    // 안전요원 드롭다운 옵션 및 태그(Chip) 바인딩
 			    populateAgentSelectOptions();
+			    const container = document.getElementById("agentTagContainer");
+			    if (container) container.innerHTML = "";
 
-			    // 안전요원 선택값 바인딩
-			    const elemAgent = document.getElementById("elemAgent");
-			    if (elemAgent) elemAgent.value = zone.agentId || "";
+			    let agentIds = [];
+			    if (Array.isArray(zone.agentIds)) {
+			        agentIds = zone.agentIds;
+			    } else if (Array.isArray(zone.agentId)) {
+			        agentIds = zone.agentId;
+			    } else if (typeof zone.agentId === "string" && zone.agentId.trim() !== "") {
+			        agentIds = zone.agentId.split(",");
+			    }
+
+			    agentIds.forEach(id => {
+			        if (id.trim()) addAgentTag(id.trim());
+			    });
 
 			    // 스트리밍 URL
 			    const elemStreamUrl = document.getElementById("elemStreamUrl");
 			    if (elemStreamUrl) elemStreamUrl.value = zone.streamUrl || "";
 
+			    // 💡 [핵심 2] 구역 전용 영역 표시, 시설물 전용 영역 숨김
 			    if (zoneOnlyFields) zoneOnlyFields.style.display = "block";
 			    if (facilityOnlyFields) facilityOnlyFields.style.display = "none";
 			}
+		
 
 		    // 상세 패널 닫기 (초기 상태)
 		    function closeDetailForm() {
@@ -428,42 +450,36 @@ function initAreaManagement() {
 			        }
 			    }
 
-				// 우측 폼에 시설물 정보 채우기
+				// 2. 우측 상세 정보 폼에 시설물(FACILITY) 데이터 채우기
 				function openFacilityDetailForm(fac) {
 				    if (emptyDetailMsg) emptyDetailMsg.style.display = "none";
 				    if (elementDetailForm) elementDetailForm.style.display = "block";
 
-				    // 1. 공통 및 유형 데이터 바인딩
+				    // 💡 [핵심 1] 모든 개별 form-group 인라인 스타일 초기화
+				    if (elementDetailForm) {
+				        elementDetailForm.querySelectorAll('.form-group').forEach(function(el) {
+				            el.style.display = "";
+				        });
+				    }
+				    const applyBtn = document.getElementById("btnApply") 
+				                  || (elementDetailForm && elementDetailForm.querySelector("button[type='button'], button[type='submit']"));
+				    if (applyBtn) applyBtn.style.display = "";
+
+				    // 공통 및 유형 데이터 바인딩
 				    if (selectedElementId) selectedElementId.value = fac.id;
 				    if (selectedElementType) selectedElementType.value = "FACILITY";
-				    if (elemTypeDisplay) elemTypeDisplay.value = `시설물 (${fac.type})`;
+				    if (elemTypeDisplay) elemTypeDisplay.value = `시설물 (${fac.type || 'FACILITY'})`;
+				    if (elemName) elemName.value = fac.name || "";
 
-				    // 2. [명칭] 입력창 및 감싸고 있는 부모 영역 숨기기
-				    if (elemName) {
-				        // elemName을 감싸고 있는 form-group 또는 부모 태그 숨김
-				        const elemNameContainer = elemName.closest('.form-group') || elemName.parentElement;
-				        if (elemNameContainer) elemNameContainer.style.display = "none";
-				    }
-
-				    // 3. [상세 설명] 입력창 및 감싸고 있는 부모 영역 숨기기
 				    const elemDesc = document.getElementById("elemDesc");
-				    if (elemDesc) {
-				        const elemDescContainer = elemDesc.closest('.form-group') || elemDesc.parentElement;
-				        if (elemDescContainer) elemDescContainer.style.display = "none";
-				    }
+				    if (elemDesc) elemDesc.value = fac.description || "";
 
-				    // 4. [정보 적용] 버튼 숨기기
-				    // 버튼의 id가 btnApply 혹은 submit-btn 형태인지 확인 후 처리 (선택자 자동 감지)
-				    const applyBtn = document.getElementById("btnApply") 
-				                  || elementDetailForm.querySelector("button[type='button']") 
-				                  || elementDetailForm.querySelector("button[type='submit']");
-				    if (applyBtn) {
-				        applyBtn.style.display = "none";
-				    }
+				    const elemStreamUrl = document.getElementById("elemStreamUrl");
+				    if (elemStreamUrl) elemStreamUrl.value = fac.streamUrl || "";
 
-				    // 기타 영역/시설물 전용 필드 숨기기
+				    // 💡 [핵심 2] 구역 전용 영역(색상, 안전요원 지정 등) 숨기고 시설물 전용 영역 표시
 				    if (zoneOnlyFields) zoneOnlyFields.style.display = "none";
-				    if (facilityOnlyFields) facilityOnlyFields.style.display = "none";
+				    if (facilityOnlyFields) facilityOnlyFields.style.display = "block";
 				}
 
 			
@@ -515,6 +531,10 @@ function initAreaManagement() {
 					// 2. [최종 데이터 저장] 버튼 클릭 이벤트 (오라클 DB 저장 연동)
 					if (btnExportJson) {
 					    btnExportJson.onclick = function () {
+							if (typeof window.applyElementInfo === 'function' && window.selectedZone) {
+							            window.applyElementInfo();
+							        }
+							
 					        if (window.savedPolygons.length === 0 && window.savedFacilities.length === 0) {
 					            alert("저장할 구역이나 시설물 데이터가 없습니다.");
 					            return;
@@ -839,7 +859,7 @@ function initAreaManagement() {
 							})();
 							
 							
-							// [정보 적용] 버튼 클릭 시 실행될 전역 함수
+							// [정보 적용] 버튼 클릭 시 실행될 전역 함수 (다중 요원 태그 방식 적용)
 							window.applyElementInfo = function () {
 							    const typeEl = document.getElementById("selectedElementType");
 							    const currentType = typeEl ? typeEl.value : "";
@@ -854,8 +874,16 @@ function initAreaManagement() {
 							        const newName = elemName ? elemName.value : "";
 							        const newDesc = elemDesc ? elemDesc.value : "";
 							        
-							        const elemAgent = document.getElementById("elemAgent");
-							        const newAgentId = elemAgent ? elemAgent.value : "";
+							        // 💡 [수정] 태그(Chip) 컨테이너에서 선택된 모든 요원 ID 추출
+							        const agentChips = document.querySelectorAll("#agentTagContainer .agent-chip");
+							        const newAgentIds = [];
+							        agentChips.forEach(chip => {
+							            const userId = chip.getAttribute("data-user-id");
+							            if (userId) newAgentIds.push(userId);
+							        });
+							        
+							        // 서버 DB 및 기존 호환을 위해 콤마 구분 문자열("agent01,agent02")도 준비
+							        const newAgentIdStr = newAgentIds.join(",");
 
 							        const elemStreamUrl = document.getElementById("elemStreamUrl");
 							        let newStreamUrl = "";
@@ -870,7 +898,8 @@ function initAreaManagement() {
 							        // 1-1. 화면 UI용 선택 객체 업데이트
 							        window.selectedZone.name = newName;
 							        window.selectedZone.description = newDesc;
-							        window.selectedZone.agentId = newAgentId;
+							        window.selectedZone.agentId = newAgentIdStr;  // 기존 콤마 문자열 호환 ("agent01,agent02")
+							        window.selectedZone.agentIds = newAgentIds;   // 배열 규격 호환 (["agent01", "agent02"])
 							        window.selectedZone.streamUrl = newStreamUrl;
 							        window.selectedZone.droneId = newDroneId;
 
@@ -883,14 +912,15 @@ function initAreaManagement() {
 							            window.selectedZone.color = `rgba(${r}, ${g}, ${b}, 0.35)`;
 							        }
 
-							        // 💡 1-2. DB 전송용 원본 배열(window.savedPolygons) 동기화 (중복 방지 및 값 업데이트)
+							        // 💡 1-2. DB 전송용 원본 배열(window.savedPolygons) 동기화
 							        if (window.savedPolygons) {
 							            const target = window.savedPolygons.find(z => z.id === window.selectedZone.id || z === window.selectedZone);
 							            if (target) {
 							                target.name = newName;
 							                target.zoneName = newName;
 							                target.description = newDesc;
-							                target.agentId = newAgentId;
+							                target.agentId = newAgentIdStr; // 기존 콤마 문자열 동기화
+							                target.agentIds = newAgentIds;  // 배열 형태 동기화
 							                target.streamUrl = newStreamUrl;
 							                target.droneId = newDroneId;
 							                if (window.selectedZone.color) target.color = window.selectedZone.color;
@@ -956,33 +986,119 @@ function initAreaManagement() {
 							}
 
 							
-							// 구역 상세 폼의 '담당 안전요원 배치' 드롭다운 옵션 갱신
+							// 1. 💡 드롭다운 선택 이벤트 감지 (jQuery 이벤트 위임 방식으로 스코프 오류 방지)
+							$(document).off('change', '#elemAgentSelect').on('change', '#elemAgentSelect', function() {
+							    const selectedUserId = $(this).val();
+							    
+							    // '-- 요원 추가 선택 --'을 누른 경우 무시
+							    if (!selectedUserId) return;
+
+							    // 태그 추가
+							    addAgentTag(selectedUserId);
+
+							    // 💡 선택 완료 후 다시 '-- 요원 추가 선택 --'으로 자동 리셋
+							    $(this).val('');
+							});
+
+							// 2. 태그(Chip) 생성 및 추가 전용 함수
+							function addAgentTag(userId) {
+							    if (!userId) return;
+
+							    const $container =$('#agentTagContainer');
+							    if (!$container.length) return;
+
+							    // 이미 추가된 요원인지 중복 체크
+							    if ($container.find(`[data-user-id="${userId}"]`).length > 0) {
+							        alert("이미 추가된 안전요원입니다.");
+							        return;
+							    }
+
+							    // 요원 목록에서 이름 정보 찾기
+							    const list = window.currentAgentList || (typeof currentAgentList !== "undefined" ? currentAgentList : []);
+							    const agent = list.find(a => (a.userId || a.id) === userId);
+							    
+							    let displayName = userId;
+							    if (agent) {
+							        displayName = agent.userName ? `${agent.userName} (${agent.userId})` : agent.userId;
+							    } else {
+							        // 데이터에서 못 찾은 경우 드롭다운에 써있는 텍스트 그대로 가져오기
+							        const selectedText = $(`#elemAgentSelect option[value="${userId}"]`).text();
+							        if (selectedText) displayName = selectedText;
+							    }
+
+							    // 태그 HTML 생성
+							    const tagHtml = `
+							        <div class="agent-chip" data-user-id="${userId}" style="display: inline-flex; align-items: center; gap: 6px; background: #1e3a8a; color: #60a5fa; border: 1px solid #3b82f6; padding: 4px 10px; border-radius: 14px; font-size: 12px; margin-right: 4px; margin-bottom: 4px;">
+							            <span>${displayName}</span>
+							            <span class="btn-remove-tag" style="cursor: pointer; color: #f87171; font-weight: bold; margin-left: 4px;" onclick="$(this).parent().remove();">✕</span>
+							        </div>
+							    `;
+
+							    $container.append(tagHtml);
+							}
+
+							// 3. 셀렉트 박스 옵션 채우기 함수
 							function populateAgentSelectOptions() {
-							    const elemAgent = document.getElementById("elemAgent");
-							    if (!elemAgent) return;
+							    const $select =$('#elemAgentSelect');
+							    if (!$select.length) return;
 
-							    // 현재 선택되어 있던 값(기존 agentId) 기억
-							    const currentSelectedValue = elemAgent.value;
+							    // 기본 옵션 재설정
+							    $select.html('<option value="">-- 요원 추가 선택 --</option>');
 
-							    // 기본 옵션만 남기고 초기화
-							    elemAgent.innerHTML = '<option value="">-- 요원 선택 --</option>';
+							    const list = window.currentAgentList || (typeof currentAgentList !== "undefined" ? currentAgentList : []);
 
-							    // currentAgentList(활성화된 요원 목록)가 존재하면 옵션 생성
-							    if (Array.isArray(window.currentAgentList) || Array.isArray(currentAgentList)) {
-							        const list = window.currentAgentList || currentAgentList;
-							        
+							    if (Array.isArray(list)) {
 							        list.forEach(agent => {
-							            const option = document.createElement("option");
-							            option.value = agent.id || agent.userId; // DB에 저장되는 ID 필드명에 맞춰 설정
-							            option.textContent = `${agent.userName || agent.name || agent.userId} (${agent.userId})`;
-							            elemAgent.appendChild(option);
+							            const userId = agent.userId || agent.id;
+							            if (!userId) return;
+
+							            const nameDisplay = agent.userName ? `${agent.userName} (${userId})` : userId;
+							            $select.append(`<option value="${userId}">${nameDisplay}</option>`);
 							        });
 							    }
+							}
+							
+							// 2. 태그 추가 함수 (드롭다운 선택 시 실행)
+							function handleAddAgentTag(userId) {
+							    if (!userId) return;
 
-							    // 기존에 선택되어 있던 값이 있다면 다시 복구
-							    if (currentSelectedValue) {
-							        elemAgent.value = currentSelectedValue;
+							    const container = document.getElementById("agentTagContainer");
+							    const selectElem = document.getElementById("elemAgentSelect");
+							    if (!container) return;
+
+							    // 이미 추가된 요원인지 중복 체크
+							    if (container.querySelector(`[data-user-id="${userId}"]`)) {
+							        alert("이미 추가된 안전요원입니다.");
+							        if (selectElem) selectElem.selectedIndex = 0; // 선택 초기화
+							        return;
 							    }
+
+							    // 요원 목록에서 표시할 이름 찾기
+							    const list = window.currentAgentList || (typeof currentAgentList !== "undefined" ? currentAgentList : []);
+							    const agent = list.find(a => (a.userId || a.id) === userId);
+							    
+							    // agent 객체를 찾지 못했을 경우 드롭다운에 표시되던 텍스트 가져오기
+							    let displayName = userId;
+							    if (agent) {
+							        displayName = agent.userName ? `${agent.userName} (${agent.userId})` : agent.userId;
+							    } else if (selectElem && selectElem.selectedOptions[0]) {
+							        displayName = selectElem.selectedOptions[0].textContent;
+							    }
+
+							    // 태그(Chip) 생성
+							    const chip = document.createElement("div");
+							    chip.className = "agent-chip";
+							    chip.setAttribute("data-user-id", userId);
+							    chip.style.cssText = "display: inline-flex; align-items: center; gap: 6px; background: #1e3a8a; color: #60a5fa; border: 1px solid #3b82f6; padding: 4px 10px; border-radius: 14px; font-size: 12px; margin-right: 4px; margin-bottom: 4px;";
+							    chip.innerHTML = `
+							        <span>${displayName}</span>
+							        <span class="btn-remove-tag" style="cursor: pointer; color: #f87171; font-weight: bold; margin-left: 4px;" onclick="this.parentElement.remove()">✕</span>
+							    `;
+
+							    container.appendChild(chip);
+
+							    // 💡 선택 후 드롭다운을 다시 첫 번째('-- 요원 추가 선택 --')로 리셋
+							    if (selectElem) selectElem.selectedIndex = 0;
 							}
 							
 							

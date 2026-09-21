@@ -1005,7 +1005,7 @@ window.contextPath = '${pageContext.request.contextPath}';
 // 전체 요원 데이터를 보관할 변수
 let currentAgentList = [];
 
-// 요원 ID로 담당 구역 이름 찾기 함수 (SSE 및 DB 최신 전역 객체 참조)
+//요원 ID로 담당 구역 이름 찾기 함수 (다중 요원 지정 대응)
 function getAgentZoneName(userId) {
     var configData = window.adminMainConfigData;
     
@@ -1015,7 +1015,21 @@ function getAgentZoneName(userId) {
     if (zones.length === 0) return '미배정';
 
     var matchedZone = zones.find(function(zone) {
-        return zone.agentId === userId;
+        if (!zone) return false;
+
+        // 1. 배열 형태(agentIds: ["agent01", "agent02"])로 들어있을 경우
+        if (Array.isArray(zone.agentIds) && zone.agentIds.includes(userId)) {
+            return true;
+        }
+
+        // 2. 콤마 구분자 문자열(agentId: "agent01,agent02")로 들어있을 경우
+        if (typeof zone.agentId === 'string' && zone.agentId.trim() !== '') {
+            // 콤마로 분리하고 공백을 제거한 배열로 변환하여 포함 여부 검사
+            var assignedArray = zone.agentId.split(',').map(function(id) { return id.trim(); });
+            return assignedArray.includes(userId);
+        }
+
+        return false;
     });
 
     return matchedZone ? matchedZone.name : '미배정';
@@ -1103,7 +1117,7 @@ function renderAdminAgentList() {
     container.innerHTML = html;
 }
 
-// 3. 모달 열기 함수
+//3. 모달 열기 함수
 function openAgentModal(index) {
     const agent = currentAgentList[index];
     if (!agent) return;
@@ -1123,14 +1137,81 @@ function openAgentModal(index) {
     }
 
     const modal = document.getElementById("agentDetailModal");
-    modal.style.display = "flex";
+    if (!modal) return;
+
+    // 1) 모달 바깥 배경: 투명화 & 마우스 클릭 통과 (뒷배경 지도 조작 가능)
+    modal.style.setProperty("display", "flex", "important");
+    modal.style.setProperty("background", "transparent", "important");
+    modal.style.setProperty("background-color", "transparent", "important");
+    modal.style.setProperty("backdrop-filter", "none", "important");
+    modal.style.setProperty("-webkit-backdrop-filter", "none", "important");
+    modal.style.setProperty("pointer-events", "none", "important");
+
+    // 2) 💡 [핵심 해결] 모달 내부의 모든 상자/요소는 마우스 클릭 100% 정상 작동하도록 설정
+    Array.from(modal.children).forEach(function(child) {
+        child.style.setProperty("pointer-events", "auto", "important");
+    });
 }
 
 // 4. 모달 닫기 함수
 function closeAgentModal() {
     const modal = document.getElementById("agentDetailModal");
+    if (!modal) return;
+
     modal.style.display = "none";
+
+    // 위치 초기화 (다시 열릴 때 중앙 배치)
+    Array.from(modal.children).forEach(function(child) {
+        child.style.transform = "translate(0px, 0px)";
+    });
 }
+
+// 5. 모달 창 드래그 기능 (모든 자식 박스 대상 작동)
+(function initAgentModalDrag() {
+    var isDragging = false;
+    var startX = 0, startY = 0;
+    var currentX = 0, currentY = 0;
+
+    // 모달 내부 박스(#agentDetailModal 의 모든 직계 자식)를 대상으로 마우스 이벤트 감지
+    $(document).off('mousedown.agentDrag').on('mousedown.agentDrag', '#agentDetailModal > *', function(e) {
+        // 버튼, 입력창, 닫기(X) 버튼, 이미지 클릭 시에는 드래그 동작 하지 않음 (버튼 클릭 동작 보장)
+        if ($(e.target).closest('button, input, textarea, a, img, .close-btn, [onclick]').length > 0) {
+            return;
+        }
+
+        var $box = $(this);
+        isDragging = true;
+
+        // 현재 적용되어 있는 transform (translate) 위치 값 파싱
+        var transform = $box.css('transform');
+        if (transform && transform !== 'none') {
+            var matrix = transform.replace(/[^0-9\-.,]/g, '').split(',');
+            currentX = parseFloat(matrix[4]) || 0;
+            currentY = parseFloat(matrix[5]) || 0;
+        } else {
+            currentX = 0;
+            currentY = 0;
+        }
+
+        startX = e.clientX - currentX;
+        startY = e.clientY - currentY;
+
+        $(document).on('mousemove.agentDrag', function(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            var x = e.clientX - startX;
+            var y = e.clientY - startY;
+
+            $box.css('transform', 'translate(' + x + 'px, ' + y + 'px)');
+        });
+
+        $(document).on('mouseup.agentDrag', function() {
+            isDragging = false;
+            $(document).off('mousemove.agentDrag mouseup.agentDrag');
+        });
+    });
+})();
 
 //5. SSE (Server-Sent Events) 실시간 수신 연결
 function initAgentSseSubscriber() {
@@ -1902,7 +1983,7 @@ $('#situation-modal').on('click', function(e) {
 .mini-btn.danger { background: rgba(239, 68, 68, 0.2); border-color: #f87171; color: #f87171; }
 .mini-btn.danger:hover { background: rgba(239, 68, 68, 0.35); }
 
-/* 3. 모달 오버레이 및 창 스타일 */
+/* 3. 모달 오버레이 및 창 스타일 (플로팅 창 변경) */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -1910,11 +1991,12 @@ $('#situation-modal').on('click', function(e) {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.75);
+    background: transparent !important;       /* 1. 어두운 배경 제거 */
+    backdrop-filter: none !important;          /* 2. 흐림(Blur) 효과 제거 */
+    pointer-events: none !important;           /* 3. 배경 클릭 통과 -> 뒷배경 지도 조작 가능 */
     z-index: 99999;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(4px);
 }
 .modal-overlay.active { display: flex !important; }
 
@@ -1926,6 +2008,7 @@ $('#situation-modal').on('click', function(e) {
     padding: 20px;
     color: #fff;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    pointer-events: auto !important;          /* 4. 모달 알맹이 박스만 클릭/드래그 작동 */
 }
 
 .modal-input {

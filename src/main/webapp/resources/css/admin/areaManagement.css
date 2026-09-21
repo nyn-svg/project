@@ -504,3 +504,34 @@
 #bgMapImage {
     pointer-events: none !important;
 }
+/* 드롭다운 목록창의 배경색과 글자색 강제 고정 */
+#elemAgentSelect option {
+    background-color: #1e1e2d !important; /* 모달 바탕색과 동일한 어두운색 */
+    color: #ffffff !important;             /* 글자는 흰색 */
+}
+
+/* 안전요원 태그(Chip) 스타일 */
+.agent-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #1e3a8a;
+    color: #60a5fa;
+    border: 1px solid #3b82f6;
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.agent-chip .btn-remove-tag {
+    cursor: pointer;
+    font-size: 12px;
+    color: #93c5fd;
+    margin-left: 2px;
+    transition: color 0.15s;
+}
+
+.agent-chip .btn-remove-tag:hover {
+    color: #f87171; /* 마우스 올렸을 때 빨간색 */
+}
