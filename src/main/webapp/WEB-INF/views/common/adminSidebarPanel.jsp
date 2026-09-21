@@ -1278,7 +1278,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 $(document).ready(function() {
-	if (typeof renderAdminDroneList === 'function') {
+    if (typeof renderAdminDroneList === 'function') {
         renderAdminDroneList();
     }
 
@@ -1294,12 +1294,32 @@ $(document).ready(function() {
         renderEmergencyContactList();
     });
 
-    // 1. 제출 이력 목록 로드 AJAX
+    // 💡 [안전한 로컬스토리지 처리 함수] - 읽은 목록 관리
+    function getReadKeys() {
+        try {
+            return JSON.parse(localStorage.getItem('read_checklist_keys') || '[]');
+        } catch(e) {
+            return [];
+        }
+    }
+
+    function markKeyAsRead(key) {
+        try {
+            var keys = getReadKeys();
+            if (!keys.includes(key)) {
+                keys.push(key);
+                localStorage.setItem('read_checklist_keys', JSON.stringify(keys));
+            }
+        } catch(e) {}
+    }
+
+ // 1. 제출 이력 목록 로드 AJAX
     function loadChecklistHistory() {
         $.ajax({
             url: '${pageContext.request.contextPath}/admin/api/checklist/history',
             type: 'GET',
             success: function(list) {
+                console.log('[AJAX 성공] 새로 가져온 데이터:', list); // 💡 동작 확인용 로그
                 renderHistoryCards(list);
             },
             error: function() {
@@ -1307,6 +1327,9 @@ $(document).ready(function() {
             }
         });
     }
+
+    // 💡 [추가] SSE 스크립트 등 외부에서도 이 함수를 호출할 수 있도록 전역(window)에 등록
+    window.loadChecklistHistory = loadChecklistHistory;
 
     // 2. 이력 카드 사이드바 렌더링
     function renderHistoryCards(list) {
@@ -1317,10 +1340,16 @@ $(document).ready(function() {
             return;
         }
 
+        const readKeys = getReadKeys();
+
         list.forEach(function(item) {
             const isAgent = item.targetType === 'AGENT';
             const targetBadgeClass = isAgent ? 'background: #007bff; color: #fff;' : 'background: #6f42c1; color: #fff;';
             const targetName = isAgent ? '안전요원' : '관제사';
+
+            // 고유 키 (유저 ID + 점검 날짜 + 유형)
+            const itemKey = item.userId + '_' + item.checkDateStr + '_' + item.targetType;
+            const isRead = readKeys.includes(itemKey);
 
             // 상태 요약 배지 생성
             let statusBadge = '';
@@ -1332,10 +1361,15 @@ $(document).ready(function() {
                 statusBadge = '<span style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">✅ 양호</span>';
             }
 
+            // 💡 [추가] 안 읽은 카드에만 빨간색 N 배지 및 하늘색 테두리 적용
+            const unreadBadge = !isRead ? '<span class="unread-badge" style="background: #ef4444; color: #fff; font-size: 9px; font-weight: bold; padding: 1px 4px; border-radius: 3px; margin-right: 2px;">N</span>' : '';
+            const borderColor = !isRead ? '#38bdf8' : '#363654';
+
             let html = '';
-            html += '<div class="history-card" data-userid="' + item.userId + '" data-checkdate="' + item.checkDateStr + '" data-target="' + item.targetType + '" style="background: #2b2b40; border-radius: 8px; padding: 12px; cursor: pointer; border: 1px solid #363654; transition: all 0.2s;">';
+            html += '<div class="history-card" data-userid="' + item.userId + '" data-checkdate="' + item.checkDateStr + '" data-target="' + item.targetType + '" style="background: #2b2b40; border-radius: 8px; padding: 12px; cursor: pointer; border: 1px solid ' + borderColor + '; transition: all 0.2s; margin-bottom: 8px;">';
             html += '   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">';
             html += '       <div style="display: flex; align-items: center; gap: 6px;">';
+            html += '           ' + unreadBadge;
             html += '           <span style="font-weight: bold; font-size: 14px; color: #fff;">' + item.userId + '</span>';
             html += '           <span style="' + targetBadgeClass + ' padding: 1px 5px; border-radius: 3px; font-size: 10px;">' + targetName + '</span>';
             html += '       </div>';
@@ -1349,13 +1383,25 @@ $(document).ready(function() {
 
             const $card = $(html);
             
-            // 카드 호버 효과 및 클릭 시 모달 오픈
+            // 카드 호버 효과
             $card.hover(
                 function() { $(this).css({'border-color': '#007bff', 'background': '#32324d'}); },
-                function() { $(this).css({'border-color': '#363654', 'background': '#2b2b40'}); }
+                function() { 
+                    const currentRead = getReadKeys().includes(itemKey);
+                    $(this).css({'border-color': currentRead ? '#363654' : '#38bdf8', 'background': '#2b2b40'}); 
+                }
             );
 
+            // 카드 클릭 시 모달 열기 + 읽음 처리
             $card.on('click', function() {
+                // 1. 읽음 처리
+                markKeyAsRead(itemKey);
+
+                // 2. 카드 UI 즉시 업데이트 (N 배지 삭제, 테두리 기본색 원복)
+                $(this).find('.unread-badge').remove();
+                $(this).css('border-color', '#363654');
+
+                // 3. 기존 상세 모달 오픈 함수 실행
                 openDetailModal(item.userId, item.checkDateStr, item.targetType);
             });
 
@@ -1363,7 +1409,7 @@ $(document).ready(function() {
         });
     }
 
- // 3. 모달 열기 및 상세 결과 조회 AJAX
+    // 3. 모달 열기 및 상세 결과 조회 AJAX
     function openDetailModal(userId, checkDateStr, targetType) {
         $('#modal-user-title').text(userId + ' 님의 점검 결과');
         $('#modal-check-date').text(checkDateStr);
@@ -1373,7 +1419,7 @@ $(document).ready(function() {
             .text(isAgent ? '안전요원' : '관제사')
             .css('background', isAgent ? '#007bff' : '#6f42c1');
 
-        // 💡 [수정] AJAX 요청과 상관없이 모달 창부터 화면에 즉시 표시
+        // 모달 창부터 화면에 즉시 표시
         $('#checklistDetailModal').css('display', 'flex');
         $('#modal-detail-body').html('<div style="text-align:center; color:#aaa; padding:20px;">불러오는 중...</div>');
 
@@ -1412,7 +1458,6 @@ $(document).ready(function() {
             else if (d.checkStatus === '주의') caution++;
             else if (d.checkStatus === '위험') danger++;
 
-            // 💡 [수정] category 값이 없거나 null일 경우 대비 예외처리 추가
             var catName = d.category || '기타 점검 항목';
 
             if (!categoryMap[catName]) {
@@ -1439,7 +1484,6 @@ $(document).ready(function() {
                 else if (item.checkStatus === '위험') statusStyle = 'background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid #e74c3c;';
                 else statusStyle = 'background: #323248; color: #aaa;';
 
-                // 💡 [수정] itemTitle, question 누락 예외처리
                 var title = item.itemTitle || item.title || '점검 항목';
                 var questionText = item.question || '';
                 var statusText = item.checkStatus || '미응답';
@@ -1472,7 +1516,39 @@ $(document).ready(function() {
             $('#checklistDetailModal').hide();
         }
     });
+});                      
+
+//==========================================
+//안전점검 제출 현황 실시간 동기화 (SSE)
+//==========================================
+function initChecklistSSE() {
+    if (!window.EventSource) return;
+
+    // 내 기능 전용 SSE 엔드포인트 호출 (/spring_application 없이 작성)
+    const eventSource = new EventSource('/api/sse/subscribe');
+
+    // 백엔드(sseService)에서 'CHECKLIST_SUBMITTED' 보낼 때 반응
+    eventSource.addEventListener('CHECKLIST_SUBMITTED', function(e) {
+        console.log('[SSE] 새 안전점검표가 제출되었습니다. 목록을 갱신합니다.');
+        
+        // 💡 현재 화면에서 패널 목록을 다시 조회해 오는 함수를 실행
+        if (typeof loadChecklistHistory === 'function') {
+            loadChecklistHistory(); 
+        }
+    });
+
+    eventSource.onerror = function() {
+        eventSource.close();
+        setTimeout(initChecklistSSE, 5000); // 연결 끊기면 5초 뒤 재연결
+    };
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    initChecklistSSE();
 });
+
+
+
 
 
 //비상연락망 전체 데이터 보관 변수 및 현재 선택된 카테고리
@@ -2042,5 +2118,24 @@ $('#situation-modal').on('click', function(e) {
 .status-select-btn.flying.active { color: #4ade80; background: rgba(34, 197, 94, 0.15); border-color: #4ade80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
 .status-select-btn.error.active { color: #f87171; background: rgba(239, 68, 68, 0.15); border-color: #f87171; box-shadow: 0 0 10px rgba(248, 113, 113, 0.3); }
 
+
+/* 비상연락망 컨테이너 스크롤 및 높이 제한 */
+#emergencyContactListContainer {
+    max-height: calc(100vh - 200px); /* 화면 높이에 맞춰 적절히 조절 */
+    overflow-y: auto;                /* 내용이 넘치면 스크롤바 생성 */
+    padding-right: 4px;              /* 스크롤바 여백 */
+}
+
+/* 스크롤바 커스텀 (어두운 테마용) */
+#emergencyContactListContainer::-webkit-scrollbar {
+    width: 6px;
+}
+#emergencyContactListContainer::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+#emergencyContactListContainer::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
 </style>
 

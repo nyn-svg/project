@@ -160,7 +160,7 @@
 let toastAutoCloseTimer = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-	const eventSource = new EventSource(window.location.origin + "/spring_application/agent/sse/connect");
+	const eventSource = new EventSource(window.location.origin + "/agent/sse/connect");
 
     eventSource.addEventListener("connect", function (e) {
         console.log("상단 실시간 알림 서버 동기화 완료:", e.data);
