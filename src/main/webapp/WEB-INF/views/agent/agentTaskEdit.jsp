@@ -17,7 +17,7 @@
 	<div class="mobile-container">
 		<header class="mobile-header">
 			<button type="button" class="btn-back" onclick="location.href='${pageContext.request.contextPath}/agent/history'">
-				<i class="fa-solid fa-arrow-left"></i>
+				<i class="fa-solid fa-chevron-left"></i>
 			</button>
 			<h1 class="header-title">조치 보고서 작성</h1>
 			<div class="header-dummy"></div>

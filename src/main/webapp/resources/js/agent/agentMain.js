@@ -3,11 +3,10 @@ $(document).ready(function() {
     /* Context Path */
     const contextPath = window.contextPath || "";
 
-    /* 알림 버튼 */
-    $("#notificationBtn").on("click", function() {
-        // 현재는 알림 기능 연결 전
-        console.log("알림 버튼 클릭");
-    });
+	/* 알림 버튼 */
+	$("#notificationBtn").on("click", function() {
+	    location.href = "report";
+	});
 
 
     /* 근무 상태 변경 */

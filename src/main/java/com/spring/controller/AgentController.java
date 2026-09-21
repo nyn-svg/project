@@ -119,6 +119,12 @@ public class AgentController {
 		agentService.changeAgentStatus(loginUserId, workStatus);
 		return "redirect:/agent/main";
 	}
+	
+	//알림 보관함
+	@GetMapping("/report")
+	public String agentReportPage() {
+		return "agent/agentReport";
+	}
 
 	// 비상연락망 목록 조회 API
 	@GetMapping("/emergency-contacts")
@@ -258,11 +264,6 @@ public class AgentController {
 		resultMap.put("totalCount", totalCount);
 
 		return resultMap;
-	}
-
-	@GetMapping("/report")
-	public String agentReportPage() {
-		return "agent/agentReport";
 	}
 
 	@GetMapping("/history")

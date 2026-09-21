@@ -1,297 +1,191 @@
 @charset "UTF-8";
 
-/* 기본 리셋 및 레이아웃 */
-* {
-    box-sizing: border-box;
+body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-body {
     background-color: #f8fafc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    color: #1e293b;
+    -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 푸른 반투명 박스 잔상 제거 */
 }
 
-/* 모바일 컨테이너 */
-.mobile-container {
+/* 🚨 상단 고정 헤더 바 (뒤로가기 공간 및 디자인 최적화) */
+.header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 430px;
-    height: 100vh;
-    max-height: 932px;
+    height: 56px;
     background-color: #ffffff;
     display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    position: relative;
-    overflow-y: auto;
-}
-
-/* 상단 헤더 */
-.mobile-header {
-    height: 56px;
-    background-color: #1d4ed8; /* 시안의 진한 파란색 */
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    color: #ffffff;
-    position: sticky;
-    top: 0;
+    padding: 0 4px; /* 뒤로가기 아이콘 간격 조정을 위해 패딩 소폭 양보 */
+    box-sizing: border-box;
+    border-bottom: 1px solid #e2e8f0;
     z-index: 100;
 }
 
-.btn-back {
+.back-btn {
+    font-size: 20px;
+    color: #1a1f2c; 
+    cursor: pointer;
     background: none;
     border: none;
-    color: #ffffff;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 4px;
+    width: 48px;
+    height: 48px;
+    display: inline-flex;  
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; 
+    transition: background-color 0.2s;
+    border-radius: 50%;
+}
+
+.back-btn:active {
+    background-color: #f1f5f9;
 }
 
 .header-title {
-    font-size: 1.1rem;
+    font-size: 17px;
     font-weight: 700;
+    color: #0f172a;
+    margin-left: 2px;
 }
 
-.header-dummy {
-    width: 24px;
+/* 콘텐츠 컨테이너 */
+.container {
+    padding: 72px 16px 24px 16px;
+    box-sizing: border-box;
 }
 
-/* 메인 컨텐츠 영역 */
-.mobile-content {
-    padding: 20px 16px;
-    flex: 1;
-}
-
-.report-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* 폼 그룹 공통 */
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.form-label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #1e293b;
-}
-
-/* Select 셀렉트 박스 */
-.form-select {
-    width: 100%;
-    height: 48px;
-    padding: 0 16px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    color: #334155;
-    background-color: #ffffff;
-    outline: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%3c64748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-}
-
-.form-select:focus {
-    border-color: #2563eb;
-}
-
-/* Textarea 텍스트 영역 */
-.textarea-wrapper {
-    position: relative;
-}
-
-.form-textarea {
-    width: 100%;
-    height: 120px;
-    padding: 12px 16px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: #334155;
-    resize: none;
-    outline: none;
-}
-
-.form-textarea:focus {
-    border-color: #2563eb;
-}
-
-.char-count {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    font-size: 0.75rem;
+/* 빈 목록 스타일 */
+.empty-msg {
+    text-align: center;
+    padding: 60px 0;
     color: #94a3b8;
+    font-size: 14px;
 }
 
-/* 첨부 사진 영역 */
-.photo-upload-area {
-    display: flex;
-    gap: 12px;
-    align-items: center;
+.empty-msg i {
+    font-size: 40px;
+    margin-bottom: 12px;
+    color: #cbd5e1;
 }
 
-.btn-photo-add {
-    width: 80px;
-    height: 80px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background-color: #f8fafc;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+/* 요약형 알림 카드 */
+.report-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
     cursor: pointer;
-    color: #64748b;
-    font-size: 0.75rem;
-}
-
-.camera-icon {
-    font-size: 1.4rem;
-    color: #64748b;
-}
-
-.photo-preview-wrapper {
+    transition: all 0.2s ease;
     position: relative;
-    width: 80px;
-    height: 80px;
+    overflow: hidden;
 }
 
-.photo-preview-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-}
-
-.btn-remove-photo {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 20px;
-    height: 20px;
-    background-color: #ef4444;
-    color: #ffffff;
-    border: none;
-    border-radius: 50%;
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 위치 정보 & 토글 스위치 */
-.location-toggle-row {
+.card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.location-text {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: #475569;
-}
-
-.pin-icon {
-    color: #64748b;
-}
-
-/* 스위치 스타일 */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #cbd5e1;
-    transition: .3s;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .3s;
-}
-
-input:checked + .slider {
-    background-color: #2563eb;
-}
-
-input:checked + .slider:before {
-    transform: translateX(20px);
-}
-
-.slider.round {
-    border-radius: 24px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
-/* 하단 버튼 그룹 */
-.form-btn-group {
-    display: flex;
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.btn-cancel, .btn-submit {
+.card-summary-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     flex: 1;
-    height: 48px;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    margin: 0 12px;
+}
+
+.badge-type {
+    background-color: #f0fdf4;
+    color: #008758;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid #d1fae5;
+    flex-shrink: 0;
+}
+
+.report-time {
+    font-size: 12px;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+/* 아코디언 애니메이션 상세 구역 */
+.card-detail-area {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.report-card.active {
+    border-color: #00B074;
+}
+
+.report-card.active .card-detail-area {
+    max-height: 220px;
+    opacity: 1;
+    margin-top: 14px;
+}
+
+.card-body {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #475569;
+    background-color: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    border: 1px solid #f1f5f9;
+}
+
+/* 버튼 액션 구역 */
+.card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action-delete {
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: none;
+    padding: 11px 0;
+    flex: 1;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-action-delete:hover {
+    background-color: #e2e8f0;
+}
+
+.btn-action-confirm {
+    background-color: #00B074;
+    color: #ffffff;
+    border: none;
+    padding: 11px 0;
+    flex: 1.5;
+    border-radius: 12px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 176, 116, 0.12);
+    transition: background 0.2s;
 }
 
-.btn-cancel {
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-}
-
-.btn-submit {
-    background-color: #1d4ed8;
-    border: none;
-    color: #ffffff;
+.btn-action-confirm:hover {
+    background-color: #009663;
 }
