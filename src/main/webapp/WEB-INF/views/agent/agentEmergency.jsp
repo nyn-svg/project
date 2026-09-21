@@ -34,7 +34,7 @@
 			</div>
 
 			<!-- AJAX 비동기 통신 폼 -->
-			<form id="emergencyForm" class="report-form" onsubmit="return false;">
+			<form id="emergencyForm" class="report-form">
 
 				<!-- 비즈니스 약속 고정 데이터 정의 (hidden) -->
 				<input type="hidden" name="situType" value="긴급보고"> 
@@ -83,7 +83,7 @@
 					<div class="location-toggle-row">
 						<div class="location-text">
 							<i class="fa-solid fa-user-shield icon-disabled-lead"></i>
-							<span class="text-disabled-title">${sessionScope.userId}</span>
+							<span class="text-disabled-title">${user.userName}</span>
 						</div>
 						<span class="badge-status badge-gray">안전요원</span>
 					</div>
@@ -104,10 +104,6 @@
 				<div class="form-group">
 					<label class="form-label">첨부 사진 (선택)</label>
 					<div class="photo-upload-area">
-						<div id="photoPreview" class="photo-preview-wrapper">
-							<img id="previewImg" src="" alt="미리보기">
-							<button type="button" class="btn-remove-photo" id="btnRemovePhoto">&times;</button>
-						</div>
 						<input type="file" id="photoInput" name="photo" accept="image/*">
 						<button type="button" class="btn-photo-add" onclick="document.getElementById('photoInput').click()">
 							<i class="fa-solid fa-camera camera-icon"></i> <span>사진 추가</span>
@@ -119,7 +115,7 @@
 				<!-- 하단 버튼 그룹 -->
 				<div class="form-btn-group">
 					<button type="button" class="btn-cancel" onclick="history.back()">취소</button>
-					<button type="button" id="btnSubmitEmergency" class="btn-submit btn-emergency-submit">긴급 등록</button>
+					<button type="submit" id="btnSubmitEmergency" class="btn-submit btn-emergency-submit">긴급 등록</button>
 				</div>
 			</form>
 		</main>

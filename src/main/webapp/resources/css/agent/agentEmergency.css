@@ -203,6 +203,11 @@ body {
     align-items: center;
 }
 
+/* 기본 파일 선택 input 숨기기 */
+#photoInput {
+    display: none;
+}
+
 /* 카메라 추가 버튼 */
 .btn-photo-add {
     width: 80px;

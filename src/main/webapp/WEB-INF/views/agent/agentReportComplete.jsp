@@ -28,7 +28,7 @@
                     <i class="fa-solid fa-check"></i>
                 </div>
                 <h2 class="complete-title">보고가 등록되었습니다.</h2>
-                <p class="complete-sub">행사장 안전 관제 DB 시스템에 저장 완료되었습니다.</p>
+                <p class="complete-sub">행사장 안전 관제 시스템에 보고 완료되었습니다.</p>
             </div>
 
             <!-- 요약 정보 테이블 카드 -->
@@ -59,7 +59,6 @@
 
             <!-- 하단 이동 버튼 그룹 (점검완료 템플릿과 디자인 통일 완료) -->
             <div class="action-btn-group">
-                <button type="button" class="btn-history" onclick="location.href='${pageContext.request.contextPath}/agent/history'">업무 이력 조회</button>
                 <button type="button" class="btn-home" onclick="location.href='${pageContext.request.contextPath}/agent/main'">홈으로 이동</button>
             </div>
         </main>

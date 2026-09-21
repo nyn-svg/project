@@ -78,11 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         var zoneName = document.getElementById('zoneName').value;
 
                         // 결과 정보를 캐치하여 완료 페이지로 파라미터 링크 이동
-                        location.href = contextPath + "/agent/report/complete"
-                                      + "?situNo=" + encodeURIComponent(realSituNo)
-                                      + "?dngrType=" + encodeURIComponent(dngrType)
-                                      + "?dngrLevel=" + encodeURIComponent(dngrLevel)
-                                      + "?zoneName=" + encodeURIComponent(zoneName);
+						location.href = contextPath + "/agent/report/complete"
+						              + "?situNo=" + encodeURIComponent(realSituNo)
+						              + "&dngrType=" + encodeURIComponent(dngrType)  
+						              + "&dngrLevel=" + encodeURIComponent(dngrLevel)
+						              + "&zoneName=" + encodeURIComponent(zoneName);  
                     } else {
                         alert("보고 등록 실패: " + response.message);
                     }
