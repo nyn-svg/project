@@ -72,13 +72,14 @@
 		</Logger> 
 		
 			<!-- Spring Web 디버그 로그 (URL 매핑 확인용) -->
-		<logger name="org.springframework.web">
-			<level value="debug" />
-		</logger>
+		<Logger name="org.springframework.web" level="DEBUG" additivity="false">
+			<AppenderRef ref="Console" />
+		</Logger>
 
 
 		<Root level="info">
 			<AppenderRef ref="Console" />
 		</Root>
+		
 	</Loggers>
 </Configuration>

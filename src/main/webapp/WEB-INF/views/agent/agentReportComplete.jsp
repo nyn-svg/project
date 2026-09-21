@@ -14,9 +14,6 @@
     <div class="mobile-container">
         <!-- 상단 헤더 -->
         <header class="mobile-header">
-            <button type="button" class="btn-back" onclick="location.href='${pageContext.request.contextPath}/agent/main'">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
             <h1 class="header-title">보고 등록 완료</h1>
             <div class="header-dummy"></div>
         </header>
