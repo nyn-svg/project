@@ -101,10 +101,10 @@
                         <input type="text" id="elemName" class="form-input" placeholder="예: 1구역 (메인무대)" />
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label class="form-label">상세 설명</label>
                         <textarea id="elemDesc" class="form-textarea" rows="3" placeholder="구역 또는 아이콘에 대한 상세 정보 입력"></textarea>
-                    </div>
+                    </div> -->
 
                     <!-- 구역(Zone) 클릭 시 표시할 전체 영역 -->
 					<div class="zone-only-fields" style="display: none;">
@@ -112,13 +112,18 @@
 					        <label class="form-label">구역 채우기 색상</label>
 					        <input type="color" id="elemColor" class="form-color-picker" value="#38bdf8" />
 					    </div>
-					    <div class="form-group">
-					        <label class="form-label">담당 안전요원 배치</label>
-					        <select id="elemAgent" class="form-select">
-					            <option value="">-- 요원 선택 --</option>
-					            <!-- AJAX로 요원 목록 동적 로드 -->
-					        </select>
-					    </div>
+					    <!-- 담당 안전요원 다중 지정 (태그 방식) -->
+						<div class="form-group" style="margin-top: 12px;">
+						    <label style="font-size: 13px; color: #aaa; display: block; margin-bottom: 6px;">담당 안전요원</label>
+						    
+						    <!-- 태그(Chip)가 쌓일 컨테이너 -->
+						    <div id="agentTagContainer" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 32px; margin-bottom: 8px;"></div>
+						
+						    <!-- onchange 속성 제거 -->
+						    <select id="elemAgentSelect" class="modal-input" style="width: 100%;">
+						        <option value="">-- 요원 추가 선택 --</option>
+						    </select>
+						</div>
 					    <div class="form-group">
 						    <label class="form-label">연동할 드론 선택</label>
 						    <select id="elemStreamUrl" class="form-input">
