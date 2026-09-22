@@ -15,14 +15,20 @@
 </head>
 <body>
 
-	<div class="header-bar">
-		<a href="javascript:history.back()" class="back-btn"> <i
-			class="fa-solid fa-chevron-left"></i>
-		</a>
-		<div class="header-title">알림 보관함</div>
-	</div>
+	<div class="mobile-container">
 
-	<div class="container" id="report-list-container"></div>
+		<!-- 상단 고정 바 -->
+		<div class="header-bar">
+			<a href="javascript:history.back()" class="back-btn"> <i
+				class="fa-solid fa-chevron-left"></i>
+			</a>
+			<div class="header-title">알림 보관함</div>
+		</div>
+
+		<!-- ✨ 스크롤이 일어나는 내부 콘텐츠 영역 영역 분리 -->
+		<div class="mobile-content" id="report-list-container"></div>
+
+	</div>
 
 	<!-- JS -->
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

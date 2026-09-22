@@ -18,9 +18,6 @@
 	<div class="mobile-container">
 		<!-- 헤더 -->
 		<header class="mobile-header">
-			<a href="javascript:history.back()" class="back-btn"> <i
-				class="fa-solid fa-chevron-left"></i>
-			</a>
 			<h1>안전순찰</h1>
 			<div class="header-right-empty"></div>
 		</header>

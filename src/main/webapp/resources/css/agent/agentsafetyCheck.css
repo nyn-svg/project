@@ -235,38 +235,38 @@ div.check-item.error {
 }
 
 /* 선택 상태별 파스텔 라이트 컬러 */
-.status-option:has(input[value="NORMAL"]:checked) {
+.status-option:has(input[value="정상"]:checked) {
     background-color: #f0fdf4;
     border-color: #86efac;
 }
-.status-option:has(input[value="NORMAL"]:checked) span {
+.status-option:has(input[value="정상"]:checked) span {
     color: #16a34a;
     font-weight: 700;
 }
 
-.status-option:has(input[value="WARN"]:checked) {
+.status-option:has(input[value="주의"]:checked) {
     background-color: #fffbeb;
     border-color: #fde047;
 }
-.status-option:has(input[value="WARN"]:checked) span {
+.status-option:has(input[value="주의"]:checked) span {
     color: #d97706;
     font-weight: 700;
 }
 
-.status-option:has(input[value="DANGER"]:checked) {
+.status-option:has(input[value="위험"]:checked) {
     background-color: #fef2f2;
     border-color: #fca5a5;
 }
-.status-option:has(input[value="DANGER"]:checked) span {
+.status-option:has(input[value="위험"]:checked) span {
     color: #ef4444;
     font-weight: 700;
 }
 
-.status-option:has(input[value="NONE"]:checked) {
+.status-option:has(input[value="해당없음"]:checked) {
     background-color: #f1f5f9;
     border-color: #cbd5e1;
 }
-.status-option:has(input[value="NONE"]:checked) span {
+.status-option:has(input[value="해당없음"]:checked) span {
     color: #475569;
     font-weight: 700;
 }

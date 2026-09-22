@@ -1,13 +1,13 @@
 @charset "UTF-8";
 
-/* ==========================================
-   1. 기본 레이아웃 리셋 및 모바일 가로폭 깨짐 방지
-========================================== */
+/* ==================================================
+   1. 기본 초기화 및 모바일 가상 프레임 (FRAME)
+================================================== */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -34,9 +34,19 @@ body {
     border-radius: 32px;
 }
 
-/* ==========================================
-   2. 플랫 헤더 영역
-========================================== */
+.mobile-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.mobile-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==================================================
+   2. 상단 네비게이션 헤더 바 (HEADER)
+================================================== */
 .mobile-header {
     flex-shrink: 0;
     height: 60px;
@@ -70,20 +80,13 @@ body {
     transform: translateX(-50%);
 }
 
-.header-dummy { width: 36px; }
-
-/* ==========================================
-   3. 스크롤 폼 본문 영역 최적화
-========================================== */
-.mobile-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
+.header-dummy {
+    width: 36px;
 }
 
-.mobile-content::-webkit-scrollbar { display: none; }
-
-/* 상황 원본 상세 요약 보드 */
+/* ==================================================
+   3. 상황 원본 데이터 카드 보드 (SUMMARY BOARD)
+================================================== */
 .info-summary-card.highlight-box {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border: 1px dashed #cbd5e1;
@@ -105,10 +108,26 @@ body {
     gap: 10px;
 }
 
-.grid-item { display: flex; flex-direction: column; }
-.grid-item .label { font-size: 11px; color: #64748b; font-weight: 600; }
-.grid-item .value { font-size: 13px; font-weight: 700; color: #334155; }
-.font-highlight { color: #2563eb !important; }
+.grid-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-item .label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.grid-item .value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.font-highlight {
+    color: #2563eb !important;
+}
 
 .status-badge {
     padding: 2px 6px;
@@ -117,12 +136,19 @@ body {
     font-weight: 800;
     width: fit-content;
 }
-.lvl-danger  { background-color: #fee2e2; color: #ef4444; }
-.lvl-warning { background-color: #fef3c7; color: #d97706; }
-.lvl-normal  { background-color: #dcfce7; color: #16a34a; }
 
-/* 폼 요소 정렬 시스템 깨짐 원천 방어 */
-.task-form { display: flex; flex-direction: column; gap: 14px; }
+.lvl-danger { background-color: #fee2e2; color: #ef4444; }
+.lvl-warning { background-color: #fef3c7; color: #d97706; }
+.lvl-normal { background-color: #dcfce7; color: #16a34a; }
+
+/* ==================================================
+   4. 입력 양식 요소 및 정렬 시스템 (FORM DESIGN)
+================================================== */
+.task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
 
 .form-row {
     display: flex;
@@ -130,7 +156,12 @@ body {
     justify-content: space-between;
     gap: 12px;
 }
-.form-row.vertical { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+.form-row.vertical {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
 
 .form-label {
     font-size: 13px;
@@ -140,7 +171,7 @@ body {
     flex-shrink: 0;
 }
 
-/* 🔒 요원 수정 금지 항목용 심플 읽기전용 텍스트/박스 스타일 */
+/* 🔒 공통 통일: 읽기 전용 상자 및 단순 텍스트 */
 .readonly-box-text {
     flex: 1;
     font-size: 14px;
@@ -149,6 +180,7 @@ body {
     text-align: right;
     padding-right: 4px;
 }
+
 .readonly-textarea-box {
     width: 100%;
     background-color: #f1f5f9;
@@ -161,10 +193,11 @@ body {
     font-weight: 500;
 }
 
-/* 입력 필드 스펙 */
+/* 📝 공통 통일: 대화형 입력 컨트롤 (인풋, 셀렉트, 데이트) */
 .form-input, .form-select {
     flex: 1;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100%;
     height: 44px;
     padding: 0 12px;
     font-size: 13px;
@@ -174,23 +207,62 @@ body {
     border: 1px solid #dcdfe6;
     border-radius: 12px;
     outline: none;
+    box-sizing: border-box; /* 브라우저간 1px 너비 깨짐 완전 방어 */
 }
+
 .form-select {
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat; background-position: right 12px center; background-size: 14px;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
 }
 
-/* 📝 요원 전용 조치내용 텍스트 필드 */
-.textarea-wrapper { width: 100%; position: relative; }
+/* ⏰ 시간 전용 정렬 조율 wrapper 구조 백업 */
+.date-input-wrapper {
+    flex: 1;
+    width: 100%;
+    display: flex;
+}
+
+.readonly-input {
+    background-color: #f1f5f9 !important;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+/* 💬 현장 조치 내용 서술형 상자 */
+.textarea-wrapper {
+    width: 100%;
+    position: relative;
+}
+
 .form-textarea {
-    width: 100%; height: 110px; padding: 12px 12px 30px 12px;
-    font-size: 13px; color: #334155; background-color: #ffffff;
-    border: 1px solid #dcdfe6; border-radius: 12px; resize: none; outline: none;
+    width: 100%;
+    height: 110px;
+    padding: 12px 12px 30px 12px;
+    font-size: 13px;
+    color: #334155;
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    border-radius: 12px;
+    resize: none;
+    outline: none;
 }
-.char-count { position: absolute; right: 12px; bottom: 10px; font-size: 11px; color: #94a3b8; }
 
-/* 🖼️ 원본 연동 이미지 컨테이너 스타일 */
+.char-count {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* ==================================================
+   5. 미디어 요소 및 팝업 레이어 (MEDIA & MODAL)
+================================================== */
+
+/* 🖼️ 원본 연동 대시보드 이미지 뷰어 */
 .image-preview-container {
     width: 100%;
     background-color: #f1f5f9;
@@ -203,30 +275,131 @@ body {
     min-height: 140px;
     max-height: 200px;
 }
+
 .img-responsive-view {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* 이미지가 찌그러지지 않고 꽉 채워지도록 조율 */
+    object-fit: cover;
+    cursor: pointer;
+    transition: opacity 0.2s;
 }
+
+.img-responsive-view:active {
+    opacity: 0.8;
+}
+
 .no-image-placeholder {
-    display: flex; flex-direction: column; align-items: center; gap: 6px; color: #94a3b8; font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #94a3b8;
+    font-size: 12px;
 }
-.no-image-placeholder i { font-size: 24px; }
 
-/* 📂 커스텀 파일 업로드 단추 스타일 */
-.file-upload-wrapper { width: 100%; position: relative; display: flex; flex-direction: column; gap: 6px; }
+.no-image-placeholder i {
+    font-size: 24px;
+}
+
+/* 📁 커스텀 파일 업로드 단추 세트 */
+.file-upload-wrapper {
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
 .form-file-input {
-    position: absolute; left: 0; top: 0; width: 100%; height: 44px; opacity: 0; cursor: pointer; z-index: 2;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 44px;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
 }
-.file-custom-button {
-    width: 100%; height: 44px; background-color: #ffffff; border: 1px solid #2563eb; color: #2563eb;
-    border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
-    font-size: 13px; font-weight: 700; transition: background-color 0.2s;
-}
-.file-name-text { font-size: 11px; color: #94a3b8; padding-left: 4px; font-weight: 600; }
 
-/* 하단 제어 단추 */
-.form-btn-group { display: flex; gap: 10px; margin-top: 8px; padding-bottom: 16px; }
-.btn-cancel, .btn-submit { flex: 1; height: 46px; border-radius: 12px; font-size: 14px; font-weight: 800; border: none; }
-.btn-cancel { background-color: #ffffff; color: #64748b; border: 1px solid #e2e8f0; }
-.btn-submit { background-color: #2563eb; color: #ffffff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+.file-custom-button {
+    width: 100%;
+    height: 44px;
+    background-color: #ffffff;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: background-color 0.2s;
+}
+
+.file-name-text {
+    font-size: 11px;
+    color: #94a3b8;
+    padding-left: 4px;
+    font-weight: 600;
+}
+
+/* 🕵️‍♂️ 전체화면 대포화 확대 모달 컴포넌트 */
+.image-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-out;
+}
+
+.image-modal img {
+    max-width: 95%;
+    max-height: 85%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    animation: zoomInEffect 0.2s ease-out;
+}
+
+@keyframes zoomInEffect {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ==================================================
+   6. 서밋 제어 단추 그룹 (ACTIONS)
+================================================== */
+.form-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    padding-bottom: 16px;
+}
+
+.btn-cancel, .btn-submit {
+    flex: 1;
+    height: 46px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    border: none;
+}
+
+.btn-cancel {
+    background-color: #ffffff;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-submit {
+    background-color: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}

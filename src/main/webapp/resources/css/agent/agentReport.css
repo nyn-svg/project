@@ -1,17 +1,43 @@
 @charset "UTF-8";
 
-body {
+/* ==================================================
+   1. 메인 페이지와 동일한 기본 초기화 및 모바일 레이아웃 설정
+================================================== */
+* {
     margin: 0;
     padding: 0;
-    background-color: #f8fafc;
-    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
-    color: #1e293b;
-    -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 푸른 반투명 박스 잔상 제거 */
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
-/* 🚨 상단 고정 헤더 바 (뒤로가기 공간 및 디자인 최적화) */
+body {
+    background-color: #f7f9fc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #1a1f2c;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 스마트폰 화면 규격 제한 (아이폰 프로맥스 규격 완벽 통일) */
+.mobile-container {
+    width: 100%;
+    max-width: 430px; 
+    height: 100vh;
+    max-height: 920px;
+    background-color: #f8fafc;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.05), 0 10px 10px rgba(0,0,0,0.05);
+    border-radius: 30px; 
+}
+
+/* 🚨 상단 헤더 바 (.mobile-container 내부 상단 고정으로 리팩토링) */
 .header-bar {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -19,7 +45,7 @@ body {
     background-color: #ffffff;
     display: flex;
     align-items: center;
-    padding: 0 4px; /* 뒤로가기 아이콘 간격 조정을 위해 패딩 소폭 양보 */
+    padding: 0 4px; 
     box-sizing: border-box;
     border-bottom: 1px solid #e2e8f0;
     z-index: 100;
@@ -52,16 +78,29 @@ body {
     margin-left: 2px;
 }
 
-/* 콘텐츠 컨테이너 */
-.container {
-    padding: 72px 16px 24px 16px;
-    box-sizing: border-box;
+/* 내부 메인 콘텐츠 스크롤 영역 */
+.mobile-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 72px 20px 24px 20px; /* 상단 고정바(56px)에 가려지지 않도록 탑 패딩 부여 */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
+
+/* 스크롤바 숨기기 스타일 유지 */
+.mobile-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==================================================
+   2. 알림 카드 및 콘텐츠 내부 스타일
+================================================== */
 
 /* 빈 목록 스타일 */
 .empty-msg {
     text-align: center;
-    padding: 60px 0;
+    padding: 80px 0;
     color: #94a3b8;
     font-size: 14px;
 }
@@ -77,13 +116,13 @@ body {
     background-color: #ffffff;
     border-radius: 16px;
     padding: 14px 16px;
-    margin-bottom: 12px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
+    width: 100%;
 }
 
 .card-top {

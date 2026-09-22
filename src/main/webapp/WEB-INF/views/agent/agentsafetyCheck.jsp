@@ -74,13 +74,13 @@
 				<!-- 상태 선택 옵션 -->
 				<div class="status-options">
 					<label class="status-option"> <input type="radio"
-						name="check_${item.itemId}" value="NORMAL"> <span>정상</span>
+						name="check_${item.itemId}" value="정상"> <span>정상</span>
 					</label> <label class="status-option"> <input type="radio"
-						name="check_${item.itemId}" value="WARN"> <span>주의</span>
+						name="check_${item.itemId}" value="주의"> <span>주의</span>
 					</label> <label class="status-option"> <input type="radio"
-						name="check_${item.itemId}" value="DANGER"> <span>위험</span>
+						name="check_${item.itemId}" value="위험"> <span>위험</span>
 					</label> <label class="status-option"> <input type="radio"
-						name="check_${item.itemId}" value="NONE"> <span>해당없음</span>
+						name="check_${item.itemId}" value="해당없음"> <span>해당없음</span>
 					</label>
 				</div>
 

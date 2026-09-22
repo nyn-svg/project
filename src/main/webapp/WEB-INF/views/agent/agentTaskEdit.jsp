@@ -53,11 +53,12 @@
 				</div>
 			</div>
 
+			<!-- ✨ 1. 컨트롤러에 파일 스트림을 온전히 전송하도록 enctype 속성 추가 -->
 			<form id="taskUpdateForm" class="task-form"
 				action="${pageContext.request.contextPath}/agent/taskEdit"
-				method="post">
+				method="post" enctype="multipart/form-data">
 
-				<!-- 💡 [필수 고정] form 바로 첫줄에 situNo 히든 필드를 배치하여 유실을 원천 방지합니다. -->
+				<!-- form 바로 첫줄에 situNo 히든 필드를 배치하여 유실을 원천 방지합니다. -->
 				<input type="hidden" id="situNo" name="situNo"
 					value="${task.situNo}">
 
@@ -81,10 +82,11 @@
 					<div class="image-preview-container">
 						<c:choose>
 							<c:when test="${not empty task.situImage}">
-								<img src="/agent/resources/upload/situation/${task.situImage}"
+								<!-- ✨ 404 에러 방지: 관제사가 맞춰놓은 정적 업로드 루트 경로 매핑 적용 -->
+								<img
+									src="${pageContext.request.contextPath}/upload/${task.situImage}"
 									alt="현장 원본 이미지" class="img-responsive-view"
-									onerror="this.onerror=null; this.src='https://placeholder.com';">
-
+									onerror="this.onerror=null; this.src='https://placehold.co';">
 							</c:when>
 							<c:otherwise>
 								<div class="no-image-placeholder">
@@ -93,6 +95,10 @@
 								</div>
 							</c:otherwise>
 						</c:choose>
+						
+						<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+							<img id="modalTargetImg" src="" alt="확대 이미지">
+						</div>
 					</div>
 				</div>
 
@@ -103,6 +109,20 @@
 							class="form-textarea" maxlength="300" required
 							placeholder="현장에서 수행한 조치 사항을 상세히 입력해주세요.">${task.workContent}</textarea>
 						<span class="char-count"><span id="charCount">0</span>/300</span>
+					</div>
+				</div>
+
+				<!-- ✨ 2. CSS 스타일 시트 및 JS 파일의 id 스펙에 맞춰 누락되었던 [현장 조치 사진 첨부 단추 컴포넌트] 완벽 복구 -->
+				<div class="form-row vertical">
+					<label class="form-label">현장 조치 증빙 사진</label>
+					<div class="file-upload-wrapper">
+						<input type="file" id="uploadFile" name="photo"
+							class="form-file-input" accept="image/*">
+						<div class="file-custom-button">
+							<i class="fa-solid fa-cloud-arrow-up"></i> 현장 조치 사진 첨부하기
+						</div>
+						<div id="fileNameDisplay" class="file-name-text">선택된 파일이
+							없습니다.</div>
 					</div>
 				</div>
 
@@ -140,7 +160,7 @@
 				<div class="form-btn-group">
 					<button type="button" class="btn-cancel"
 						onclick="location.href='${pageContext.request.contextPath}/agent/history'">취소</button>
-					<button type="submit" class="btn-submit">완료 보고서 제출</button>
+					<button type="submit" class="btn-submit">제출</button>
 				</div>
 
 			</form>

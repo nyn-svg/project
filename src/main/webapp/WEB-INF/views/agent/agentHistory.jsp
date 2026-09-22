@@ -20,9 +20,6 @@
 	<div class="mobile-container">
 		<!-- HEADER -->
 		<header class="mobile-header">
-			<button type="button" class="btn-back" onclick="history.back()">
-				<i class="fa-solid fa-chevron-left"></i>
-			</button>
 			<h1 class="header-title">조치 보고</h1>
 			<div class="header-dummy"></div>
 		</header>

@@ -1,10 +1,10 @@
 // 자바 Date 객체가 텍스트로 깨져서 넘어와도(예: Tue Sep 15...) 완벽하게 파싱하는 함수
 function parseAndFormatDate(rawDate) {
     if (!rawDate || rawDate === "null" || rawDate === null) return "확인 불가 (기록 없음)";
-    
+
     let str = String(rawDate).trim();
     if (!str) return "확인 불가 (기록 없음)";
-    
+
     // 💡 브라우저 내장 파싱 엔진 가동 (영문 요일 텍스트 포맷 완벽 방어)
     let timestamp = Date.parse(str);
     if (!isNaN(timestamp)) {
@@ -12,14 +12,14 @@ function parseAndFormatDate(rawDate) {
         let pad = (n) => n < 10 ? '0' + n : n;
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
-    
+
     // 만약 순수 밀리초 숫자로 들어온 경우 방어
     if (!isNaN(str)) {
         let d = new Date(Number(str));
         let pad = (n) => n < 10 ? '0' + n : n;
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
-    
+
     return str.replace("T", " ").substring(0, 16);
 }
 
@@ -42,7 +42,19 @@ function convertToDateTimeLocalFormat(rawDate) {
 }
 
 $(document).ready(function() {
-    
+
+
+    $(".img-responsive-view").on("click", function() {
+        const imgSrc = $(this).attr("src"); 
+        $("#modalTargetImg").attr("src", imgSrc); 
+        $("#imageModal").css("display", "flex"); 
+    });
+
+
+    window.closeImageModal = function() {
+        $("#imageModal").css("display", "none");
+    };
+
     // 1. 조치 완료 시간 세팅
     const dbEndDate = $("#endDate").data("raw-date");
     const endVal = convertToDateTimeLocalFormat(dbEndDate);
@@ -57,7 +69,7 @@ $(document).ready(function() {
             $count.text($(this).val().length);
         });
     }
-    
+
     // 3. 커스텀 첨부파일 등록 파일명 노출
     $("#uploadFile").on("change", function() {
         let fileValue = $(this).val();
