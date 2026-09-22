@@ -10,10 +10,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,20 +22,27 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.dto.SituationDTO;
 import com.spring.service.SituationService;
+import com.spring.service.SseService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class SituationController {
+	
+	@Autowired
+	private SseService sseService;
 
     @Autowired
     private SituationService situationService;
     
-    @Value("${savedPath.upload.files}")
-    private String uploadPath;
-    
     // 전체 공유용 감지조치이력 목록
     private static final List<SituationDTO> situationList = Collections.synchronizedList(new ArrayList<>());
+    
+    public static void clearSituationCache() {
+        synchronized (situationList) {
+            situationList.clear();
+        }
+    }
     
     // 전체 감지조치이력 목록 조회
     @GetMapping("/total/api/list")
@@ -74,16 +79,7 @@ public class SituationController {
     
     // (수동) 위험 감지 이력 등록
     @GetMapping("/detection/regist")
-    public String getDetectionRegist(Model model, Authentication authentication) {
-    	// 권한(Role) 확인 (ROLE_ADMIN, ROLE_CONTROL)
-        boolean hasPermission = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_CONTROL"));
-        if (!hasPermission) {
-        	model.addAttribute("errorMessage", "잘못된 접근입니다.");
-            model.addAttribute("closeWindow", true);
-            
-            return "status/popup-alert";
-        }
-    	
+    public String getDetectionRegist() {
     	return "detection/regist";
     }
     @PostMapping("/detection/regist")
@@ -93,12 +89,14 @@ public class SituationController {
                 situation.setFinder(principal.getName());
             } else {
                 // 세션이 만료되었거나 로그인 정보가 없는 경우에도 실패 화면으로 처리
-                return "status/fail"; 
+                return "status/regist_fail"; 
             }
     		
             // 1. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
             if (photo != null && !photo.isEmpty()) {
-                // uploadPath = c:/static/upload/
+                // 웹 프로젝트 내의 업로드 폴더 실제 경로 구하기 (/resources/upload/situation)
+                String uploadPath = request.getServletContext().getRealPath("/resources/upload/situation");
+                
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs(); // 폴더가 없으면 생성
@@ -120,19 +118,18 @@ public class SituationController {
             // 3. DB 저장 Service 호출
             boolean isSuccess = situationService.registerSituation(situation);
 
-            if (isSuccess) {           	
+            if (isSuccess) {
+            	clearSituationCache();
                 // 성공 처리
-            	// 캐시 초기화: 리스트를 비워두면, 프론트엔드에서 목록을 재조회함
-                situationList.clear();
-                return "redirect:/success";
+                return "redirect:/regist_success";
             } else {
             	// 실패 처리 (비즈니스 로직 실패)
-            	return "status/fail";
+            	return "status/regist_fail";
             }
         } catch (Exception e) {
             e.printStackTrace();
             // 에러 처리 (파일 업로드 중 오류, DB 접속 오류 등)
-            return "status/fail";
+            return "status/regist_fail";
         }
     }
     
@@ -153,6 +150,8 @@ public class SituationController {
      * 
      * }
      */
+    
+ // 💡 SituationController.java 파일 내의 registerReport 메서드를 아래 코드로 완전히 교체하세요.
 
     @PostMapping("/agent/api/report")
     @ResponseBody
@@ -201,6 +200,10 @@ public class SituationController {
             boolean isSuccess = situationService.registerSituation(situation);
 
             if (isSuccess) {
+            	clearSituationCache();
+            	// 💡 [추가] DB 저장이 완료되었으므로 관리자/관제 화면으로 실시간 긴급보고 SSE 전송!
+            	sseService.sendEvent("EMERGENCY_SUBMITTED", situation.getSituNo());
+            	
                 result.put("success", true);
                 result.put("situNo", situation.getSituNo()); // 🚨 생성된 진짜 이력번호를 결과에 담아 전송!
                 return ResponseEntity.ok(result);
@@ -217,57 +220,16 @@ public class SituationController {
         }
     }
 
-    // 감지 이력 수정 또는 조치 이력 입력
-    @GetMapping("/detection/modify")
-    public String getDetectionModify(@RequestParam("no") String situNo, Model model) {
-    	SituationDTO situation = situationService.getSituationBySituNo(situNo);
-        
-        model.addAttribute("situation", situation);
-        
-        return "detection/modify"; 
-    }
     
-    // 삭제 또는 취소
-    @GetMapping("/detection/remove")
-    public String getDetectionRemove(@RequestParam("no") String situNo, Model model, Authentication authentication) {
-    	// 권한(Role) 확인 (ROLE_ADMIN, ROLE_CONTROL)
-        boolean hasPermission = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_CONTROL"));
-        if (!hasPermission) {
-        	model.addAttribute("errorMessage", "잘못된 접근입니다.");
-            model.addAttribute("closeWindow", true);
-            
-            return "status/popup-alert";
-        }
-        
-    	SituationDTO situation = situationService.getSituationBySituNo(situNo);
-        model.addAttribute("situation", situation);
-        
-        return "detection/remove"; 
-    }
-    @PostMapping("/detection/remove")
-    public String postDetectionRemove(@RequestParam("situNo") String situNo, @RequestParam("situStatus") String situStatus) {
-        if ("감지".equals(situStatus)) {
-            situationService.removeSituation(situNo);
-            
-            // 💡 메모리 캐시 초기화 추가
-            situationList.clear();
-            
-            return "redirect:/success";
-            
-        } else if ("조치".equals(situStatus)) {
-        	SituationDTO situation = situationService.getSituationBySituNo(situNo);
-        	situation.setSituStatus("취소");
-            situationService.setStart(situNo);
-            situationService.setEnd(situation);
-            
-            // 💡 메모리 캐시 초기화 추가
-            situationList.clear();
-            
-            return "redirect:/success";
-        }
-        
-        return "status/fail";
-    }
+    /*
+     * // 감지 이력 수정 또는 조치 이력 입력
+     * 
+     * @PostMapping("/detect/modify")
+     * 
+     * @ResponseBody public Map<String, Object> modifySituation() {
+     * 
+     * }
+     */
 
     // =========================================================================
     // [현장 조치 승인 및 관리 기능 - fieldAction.jsp 연동 API]
@@ -303,6 +265,7 @@ public class SituationController {
             boolean isSuccess = situationService.processFieldAction(actionId, status, adminComment, adminId);
 
             if (isSuccess) {
+            	clearSituationCache();
                 response.put("status", "success");
                 response.put("message", "성공적으로 처리되었습니다.");
             } else {

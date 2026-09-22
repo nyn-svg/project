@@ -10,7 +10,7 @@
 	<bean id="picturePath" 
 		  class="java.lang.String"
 		  c:value="${savedPath.member.picture}" 		
-	/>
+	/>	
 	
 	<!-- summernote.image -->
 	<bean id="summernotePath"

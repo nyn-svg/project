@@ -194,7 +194,7 @@ function createCardHtml(task) {
                         '<span class="history-title">' + taskTitle + '</span>' +
                     '</div>' +
                     '<div class="info-meta">' +
-                        '<span>' + (taskArea ? taskArea : '') + '</span>' +
+                        '<span>' + (taskArea ? taskArea + '구역' : '') + '</span>' +
                         '<span>' + startTime + '</span>' +
                     '</div>' +
                 '</div>' +

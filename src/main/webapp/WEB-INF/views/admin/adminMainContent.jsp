@@ -9,16 +9,17 @@
     <!-- 1. 상단 요약 KPI 카드 (5개 영역) -->
     <section class="kpi-grid">
         <div class="kpi-card">
-            <div class="kpi-title">밀집도 위험구역</div>
-            <div class="kpi-value-group">
-                <span class="kpi-value warning">0</span><span class="kpi-unit">개</span>
-            </div>
-            <div class="kpi-sub diff-up"></div>
-        </div>
+		    <div class="kpi-title">신규 안전점검 현황</div>
+		    <div class="kpi-value-group">
+		        <!-- 💡 id="kpi-unread-count" 추가 -->
+		        <span class="kpi-value warning" id="kpi-unread-count">0</span><span class="kpi-unit">개</span>
+		    </div>
+		    <div class="kpi-sub diff-up"></div>
+		</div>
         <div class="kpi-card">
-            <div class="kpi-title">야생동물 위험</div>
+            <div class="kpi-title">미확인 긴급보고</div>
             <div class="kpi-value-group">
-                <span class="kpi-value warning">0</span><span class="kpi-unit">건</span>
+                <span class="kpi-value danger">0</span><span class="kpi-unit">건</span>
             </div>
             <div class="kpi-sub diff-up"></div>
         </div>
@@ -36,13 +37,7 @@
             </div>
             <div class="kpi-sub status-ok">(!연동됨)</div>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-title">미확인 긴급보고</div>
-            <div class="kpi-value-group">
-                <span class="kpi-value danger">0</span><span class="kpi-unit">건</span>
-            </div>
-            <div class="kpi-sub diff-up"></div>
-        </div>
+        
     </section>
 
     <!-- 2. 중단 영역 (좌: 지도 관제 / 우: 대응 현황) -->

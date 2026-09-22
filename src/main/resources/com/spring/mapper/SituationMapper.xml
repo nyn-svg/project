@@ -25,54 +25,52 @@
 		WHERE SITU_NO = #{situNo}
 	</select>
 	
-	<!-- 전체 감지조치이력 목록 조회 -->
-	<select id="findAllSituations" resultType="com.spring.dto.SituationDTO">
-		SELECT
-			SITU_NO 		AS situNo,
-			SITU_TYPE 		AS situType,
-			DNGR_TYPE	 	AS dngrType,
-			DNGR_LEVEL	 	AS dngrLevel,
-			SITU_STATUS 	AS situStatus,
-			SITU_CONTENT	AS situContent,
-			SITU_DATE		AS situDate,
-			SITU_IMAGE		AS situImage,
-			WORK_CONTENT 	AS workContent,
-			START_DATE		AS startDate,
-			END_DATE		AS endDate,
-			WORK_IMAGE		AS workImage,
-			ZONE_NAME		AS zoneName,
-			DRONE_ID		AS droneID,
-			FINDER			AS finder,
-			WORKER			AS worker
-		FROM SITUATIONS
-		ORDER BY 
-		    COALESCE(END_DATE, START_DATE, SITU_DATE) DESC,
-		    SITU_NO DESC
-	</select>
+	<!-- 전체 감지조치이력 목록 조회 (수정 후) -->
+<select id="findAllSituations" resultType="com.spring.dto.SituationDTO">
+    SELECT
+        SITU_NO         AS situNo,
+        SITU_TYPE       AS situType,
+        DNGR_TYPE       AS dngrType,
+        DNGR_LEVEL      AS dngrLevel,
+        SITU_STATUS     AS situStatus,
+        SITU_CONTENT    AS situContent,
+        SITU_DATE       AS situDate,
+        SITU_IMAGE      AS situImage,
+        WORK_CONTENT    AS workContent,
+        START_DATE      AS startDate,
+        END_DATE        AS endDate,
+        WORK_IMAGE      AS workImage,
+        ZONE_NAME       AS zoneName,
+        DRONE_ID        AS droneID,
+        FINDER          AS finder,
+        WORKER          AS worker
+    FROM SITUATIONS
+    ORDER BY SITU_DATE DESC, SITU_NO DESC  <!-- 💡 SITU_NO 대신 SITU_DATE(등록일시) 최신순 정렬 -->
+</select>
 	
-	<!-- 감지이력 목록 조회 -->
-	<select id="findSituations" resultType="com.spring.dto.SituationDTO">
-		SELECT
-			SITU_NO 		AS situNo,
-			SITU_TYPE 		AS situType,
-			DNGR_TYPE	 	AS dngrType,
-			DNGR_LEVEL	 	AS dngrLevel,
-			SITU_STATUS 	AS situStatus,
-			SITU_CONTENT	AS situContent,
-			SITU_DATE		AS situDate,
-			SITU_IMAGE		AS situImage,
-			WORK_CONTENT 	AS workContent,
-			START_DATE		AS startDate,
-			END_DATE		AS endDate,
-			WORK_IMAGE		AS workImage,
-			ZONE_NAME		AS zoneName,
-			DRONE_ID		AS droneID,
-			FINDER			AS finder,
-			WORKER			AS worker
-		FROM SITUATIONS
-		WHERE SITU_STATUS = '감지'
-		ORDER BY SITU_DATE DESC
-	</select>
+<!-- 감지이력 목록 조회 -->
+<select id="findSituations" resultType="com.spring.dto.SituationDTO">
+    SELECT
+        SITU_NO         AS situNo,
+        SITU_TYPE       AS situType,
+        DNGR_TYPE       AS dngrType,
+        DNGR_LEVEL      AS dngrLevel,
+        SITU_STATUS     AS situStatus,
+        SITU_CONTENT    AS situContent,
+        SITU_DATE       AS situDate,
+        SITU_IMAGE      AS situImage,
+        WORK_CONTENT    AS workContent,
+        START_DATE      AS startDate,
+        END_DATE        AS endDate,
+        WORK_IMAGE      AS workImage,
+        ZONE_NAME       AS zoneName,
+        DRONE_ID        AS droneID,
+        FINDER          AS finder,
+        WORKER          AS worker
+    FROM SITUATIONS
+    WHERE SITU_STATUS = '감지' OR SITU_STATUS IS NULL  <!-- 💡 NULL 데이터도 포함되도록 추가 -->
+    ORDER BY SITU_DATE DESC
+</select>
 	
 	<!-- 조치이력 목록 조회 -->
 	<select id="findStartSituations" resultType="com.spring.dto.SituationDTO">
@@ -140,6 +138,8 @@
             SITU_TYPE,
             DNGR_TYPE,
             DNGR_LEVEL,
+            SITU_STATUS,
+            SITU_DATE,
             SITU_CONTENT,
             SITU_IMAGE,
             ZONE_NAME,
@@ -150,6 +150,8 @@
             #{situType},
             #{dngrType},
             #{dngrLevel},
+            #{situStatus},
+            SYSDATE,
             #{situContent},
             #{situImage, jdbcType=VARCHAR},
             #{zoneName, jdbcType=VARCHAR},
@@ -161,18 +163,14 @@
     <!-- 조치 시작일시 기록 -->
     <update id="startSituation" parameterType="string">
     	UPDATE SITUATIONS
-    	SET
-    		SITU_STATUS = '조치',
-    		START_DATE = SYSDATE
+    	SET START_DATE = SYSDATE
     	WHERE SITU_NO = #{situNo}
     </update>
     
     <!-- 조치 종료일시 기록 -->
-    <update id="endSituation" parameterType="com.spring.dto.SituationDTO">
+    <update id="endSituation" parameterType="string">
     	UPDATE SITUATIONS
-    	SET 
-    		SITU_STATUS = '#{situStatus}',
-    		END_DATE = SYSDATE
+    	SET END_DATE = SYSDATE
     	WHERE SITU_NO = #{situNo}
     </update>
 	
@@ -182,6 +180,7 @@
         SET 
             DNGR_TYPE		= #{dngrType},
             DNGR_LEVEL		= #{dngrLevel},
+            SITU_STATUS		= #{situStatus},
             SITU_CONTENT	= #{situContent},
             SITU_IMAGE		= #{situImage, jdbcType=VARCHAR},
             WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
@@ -190,12 +189,6 @@
             WORKER			= #{worker, jdbcType=VARCHAR}
         WHERE SITU_NO = #{situNo}
 	</update>
-	
-	<!-- 감지조치이력 삭제 -->
-	<delete id="deleteSituation" parameterType="string">
-		DELETE FROM SITUATIONS
-		WHERE SITU_NO = #{situNo}
-	</delete>
 	
 	<!-- 전체 감지조치이력 수 -->
     <select id="getTotalSituationCount" resultType="int">
