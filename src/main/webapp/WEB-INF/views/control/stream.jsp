@@ -542,6 +542,51 @@ function showToast(message, type = 'info') {
 	}, 3000);
 }
 
+// Flask 서버 설정 변경 API 호출
+function sendToggleApi() {
+	// 현재 img 태그 src 기반으로 API URL 생성
+	// views.py 라우트: @stream.route('/video_feed/api/toggle', methods=['POST'])
+	const videoSrc = $('#stream-video').attr('src') || '';
+	// src URL에서 '/video_feed' 부분까지만 추출 후 '/api/toggle' 붙이기
+	let toggleUrl = videoSrc.replace(/\/video_feed.*$/, '') + '/video_feed/api/toggle';
+
+	// 1. 현재 화면 UI에서 최신 옵션 상태 수집
+	const isShowDensity = $('#density-overlay-toggle').is(':checked');
+	const isShowCount = $('#density-count-toggle').is(':checked');
+	const isShowBbox = $('#animal-boxing-toggle').is(':checked');
+
+	// 2. 현재 선택된 민감도 버튼에서 numeric 값 추출
+	const activeSensLevel = $('.sens-btn.active').data('sens-level');
+	const sensMap = {
+		'low': 100.0,
+		'mid': 150.0,
+		'high': 200.0
+	};
+	const isMaxDensity = sensMap[activeSensLevel] || 150.0;
+
+	// 3. Flask views.py로 전달할 JSON payload 구성
+	const payload = {
+		max_density: isMaxDensity,
+		show_density: isShowDensity,
+		show_count: isShowCount,
+		show_bbox: isShowBbox
+	};
+
+	// 4. 비동기 HTTP 요청
+	fetch(toggleUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(payload)
+	})
+	.then(response => response.json())
+	.then(data => {
+		console.log('⚙️ Flask 스트리밍 설정 변경 완료:', data.settings);
+	})
+	.catch(error => console.error('❌ 설정 변경 API 에러 발생:', error));
+}
+
 //[공통] 팝업창 오픈 함수
 function openPopup(url, windowName, width = 630, height = 830) {
     const left = (window.screen.width / 2) - (width / 2);
@@ -667,7 +712,10 @@ $(document).off('click', '.sens-btn').on('click', '.sens-btn', function() {
 		'mid': '기본(150.0)',
 		'high': '고고도(200.0)'
 	};
-
+	
+	// 💡 Flask 서버로 변경된 민감도 전달
+	sendToggleApi();
+	
 	var selectedText = levelNames[level] || 'UNKNOWN';
 	showToast('⚙️ 민감도가 [' + selectedText + ']로 변경되었습니다.', 'info');
 });
@@ -681,6 +729,9 @@ $(document).off('change', '#density-overlay-toggle, #density-count-toggle, #anim
 		'density-count-toggle': '👥 사람 수 표시',
 		'animal-boxing-toggle': '🐾 바운딩 박스 표시'
 	};
+	
+	// 💡 Flask 서버로 변경된 민감도 전달
+	sendToggleApi();
 	
 	const label = labels[this.id] || '옵션';
 	const isChecked = $(this).is(':checked');
