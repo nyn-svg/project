@@ -23,62 +23,64 @@
     </div>
 
     <!-- 1. 미결 조치 검토 영역 -->
-    <div id="tab-pending" class="content-card">
-        <div class="filter-bar">
-            <span>안전요원이 제출한 현장 조치 요청 건을 검토 후 승인/반려합니다.</span>
-        </div>
-        <table class="custom-table">
-            <!-- 1. 미결 조치 검토 테이블 헤더 -->
-			<thead>
-			    <tr>
-			        <th style="width: 18%;">요청ID</th>
-			        <th style="width: 10%;">구역명</th>
-			        <th style="width: 12%;">제출 안전요원</th>
-			        <th style="width: 28%;">조치 내용 Summary</th> <!-- 넓은 공간 할당 -->
-			        <th style="width: 14%;">제출 일시</th>
-			        <th style="width: 9%;">상태</th>
-			        <th style="width: 9%;">검토 처리</th> <!-- 버튼 컬럼 최적화 -->
-			    </tr>
-			</thead>
-            <!-- JS 연동을 위한 id 부여 및 더미 tr 제거 -->
-            <tbody id="pendingTbody">
-                <tr>
-                    <td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td>
-                </tr>
-            </tbody>
-        </table>
+<div id="tab-pending" class="content-card">
+    <div class="filter-bar">
+        <span>안전요원이 제출한 현장 조치 요청 건을 검토 후 승인/반려합니다.</span>
     </div>
+    <table class="custom-table">
+        <!-- 1. 미결 조치 검토 테이블 헤더 (총 8컬럼으로 변경) -->
+        <thead>
+            <tr>
+                <th style="width: 15%;">요청ID</th>
+                <th style="width: 10%;">위험유형</th> <!-- 💡 새로 추가됨 (dngrType) -->
+                <th style="width: 10%;">감지유형</th> <!-- 💡 구역명 -> 감지유형 변경 (situType) -->
+                <th style="width: 11%;">제출자</th>
+                <th style="width: 24%;">조치 내용 Summary</th>
+                <th style="width: 13%;">제출 일시</th>
+                <th style="width: 8%;">상태</th>
+                <th style="width: 9%;">검토 처리</th>
+            </tr>
+        </thead>
+        <!-- JS 연동을 위한 id 부여 (colspan=8로 변경) -->
+        <tbody id="pendingTbody">
+            <tr>
+                <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
     <!-- 2. 완료 조치 이력 (아카이빙) 영역 -->
-    <div id="tab-history" class="content-card" style="display: none;">
-        <div class="filter-bar">
-            <div>
-                <input type="text" placeholder="검색어 (구역, 안전요원명)" style="padding: 6px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 4px;">
-                <button class="btn btn-secondary">검색</button>
-            </div>
-            <span>최종 마감된 이력 데이터입니다.</span>
+<div id="tab-history" class="content-card" style="display: none;">
+    <div class="filter-bar">
+        <div>
+            <input type="text" placeholder="검색어 (위험유형, 감지유형, 안전요원명)" style="padding: 6px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 4px;">
+            <button class="btn btn-secondary">검색</button>
         </div>
-        <table class="custom-table">
-            <!-- 2. 완료 조치 이력 테이블 헤더 -->
-			<thead>
-			    <tr>
-			        <th style="width: 18%;">요청ID</th>
-			        <th style="width: 10%;">구역명</th>
-			        <th style="width: 12%;">안전요원</th>
-			        <th style="width: 10%;">최종 처리상태</th>
-			        <th style="width: 22%;">승인/반려 일시</th>
-			        <th style="width: 18%;">처리자(관리자)</th>
-			        <th style="width: 10%;">상세보기</th>
-			    </tr>
-			</thead>
-            <!-- JS 연동을 위한 id 부여 및 더미 tr 제거 -->
-            <tbody id="historyTbody">
-                <tr>
-                    <td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td>
-                </tr>
-            </tbody>
-        </table>
+        <span>최종 마감된 이력 데이터입니다.</span>
     </div>
+    <table class="custom-table">
+        <!-- 2. 완료 조치 이력 테이블 헤더 (총 8컬럼) -->
+        <thead>
+            <tr>
+                <th style="width: 15%;">요청ID</th>
+                <th style="width: 10%;">위험유형</th> <!-- 💡 새로 추가됨 (dngrType) -->
+                <th style="width: 10%;">감지유형</th> <!-- 💡 구역명 -> 감지유형 변경 (situType) -->
+                <th style="width: 10%;">제출자</th>
+                <th style="width: 10%;">최종 처리상태</th>
+                <th style="width: 18%;">승인/반려 일시</th>
+                <th style="width: 17%;">처리자(관리자)</th>
+                <th style="width: 10%;">상세보기</th>
+            </tr>
+        </thead>
+        <!-- JS 연동을 위한 id 부여 (colspan=8로 변경) -->
+        <tbody id="historyTbody">
+            <tr>
+                <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 </div>
 
 <!-- 상세 보기 및 승인/반려 모달 -->

@@ -1,334 +1,318 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.spring.mapper.SituationMapper">
-
+	
 	<!-- 이력번호로 감지조치이력 조회 -->
-	<select id="findBySituNo" parameterType="string"
-		resultType="com.spring.dto.SituationDTO">
+	<select id="findBySituNo" parameterType="string" resultType="com.spring.dto.SituationDTO">
 		SELECT
-		SITU_NO AS situNo,
-		SITU_TYPE AS situType,
-		DNGR_TYPE AS
-		dngrType,
-		DNGR_LEVEL AS dngrLevel,
-		SITU_STATUS AS situStatus,
-		SITU_CONTENT AS situContent,
-		SITU_DATE AS situDate,
-		SITU_IMAGE AS
-		situImage,
-		WORK_CONTENT AS workContent,
-		START_DATE AS startDate,
-		END_DATE AS endDate,
-		WORK_IMAGE AS workImage,
-		ZONE_NAME AS zoneName,
-		DRONE_ID AS droneID,
-		FINDER AS finder,
-		WORKER AS worker
+			SITU_NO 		AS situNo,
+			SITU_TYPE 		AS situType,
+			DNGR_TYPE	 	AS dngrType,
+			DNGR_LEVEL	 	AS dngrLevel,
+			SITU_STATUS 	AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_DATE		AS situDate,
+			SITU_IMAGE		AS situImage,
+			WORK_CONTENT 	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			WORK_IMAGE		AS workImage,
+			ZONE_NAME		AS zoneName,
+			DRONE_ID		AS droneID,
+			FINDER			AS finder,
+			WORKER			AS worker
 		FROM SITUATIONS
 		WHERE SITU_NO = #{situNo}
 	</select>
-
-	<!-- 전체 감지조치이력 목록 조회 -->
-	<select id="findAllSituations"
-		resultType="com.spring.dto.SituationDTO">
-		SELECT
-		SITU_NO AS situNo,
-		SITU_TYPE AS situType,
-		DNGR_TYPE AS dngrType,
-		DNGR_LEVEL AS dngrLevel,
-		SITU_STATUS AS situStatus,
-		SITU_CONTENT AS situContent,
-		SITU_DATE AS situDate,
-		SITU_IMAGE AS situImage,
-		WORK_CONTENT AS workContent,
-		START_DATE AS startDate,
-		END_DATE AS endDate,
-		WORK_IMAGE AS workImage,
-		ZONE_NAME AS zoneName,
-		DRONE_ID AS droneID,
-		FINDER AS finder,
-		WORKER AS worker
-		FROM SITUATIONS
-		ORDER BY SITU_DATE DESC, SITU_NO DESC
-	</select>
-
-	<!-- 감지이력 목록 조회 -->
-	<select id="findSituations"
-		resultType="com.spring.dto.SituationDTO">
-		SELECT
-		SITU_NO AS situNo,
-		SITU_TYPE AS situType,
-		DNGR_TYPE AS dngrType,
-		DNGR_LEVEL AS dngrLevel,
-		SITU_STATUS AS situStatus,
-		SITU_CONTENT AS situContent,
-		SITU_DATE AS situDate,
-		SITU_IMAGE AS situImage,
-		WORK_CONTENT AS workContent,
-		START_DATE AS startDate,
-		END_DATE AS endDate,
-		WORK_IMAGE AS workImage,
-		ZONE_NAME AS zoneName,
-		DRONE_ID AS droneID,
-		FINDER AS finder,
-		WORKER AS worker
-		FROM SITUATIONS
-		WHERE SITU_STATUS = '감지' OR SITU_STATUS IS NULL
-		ORDER BY SITU_DATE DESC
-	</select>
-
+	
+	<!-- 전체 감지조치이력 목록 조회 (수정 후) -->
+<select id="findAllSituations" resultType="com.spring.dto.SituationDTO">
+    SELECT
+        SITU_NO         AS situNo,
+        SITU_TYPE       AS situType,
+        DNGR_TYPE       AS dngrType,
+        DNGR_LEVEL      AS dngrLevel,
+        SITU_STATUS     AS situStatus,
+        SITU_CONTENT    AS situContent,
+        SITU_DATE       AS situDate,
+        SITU_IMAGE      AS situImage,
+        WORK_CONTENT    AS workContent,
+        START_DATE      AS startDate,
+        END_DATE        AS endDate,
+        WORK_IMAGE      AS workImage,
+        ZONE_NAME       AS zoneName,
+        DRONE_ID        AS droneID,
+        FINDER          AS finder,
+        WORKER          AS worker
+    FROM SITUATIONS
+    ORDER BY SITU_DATE DESC, SITU_NO DESC  <!-- 💡 SITU_NO 대신 SITU_DATE(등록일시) 최신순 정렬 -->
+</select>
+	
+<!-- 감지이력 목록 조회 -->
+<select id="findSituations" resultType="com.spring.dto.SituationDTO">
+    SELECT
+        SITU_NO         AS situNo,
+        SITU_TYPE       AS situType,
+        DNGR_TYPE       AS dngrType,
+        DNGR_LEVEL      AS dngrLevel,
+        SITU_STATUS     AS situStatus,
+        SITU_CONTENT    AS situContent,
+        SITU_DATE       AS situDate,
+        SITU_IMAGE      AS situImage,
+        WORK_CONTENT    AS workContent,
+        START_DATE      AS startDate,
+        END_DATE        AS endDate,
+        WORK_IMAGE      AS workImage,
+        ZONE_NAME       AS zoneName,
+        DRONE_ID        AS droneID,
+        FINDER          AS finder,
+        WORKER          AS worker
+    FROM SITUATIONS
+    WHERE SITU_STATUS = '감지' OR SITU_STATUS IS NULL  <!-- 💡 NULL 데이터도 포함되도록 추가 -->
+    ORDER BY SITU_DATE DESC
+</select>
+	
 	<!-- 조치이력 목록 조회 -->
-	<select id="findStartSituations"
-		resultType="com.spring.dto.SituationDTO">
+	<select id="findStartSituations" resultType="com.spring.dto.SituationDTO">
 		SELECT
-		SITU_NO AS situNo,
-		SITU_TYPE AS situType,
-		DNGR_TYPE AS
-		dngrType,
-		DNGR_LEVEL AS dngrLevel,
-		SITU_STATUS AS situStatus,
-		SITU_CONTENT AS situContent,
-		SITU_DATE AS situDate,
-		SITU_IMAGE AS
-		situImage,
-		WORK_CONTENT AS workContent,
-		START_DATE AS startDate,
-		END_DATE AS endDate,
-		WORK_IMAGE AS workImage,
-		ZONE_NAME AS zoneName,
-		DRONE_ID AS droneID,
-		FINDER AS finder,
-		WORKER AS worker
+			SITU_NO 		AS situNo,
+			SITU_TYPE 		AS situType,
+			DNGR_TYPE	 	AS dngrType,
+			DNGR_LEVEL	 	AS dngrLevel,
+			SITU_STATUS 	AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_DATE		AS situDate,
+			SITU_IMAGE		AS situImage,
+			WORK_CONTENT 	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			WORK_IMAGE		AS workImage,
+			ZONE_NAME		AS zoneName,
+			DRONE_ID		AS droneID,
+			FINDER			AS finder,
+			WORKER			AS worker
 		FROM SITUATIONS
 		WHERE SITU_STATUS = '조치'
 		ORDER BY START_DATE DESC
 	</select>
-
+	
 	<!-- 종료이력 목록 조회 -->
-	<select id="findEndSituations"
-		resultType="com.spring.dto.SituationDTO">
+	<select id="findEndSituations" resultType="com.spring.dto.SituationDTO">
 		SELECT
-		SITU_NO AS situNo,
-		SITU_TYPE AS situType,
-		DNGR_TYPE AS
-		dngrType,
-		DNGR_LEVEL AS dngrLevel,
-		SITU_STATUS AS situStatus,
-		SITU_CONTENT AS situContent,
-		SITU_DATE AS situDate,
-		SITU_IMAGE AS
-		situImage,
-		WORK_CONTENT AS workContent,
-		START_DATE AS startDate,
-		END_DATE AS endDate,
-		WORK_IMAGE AS workImage,
-		ZONE_NAME AS zoneName,
-		DRONE_ID AS droneID,
-		FINDER AS finder,
-		WORKER AS worker
+			SITU_NO 		AS situNo,
+			SITU_TYPE 		AS situType,
+			DNGR_TYPE	 	AS dngrType,
+			DNGR_LEVEL	 	AS dngrLevel,
+			SITU_STATUS 	AS situStatus,
+			SITU_CONTENT	AS situContent,
+			SITU_DATE		AS situDate,
+			SITU_IMAGE		AS situImage,
+			WORK_CONTENT 	AS workContent,
+			START_DATE		AS startDate,
+			END_DATE		AS endDate,
+			WORK_IMAGE		AS workImage,
+			ZONE_NAME		AS zoneName,
+			DRONE_ID		AS droneID,
+			FINDER			AS finder,
+			WORKER			AS worker
 		FROM SITUATIONS
 		WHERE END_DATE IS NOT NULL
 		ORDER BY END_DATE DESC
 	</select>
-
-	<!-- 감지 이력 등록 -->
-	<insert id="insertSituation"
-		parameterType="com.spring.dto.SituationDTO">
-		<selectKey keyProperty="situNo" resultType="string"
-			order="BEFORE">
-			SELECT
-			CASE #{situType}
-			WHEN '자동감지' THEN 'AUTO_'
-			WHEN '수동감지' THEN 'MANU_'
-			WHEN '긴급보고' THEN 'EMER_'
-			ELSE 'SITU_'
-			END || TO_CHAR(SYSDATE, 'YYYYMMDD') || '_' || LPAD(SITU_SEQ.NEXTVAL, 4,
-			'0')
-			FROM DUAL
-		</selectKey>
-
-		INSERT INTO SITUATIONS (
-		SITU_NO,
-		SITU_TYPE,
-		DNGR_TYPE,
-		DNGR_LEVEL,
-		SITU_STATUS,
-		SITU_DATE,
-		SITU_CONTENT,
-		SITU_IMAGE,
-		ZONE_NAME,
-		DRONE_ID,
-		FINDER
-		) VALUES (
-		#{situNo},
-		#{situType},
-		#{dngrType},
-		#{dngrLevel},
-		#{situStatus},
-		SYSDATE,
-		#{situContent},
-		#{situImage, jdbcType=VARCHAR},
-		#{zoneName, jdbcType=VARCHAR},
-		#{droneId, jdbcType=VARCHAR},
-		#{finder, jdbcType=VARCHAR}
-		)
-	</insert>
-
-	<!-- 조치 시작일시 기록 -->
-	<update id="startSituation" parameterType="string">
-		UPDATE SITUATIONS
-		SET START_DATE = SYSDATE
-		WHERE SITU_NO = #{situNo}
-	</update>
-
-	<!-- 조치 종료일시 기록 -->
-	<update id="endSituation" parameterType="string">
-		UPDATE SITUATIONS
-		SET END_DATE = SYSDATE
-		WHERE SITU_NO = #{situNo}
-	</update>
-
+	
+    <!-- 감지 이력 등록 -->
+    <insert id="insertSituation" parameterType="com.spring.dto.SituationDTO">
+        <selectKey keyProperty="situNo" resultType="string" order="BEFORE">
+            SELECT 
+	            CASE #{situType}
+	                WHEN '자동감지' THEN 'AUTO_'
+	                WHEN '수동감지' THEN 'MANU_'
+	                WHEN '긴급보고' THEN 'EMER_'
+	                ELSE 'SITU_'
+	            END || TO_CHAR(SYSDATE, 'YYYYMMDD') || '_' || LPAD(SITU_SEQ.NEXTVAL, 4, '0')
+	        FROM DUAL
+        </selectKey>
+        
+        INSERT INTO SITUATIONS (
+            SITU_NO,
+            SITU_TYPE,
+            DNGR_TYPE,
+            DNGR_LEVEL,
+            SITU_STATUS,
+            SITU_DATE,
+            SITU_CONTENT,
+            SITU_IMAGE,
+            ZONE_NAME,
+            DRONE_ID,
+            FINDER
+        ) VALUES (
+            #{situNo},
+            #{situType},
+            #{dngrType},
+            #{dngrLevel},
+            #{situStatus},
+            SYSDATE,
+            #{situContent},
+            #{situImage, jdbcType=VARCHAR},
+            #{zoneName, jdbcType=VARCHAR},
+            #{droneId, jdbcType=VARCHAR},
+            #{finder, jdbcType=VARCHAR}
+        )
+    </insert>
+    
+    <!-- 조치 시작일시 기록 -->
+    <update id="startSituation" parameterType="string">
+    	UPDATE SITUATIONS
+    	SET START_DATE = SYSDATE
+    	WHERE SITU_NO = #{situNo}
+    </update>
+    
+    <!-- 조치 종료일시 기록 -->
+    <update id="endSituation" parameterType="string">
+    	UPDATE SITUATIONS
+    	SET END_DATE = SYSDATE
+    	WHERE SITU_NO = #{situNo}
+    </update>
+	
 	<!-- 감지 이력 수정 또는 조치 내용 입력 -->
-	<update id="updateSituation"
-		parameterType="com.spring.dto.SituationDTO">
+	<update id="updateSituation" parameterType="com.spring.dto.SituationDTO">
 		UPDATE SITUATIONS
-		SET
-		DNGR_TYPE = #{dngrType},
-		DNGR_LEVEL = #{dngrLevel},
-		SITU_STATUS = #{situStatus},
-		SITU_CONTENT = #{situContent},
-		SITU_IMAGE = #{situImage, jdbcType=VARCHAR},
-		WORK_CONTENT = #{workContent, jdbcType=VARCHAR},
-		WORK_IMAGE = #{workImage, jdbcType=VARCHAR},
-		ZONE_NAME = #{zoneName, jdbcType=VARCHAR},
-		WORKER = #{worker, jdbcType=VARCHAR}
-		WHERE SITU_NO = #{situNo}
+        SET 
+            DNGR_TYPE		= #{dngrType},
+            DNGR_LEVEL		= #{dngrLevel},
+            SITU_STATUS		= #{situStatus},
+            SITU_CONTENT	= #{situContent},
+            SITU_IMAGE		= #{situImage, jdbcType=VARCHAR},
+            WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
+            WORK_IMAGE		= #{workImage, jdbcType=VARCHAR},
+            ZONE_NAME		= #{zoneName, jdbcType=VARCHAR},
+            WORKER			= #{worker, jdbcType=VARCHAR}
+        WHERE SITU_NO = #{situNo}
 	</update>
-
+	
 	<!-- 전체 감지조치이력 수 -->
-	<select id="getTotalSituationCount" resultType="int">
-		SELECT COUNT(*)
-		FROM SITUATIONS
-	</select>
+    <select id="getTotalSituationCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM SITUATIONS
+    </select>
+    
+    <!-- 감지이력 수 -->
+    <select id="getSituationCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE SITU_STATUS = '감지'
+    </select>
+    
+    <!-- 조치이력 수 -->
+    <select id="getStartSituationCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE SITU_STATUS = '조치'
+    </select>
+    
+    <!-- 종료이력 수 -->
+    <select id="getEndSituationCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE END_DATE IS NOT NULL
+    </select>
+    
+    <!-- 승인 / 반려 업데이트 (Oracle SYSDATE 및 기존 컬럼 매핑) -->
+    <update id="processFieldAction" parameterType="map">
+        UPDATE SITUATIONS
+        SET 
+            SITU_STATUS  = #{status},
+            WORK_CONTENT = #{adminComment, jdbcType=VARCHAR},
+            WORKER       = #{adminId, jdbcType=VARCHAR},
+            END_DATE     = SYSDATE            <!-- NOW() -> SYSDATE -->
+        WHERE SITU_NO = #{actionId}
+    </update>
+    
+	<!-- 현장 조치 목록 조회 (DB 컬럼명 및 테이블명 SITUATIONS로 수정) -->
+    <select id="getFieldActionList" parameterType="string" resultType="com.spring.dto.SituationDTO">
+        SELECT 
+            SITU_NO         AS situNo,
+            SITU_TYPE       AS situType,      <!-- 💡 추가된 부분 (감지유형) -->
+       		DNGR_TYPE       AS dngrType,      <!-- 💡 추가된 부분 (위험유형) -->
+            ZONE_NAME       AS zoneName,
+            FINDER          AS finder,
+            SITU_CONTENT    AS situContent,
+            SITU_DATE       AS situDate,      <!-- REG_DATE -> SITU_DATE -->
+            SITU_STATUS     AS situStatus,    <!-- STATUS -> SITU_STATUS -->
+            WORK_CONTENT    AS workContent,   <!-- ADMIN_COMMENT -> WORK_CONTENT 매핑 -->
+            WORKER          AS worker,        <!-- ADMIN_ID -> WORKER 매핑 -->
+            END_DATE        AS endDate        <!-- PROCESS_DATE -> END_DATE 매핑 -->
+        FROM SITUATIONS                       <!-- SITUATIONS 복수형 테이블 -->
+        <where>
+            <if test="statusType == 'PENDING'">
+                SITU_STATUS = 'PENDING' OR SITU_STATUS = '감지' OR SITU_STATUS IS NULL
+            </if>
+            <if test="statusType == 'HISTORY'">
+                SITU_STATUS IN ('APPROVE', 'REJECT', '조치', '종료')
+            </if>
+        </where>
+        ORDER BY SITU_DATE DESC
+    </select>
+    
+    <!-- [안전요원 모바일용 무한스크롤 페이징 및 카운트 조회 쿼리 통합] -->
+    <select id="getTaskListPaged" parameterType="map" resultType="com.spring.dto.SituationDTO">
+        SELECT * 
+        FROM (
+            SELECT 
+                SITU_NO         AS situNo,
+                SITU_TYPE       AS situType,
+                DNGR_TYPE       AS dngrType,
+                DNGR_LEVEL      AS dngrLevel,
+                SITU_STATUS     AS situStatus,
+                SITU_CONTENT    AS situContent,
+                START_DATE      AS startDate,
+                END_DATE        AS endDate,
+                ZONE_NAME       AS zoneName,
+                WORKER          AS worker,
+                ROWNUM          AS RNUM
+            FROM (
+                SELECT 
+                    SITU_NO, SITU_TYPE, DNGR_TYPE, DNGR_LEVEL, 
+                    SITU_STATUS, SITU_CONTENT, START_DATE, END_DATE, ZONE_NAME, WORKER
+                FROM SITUATIONS
+                <where>
+                    <!-- 💡 중요: 토스트 알림창에서 수락하여 내 ID가 WORKER로 배정된 위험 이력만 노출 -->
+                    AND WORKER = #{userId}
+                    <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
+                        <choose>
+                            <!-- 1. 조치대기 탭: 현재 열심히 처리 중인 '조치' 상태 데이터 -->
+                            <when test="actionStatus == 'PENDING'">
+                                AND SITU_STATUS = '조치'
+                            </when>
+                            <!-- 2. 조치완료 탭: 조치서 작성이 완전히 끝난 '조치완료' 상태 데이터 -->
+                            <when test="actionStatus == 'COMPLETED'">
+                                AND SITU_STATUS = '조치완료'
+                            </when>
+                        </choose>
+                    </if>
+                </where>
+                ORDER BY START_DATE DESC
+            ) A
+            WHERE ROWNUM &lt;= #{offset} + #{limit}
+        )
+        WHERE RNUM &gt; #{offset}
+    </select>
 
-	<!-- 감지이력 수 -->
-	<select id="getSituationCount" resultType="int">
-		SELECT COUNT(*)
-		FROM SITUATIONS
-		WHERE SITU_STATUS = '감지'
-	</select>
-
-	<!-- 조치이력 수 -->
-	<select id="getStartSituationCount" resultType="int">
-		SELECT COUNT(*)
-		FROM SITUATIONS
-		WHERE SITU_STATUS = '조치'
-	</select>
-
-	<!-- 종료이력 수 -->
-	<select id="getEndSituationCount" resultType="int">
-		SELECT COUNT(*)
-		FROM SITUATIONS
-		WHERE END_DATE IS NOT NULL
-	</select>
-
-	<!-- 승인 / 반려 업데이트 (Oracle SYSDATE 및 기존 컬럼 매핑) -->
-	<update id="processFieldAction" parameterType="map">
-		UPDATE SITUATIONS
-		SET
-		SITU_STATUS = #{status},
-		WORK_CONTENT = #{adminComment, jdbcType=VARCHAR},
-		WORKER = #{adminId, jdbcType=VARCHAR},
-		END_DATE = SYSDATE
-		WHERE SITU_NO = #{actionId}
-	</update>
-
-	<!-- 현장 조치 목록 조회 -->
-	<select id="getFieldActionList" parameterType="string"
-		resultType="com.spring.dto.SituationDTO">
-		SELECT
-		SITU_NO AS situNo,
-		ZONE_NAME AS zoneName,
-		FINDER AS finder,
-		SITU_CONTENT AS situContent,
-		SITU_DATE AS situDate,
-		SITU_STATUS AS situStatus,
-		WORK_CONTENT AS workContent,
-		WORKER AS worker,
-		END_DATE AS endDate
-		FROM SITUATIONS
-		<where>
-			<if test="statusType == 'PENDING'">
-				SITU_STATUS = 'PENDING' OR SITU_STATUS = '감지' OR SITU_STATUS IS NULL
-			</if>
-			<if test="statusType == 'HISTORY'">
-				SITU_STATUS IN ('APPROVE', 'REJECT', '조치', '종료')
-			</if>
-		</where>
-		ORDER BY SITU_DATE DESC
-	</select>
-
-	<!-- [안전요원 모바일용 무한스크롤 페이징 조회] -->
-	<select id="getTaskListPaged" parameterType="map"
-		resultType="com.spring.dto.SituationDTO">
-		SELECT *
-		FROM (
-		SELECT
-		SITU_NO AS situNo,
-		SITU_TYPE AS situType,
-		DNGR_TYPE AS dngrType,
-		DNGR_LEVEL AS dngrLevel,
-		SITU_STATUS AS situStatus,
-		SITU_CONTENT AS situContent,
-		START_DATE AS startDate,
-		END_DATE AS endDate,
-		ZONE_NAME AS zoneName,
-		WORKER AS worker,
-		ROWNUM AS RNUM
-		FROM (
-		SELECT
-		SITU_NO, SITU_TYPE, DNGR_TYPE, DNGR_LEVEL,
-		SITU_STATUS, SITU_CONTENT, START_DATE, END_DATE, ZONE_NAME, WORKER
-		FROM SITUATIONS
-		<where>
-			AND WORKER = #{userId}
-			<if
-				test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
-				<choose>
-					<when test="actionStatus == 'PENDING'">
-						AND SITU_STATUS = '조치'
-					</when>
-					<when test="actionStatus == 'COMPLETED'">
-						AND SITU_STATUS = '조치완료'
-					</when>
-				</choose>
-			</if>
-		</where>
-		ORDER BY START_DATE DESC
-		) A
-		WHERE ROWNUM &lt;= #{offset} + #{limit}
-		)
-		WHERE RNUM &gt; #{offset}
-	</select>
-
-	<!-- [안전요원 모바일용 무한스크롤 데이터 카운트 조회] -->
-	<select id="getTaskListCount" parameterType="map"
-		resultType="int">
-		SELECT COUNT(*)
-		FROM SITUATIONS
-		<where>
-			AND WORKER = #{userId}
-			<if
-				test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
-				<choose>
-					<when test="actionStatus == 'PENDING'">
-						AND SITU_STATUS = '조치'
-					</when>
-					<when test="actionStatus == 'COMPLETED'">
-						AND SITU_STATUS = '조치완료'
-					</when>
-				</choose>
-			</if>
-		</where>
-	</select>
+    <select id="getTaskListCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        <where>
+            AND WORKER = #{userId}
+            <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
+                <choose>
+                    <when test="actionStatus == 'PENDING'">
+                        AND SITU_STATUS = '조치'
+                    </when>
+                    <when test="actionStatus == 'COMPLETED'">
+                        AND SITU_STATUS = '조치완료'
+                    </when>
+                </choose>
+            </if>
+        </where>
+    </select>
 </mapper>

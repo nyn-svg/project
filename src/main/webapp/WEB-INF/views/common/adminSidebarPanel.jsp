@@ -88,16 +88,15 @@
 
 
 
-    <!-- 2) 안전요원 관리 패널 -->
+<!-- 2) 안전요원 관리 패널 -->
 <div id="panel-admin-agents" class="drawer-content">
-    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
+    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px; border-bottom: 1px solid #333; padding-bottom: 8px;">
         <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">안전요원 관리</span>
     </div>
-    <div class="drawer-body">
-        
-        
-        <!-- 👈 요원 목록이 리스트 형태로 담길 컨테이너 추가 -->
-        <div id="agentListContainer" class="agent-list-container" style="margin-top: 10px;">
+    
+    <div class="drawer-body" style="padding-top: 10px;">
+        <!-- 💡 요원 목록 컨테이너 독립 스크롤 및 반응형 높이 설정 -->
+        <div id="agentListContainer" class="agent-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 4px;">
             <!-- JS에서 요원 목록을 여기에 동적으로 생성합니다 -->
         </div>
     </div>
@@ -112,9 +111,11 @@
         </button>
     </div>
 
-    <!-- 제출 이력 요약 카드 리스트 영역 -->
-    <div class="drawer-body" id="history-list-container" style="padding: 10px 0; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: calc(100vh - 120px);">
-        <!-- AJAX로 이력 카드 목록이 여기에 동적 생성됩니다 -->
+    <div class="drawer-body" style="padding-top: 10px;">
+        <!-- 💡 리스트 컨테이너 독립 스크롤 및 여백 맞춤 설정 -->
+        <div id="history-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 4px;">
+            <!-- AJAX로 이력 카드 목록이 여기에 동적 생성됩니다 -->
+        </div>
     </div>
 </div>
 
@@ -149,7 +150,7 @@
 	    </div>
 	</div>
 	
-	<!-- 긴급보고 패널 -->
+<!-- 긴급보고 패널 -->
 <div id="panel-agent" class="drawer-content">
     <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px; border-bottom: 1px solid #333; padding-bottom: 8px;">
         <div style="display: flex; align-items: center; gap: 6px;">
@@ -162,8 +163,8 @@
     </div>
 
     <div class="drawer-body" style="padding-top: 10px;">
-        <!-- 실시간 카드 리스트 컨테이너 -->
-        <div id="situation-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- 💡 max-height를 calc(100vh - 140px)로 변경하여 하단까지 자동으로 늘어나게 설정 -->
+        <div id="situation-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 4px;">
             <!-- JS가 SSE 이벤트를 받아 여기에 카드를 동적으로 추가합니다 -->
         </div>
     </div>
@@ -266,15 +267,16 @@
 <!-- ========================================== -->
 <div id="checklistDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 15, 0.85); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
     
-    <div style="background: radial-gradient(circle at 0% 0%, #1a102f 0%, #0d1127 50%, #080914 100%); border: 1px solid rgba(147, 51, 234, 0.25); border-radius: 16px; width: 680px; max-width: 90%; max-height: 85vh; padding: 24px; color: #f1f5f9; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(126, 34, 206, 0.12); display: flex; flex-direction: column; position: relative; z-index: 100000;">
+    <!-- 💡 아래 div에 class="modal-content" 추가됨 -->
+    <div class="modal-content" style="background: radial-gradient(circle at 0% 0%, #1a102f 0%, #0d1127 50%, #080914 100%); border: 1px solid rgba(147, 51, 234, 0.25); border-radius: 16px; width: 680px; max-width: 90%; max-height: 85vh; padding: 24px; color: #f1f5f9; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(126, 34, 206, 0.12); display: flex; flex-direction: column; position: relative; z-index: 100000; pointer-events: auto;">
         
         <!-- 헤더 -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 14px; margin-bottom: 14px; cursor: move;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <h3 id="modal-user-title" style="margin: 0; font-size: 16px; font-weight: 700; color: #e2e8f0;">점검 상세 내역</h3>
                 <span id="modal-target-badge" style="padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">요원</span>
             </div>
-            <button type="button" class="btn-close-modal" style="background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer;">✕</button>
+            <button type="button" class="btn-close-modal" style="background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 4px 8px;">✕</button>
         </div>
 
         <!-- 서브 요약 바 -->
@@ -390,11 +392,19 @@
                     <img id="situ-modal-img" src="" alt="상황 사진" style="max-width: 100%; max-height: 220px; object-fit: contain; display: block; margin: 0 auto;">
                 </div>
             </div>
+
+            <!-- 💡 [추가] 관리자 검토 의견 / 반려 사유 입력칸 -->
+            <div style="margin-top: 4px;">
+                <strong style="color: #f8fafc;">관리자 검토 의견:</strong>
+                <textarea id="situ-admin-comment" placeholder="승인 또는 반려 사유를 입력하세요." style="width: 100%; box-sizing: border-box; background: #14161d; border: 1px solid #2c303e; border-radius: 6px; padding: 10px; margin-top: 6px; color: #e2e8f0; font-size: 12px; resize: vertical; min-height: 50px; outline: none;"></textarea>
+            </div>
         </div>
         
-        <!-- Footer -->
-        <div style="margin-top: 20px; text-align: right;">
-            <button id="btn-situ-modal-confirm" type="button" class="mini-btn primary" style="padding: 8px 20px; background: #3b82f6; border: none; color: #fff; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">확인</button>
+        <!-- Footer (승인, 반려, 닫기 버튼 배치) -->
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="processUrgentAction('APPROVE')" style="padding: 8px 16px; background: #22c55e; border: none; color: #fff; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: background 0.2s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">최종 승인</button>
+            <button type="button" onclick="processUrgentAction('REJECT')" style="padding: 8px 16px; background: #ef4444; border: none; color: #fff; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">조치 반려</button>
+            <button id="btn-situ-modal-confirm" type="button" style="padding: 8px 16px; background: #475569; border: none; color: #fff; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: background 0.2s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#475569'">닫기</button>
         </div>
     </div>
 </div>
@@ -520,7 +530,7 @@ $(document).ready(function() {
                  var html = 
                      '<div style="display: flex; justify-content: space-between; align-items: center;">' +
                          '<div style="display: flex; align-items: center;">' +
-                             '<span style="color: ' + (isActive ? '#fff' : '#64748b') + '; margin-right: 8px; font-size: 16px;"><i class="fa-solid fa-drone"></i></span>' +
+                             '<span style="color: ' + (isActive ? '#fff' : '#64748b') + '; margin-right: 8px; font-size: 16px;"><i class="fa-solid fa-mask-ventilator"></i></span>' +
                              '<strong style="color: ' + (isActive ? '#fff' : '#94a3b8') + '; font-size: 14px;">' + droneId + '</strong>' +
                          '</div>' +
                          '<div style="display: flex; align-items: center; gap: 8px;">' +
@@ -1283,45 +1293,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 $(document).ready(function() {
-	
-	// 💡 네비게이션 버튼 점멸 + 메인 화면 KPI 카드 신규 개수 연동 함수
-	function updateNavBadge() {
-	    // 1. 안 읽은 항목(N 배지)의 개수 파악
-	    const unreadCount = $('#history-list-container').find('.unread-badge').length;
-	    const $navBtn = $('[data-target="panel-admin-reports"]');
-	    const $kpiCount = $('#kpi-unread-count');
+    
+    // 드래그 이동 위치 기억용 변수 (전역 선언)
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let currentX = 0, currentY = 0;
 
-	    // 2. 메인 화면 KPI 카드 숫자 업데이트 (0, 1, 2...)
-	    if ($kpiCount.length > 0) {
-	        $kpiCount.text(unreadCount);
-	    }
+    // 💡 네비게이션 버튼 점멸 + 메인 화면 KPI 카드 신규 개수 연동 함수
+    function updateNavBadge() {
+        const unreadCount = $('#history-list-container').find('.unread-badge').length;
+        const $navBtn = $('[data-target="panel-admin-reports"]');
+        const $kpiCount = $('#kpi-unread-count');
 
-	    // 3. 안 읽은 이력이 1개 이상이면 버튼 점멸, 0개면 원복
-	    if (unreadCount > 0) {
-	        $navBtn.addClass('unread-blink');
-	    } else {
-	        $navBtn.removeClass('unread-blink');
-	    }
-	}
+        if ($kpiCount.length > 0) {
+            $kpiCount.text(unreadCount);
+        }
 
-    // 💡 페이지 처음 켜질 때도 이력 목록을 한번 조회하여 네비 버튼 배지 갱신
-    loadChecklistHistory();
-	
-    if (typeof renderAdminDroneList === 'function') {
-        renderAdminDroneList();
+        if (unreadCount > 0) {
+            $navBtn.addClass('unread-blink');
+        } else {
+            $navBtn.removeClass('unread-blink');
+        }
     }
-
-    // 패널 열릴 때 or 새로고침 클릭 시 이력 로드
-    $('[data-target="panel-admin-reports"]').on('click', function() {
-        loadChecklistHistory();
-    });
-    $('#btn-refresh-history').on('click', function(e) {
-        e.stopPropagation();
-        loadChecklistHistory();
-    });
-    $('[data-target="panel-admin-emergency"]').on('click', function() {
-        renderEmergencyContactList();
-    });
 
     // 💡 [안전한 로컬스토리지 처리 함수] - 읽은 목록 관리
     function getReadKeys() {
@@ -1342,22 +1335,22 @@ $(document).ready(function() {
         } catch(e) {}
     }
 
- // 1. 제출 이력 목록 로드 AJAX
+    // 1. 제출 이력 목록 로드 AJAX
     function loadChecklistHistory() {
         $.ajax({
             url: '${pageContext.request.contextPath}/admin/api/checklist/history',
             type: 'GET',
             success: function(list) {
-                console.log('[AJAX 성공] 새로 가져온 데이터:', list); // 💡 동작 확인용 로그
+                console.log('[AJAX 성공] 새로 가져온 데이터:', list);
                 renderHistoryCards(list);
             },
-            error: function() {
-                console.error('이력 목록을 불러오지 못했습니다.');
+            error: function(xhr, status, error) {
+                console.error('이력 목록을 불러오지 못했습니다.:', error);
             }
         });
     }
 
-    // 💡 [추가] SSE 스크립트 등 외부에서도 이 함수를 호출할 수 있도록 전역(window)에 등록
+    // 외부(SSE 등)에서도 호출할 수 있게 전역에 등록
     window.loadChecklistHistory = loadChecklistHistory;
 
     // 2. 이력 카드 사이드바 렌더링
@@ -1391,7 +1384,6 @@ $(document).ready(function() {
                 statusBadge = '<span style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">✅ 양호</span>';
             }
 
-            // 💡 [추가] 안 읽은 카드에만 빨간색 N 배지 및 하늘색 테두리 적용
             const unreadBadge = !isRead ? '<span class="unread-badge" style="background: #ef4444; color: #fff; font-size: 9px; font-weight: bold; padding: 1px 4px; border-radius: 3px; margin-right: 2px;">N</span>' : '';
             const borderColor = !isRead ? '#38bdf8' : '#363654';
 
@@ -1424,29 +1416,23 @@ $(document).ready(function() {
 
             // 카드 클릭 시 모달 열기 + 읽음 처리
             $card.on('click', function() {
-                // 1. 읽음 처리
                 markKeyAsRead(itemKey);
-
-                // 2. 카드 UI 즉시 업데이트 (N 배지 삭제, 테두리 기본색 원복)
                 $(this).find('.unread-badge').remove();
                 $(this).css('border-color', '#363654');
-                
-          	   // 💡 3. 네비게이션 버튼 빨간 점 상태 갱신 (남은 안읽은 항목 체크)
                 updateNavBadge();
 
-                // 4. 기존 상세 모달 오픈 함수 실행
-                openDetailModal(item.userId, item.checkDateStr, item.targetType);
+                // 모달 상세 데이터 조회 오픈
+                window.openDetailModal(item.userId, item.checkDateStr, item.targetType);
             });
 
             $container.append($card);
         });
         
-     // 💡 모든 카드를 다 그린 후 네비게이션 버튼 배지 업데이트 실행
         updateNavBadge();
     }
 
-    // 3. 모달 열기 및 상세 결과 조회 AJAX
-    function openDetailModal(userId, checkDateStr, targetType) {
+    // 3. 모달 열기 및 상세 결과 조회 AJAX (window 등록)
+    window.openDetailModal = function(userId, checkDateStr, targetType) {
         $('#modal-user-title').text(userId + ' 님의 점검 결과');
         $('#modal-check-date').text(checkDateStr);
         
@@ -1455,7 +1441,12 @@ $(document).ready(function() {
             .text(isAgent ? '안전요원' : '관제사')
             .css('background', isAgent ? '#007bff' : '#6f42c1');
 
-        // 모달 창부터 화면에 즉시 표시
+        // 모달 재열림 시 드래그 위치 초기화
+        currentX = 0;
+        currentY = 0;
+        $('#checklistDetailModal .modal-content').css('transform', 'none');
+
+        // 모달 화면 오픈
         $('#checklistDetailModal').css('display', 'flex');
         $('#modal-detail-body').html('<div style="text-align:center; color:#aaa; padding:20px;">불러오는 중...</div>');
 
@@ -1473,7 +1464,7 @@ $(document).ready(function() {
                 $('#modal-detail-body').html('<div style="text-align:center; color:#f87171; padding:20px;">상세 정보를 불러오지 못했습니다.</div>');
             }
         });
-    }
+    };
 
     // 4. 모달 본문 상세 내용 렌더링
     function renderModalDetail(details) {
@@ -1488,7 +1479,6 @@ $(document).ready(function() {
         let normal = 0, caution = 0, danger = 0;
         let categoryMap = {};
 
-        // 카테고리별 그룹핑
         details.forEach(function(d) {
             if (d.checkStatus === '정상') normal++;
             else if (d.checkStatus === '주의') caution++;
@@ -1502,14 +1492,12 @@ $(document).ready(function() {
             categoryMap[catName].push(d);
         });
 
-        // 헤더 요약 렌더링
         $summary.append('<span style="color:#2ecc71;">정상 ' + normal + '</span>');
         $summary.append('<span style="color:#f1c40f;">주의 ' + caution + '</span>');
         $summary.append('<span style="color:#e74c3c;">위험 ' + danger + '</span>');
 
-        // 카테고리별 문항 및 답변 렌더링
         Object.keys(categoryMap).forEach(function(cat) {
-            let catHtml = '<div style="background: #151521; border-radius: 8px; padding: 12px 16px; border: 1px solid #2b2b40;">';
+            let catHtml = '<div style="background: #151521; border-radius: 8px; padding: 12px 16px; border: 1px solid #2b2b40; margin-bottom: 10px;">';
             catHtml += '  <h4 style="margin: 0 0 10px 0; color: #007bff; font-size: 14px;"><i class="fa-solid fa-layer-group"></i> ' + cat + '</h4>';
             catHtml += '  <div style="display: flex; flex-direction: column; gap: 8px;">';
 
@@ -1546,13 +1534,82 @@ $(document).ready(function() {
         });
     }
 
-    // 5. 모달 닫기 이벤트
-    $('.btn-close-modal, #checklistDetailModal').on('click', function(e) {
-        if (e.target === this) {
-            $('#checklistDetailModal').hide();
+ // =========================================================================
+ // [점검 이력 상세 모달] 제어 스크립트 (드래그, 닫기 버튼, ESC 키)
+ // =========================================================================
+
+ // 1. 모달 닫기 버튼 클릭 이벤트 (상단 ✕ 및 하단 닫기 버튼 공통 처리)
+ $(document).on('click', '#checklistDetailModal .btn-close-modal', function(e) {
+     e.preventDefault();
+     e.stopPropagation();
+     $('#checklistDetailModal').hide();
+ });
+
+ // 2. ESC 키 입력 시 닫기
+ $(document).on('keydown', function(e) {
+     if ((e.key === 'Escape' || e.keyCode === 27) && $('#checklistDetailModal').is(':visible')) {
+         $('#checklistDetailModal').hide();
+     }
+ });
+
+ // 3. 드래그 이동 로직
+ let isModalDragging = false;
+ let modalStartX = 0, modalStartY = 0;
+ let modalCurrentX = 0, modalCurrentY = 0;
+
+ // 모달 상단/헤더/여백 클릭 시 드래그 시작
+ $(document).on('mousedown', '#checklistDetailModal .modal-content', function(e) {
+     // 닫기 버튼, 입력창, 내용 본문 스크롤 영역 클릭 시 드래그 방지
+     if ($(e.target).closest('button, input, select, textarea, .btn-close-modal, #modal-detail-body').length) {
+         return;
+     }
+
+     isModalDragging = true;
+     modalStartX = e.clientX - modalCurrentX;
+     modalStartY = e.clientY - modalCurrentY;
+     $(this).css('cursor', 'grabbing');
+ });
+
+ $(document).on('mousemove', function(e) {
+     if (!isModalDragging) return;
+
+     modalCurrentX = e.clientX - modalStartX;
+     modalCurrentY = e.clientY - modalStartY;
+
+     $('#checklistDetailModal .modal-content').css('transform', 'translate(' + modalCurrentX + 'px, ' + modalCurrentY + 'px)');
+ });
+
+ $(document).on('mouseup', function() {
+     if (isModalDragging) {
+         isModalDragging = false;
+         $('#checklistDetailModal .modal-content').css('cursor', 'default');
+     }
+ });
+
+    // --- 이벤트 바인딩 및 초기 실행 ---
+
+    // 페이지 접속시 초기 이력 목록 로드
+    loadChecklistHistory();
+
+    if (typeof renderAdminDroneList === 'function') {
+        renderAdminDroneList();
+    }
+
+    // 패널 열릴 때 or 새로고침 클릭 시
+    $('[data-target="panel-admin-reports"]').on('click', function() {
+        loadChecklistHistory();
+    });
+    $('#btn-refresh-history').on('click', function(e) {
+        e.stopPropagation();
+        loadChecklistHistory();
+    });
+    $('[data-target="panel-admin-emergency"]').on('click', function() {
+        if (typeof renderEmergencyContactList === 'function') {
+            renderEmergencyContactList();
         }
     });
-});                      
+
+});                  
 
 
 
@@ -1858,6 +1915,8 @@ function updateEmergencyBlink() {
  const unreadCount = window.currentUrgentData.filter(function(item) {
      return item.situNo && !readNos.includes(String(item.situNo));
  }).length;
+ 
+ $('#kpi-unread-emergency-count').text(unreadCount);
 
  if (unreadCount > 0) {
      $emergencyBtn.addClass('unread-blink');
@@ -1894,9 +1953,14 @@ function renderSituationList() {
              return;
          }
 
-         // 필터링 (situType이 긴급보고인 데이터 추출)
+      // 필터링 (situType이 긴급보고이고, worker가 널(Null)인 미배정 건만 추출)
          var urgentList = data.filter(function(item) {
-             return item.situType && (item.situType.trim() === '긴급보고' || item.situType.trim() === '긴급');
+             var isUrgent = item.situType && (item.situType.trim() === '긴급보고' || item.situType.trim() === '긴급');
+             
+      // 💡 worker가 존재하지 않거나(null, undefined), 빈값 또는 'null' 문자열인 건만 true (목록 유지)
+             var isUnassigned = !item.worker || String(item.worker).trim() === '' || item.worker === 'null';
+
+             return isUrgent && isUnassigned;
          });
 
          console.log('[필터링 완료] 긴급보고 항목 개수:', urgentList.length);
@@ -1914,49 +1978,55 @@ function renderSituationList() {
          var html = '';
 
          urgentList.forEach(function(item) {
-             var situNo = item.situNo || '';
-             var isUnread = situNo && !readNos.includes(String(situNo));
+        	    var situNo = item.situNo || '';
+        	    var isUnread = situNo && !readNos.includes(String(situNo));
 
-             var dngrType = item.dngrType || '위험상황';
-             var dngrLevel = item.dngrLevel || '미지정';
-             var zoneName = item.zoneName || '구역 미지정';
-             var finder = item.finder || '요원';
+        	    var dngrType = item.dngrType || '위험상황';
+        	    var dngrLevel = item.dngrLevel || '미지정';
+        	    var zoneName = item.zoneName || '구역 미지정';
+        	    var finder = item.finder || '요원';
 
-             var dateStr = '-';
-             if (item.situDate) {
-                 var d = new Date(Number(item.situDate));
-                 if (!isNaN(d.getTime())) {
-                     dateStr = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-                 }
-             }
+        	    var dateStr = '-';
+        	    if (item.situDate) {
+        	        var d = new Date(Number(item.situDate));
+        	        if (!isNaN(d.getTime())) {
+        	            dateStr = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        	        }
+        	    }
 
-             var levelColor = '#38bdf8';
-             if (dngrLevel === '주의') levelColor = '#facc15';
-             else if (dngrLevel === '경계') levelColor = '#fb923c';
-             else if (dngrLevel === '심각') levelColor = '#f87171';
+        	    var levelColor = '#38bdf8';
+        	    if (dngrLevel === '주의') levelColor = '#facc15';
+        	    else if (dngrLevel === '경계') levelColor = '#fb923c';
+        	    else if (dngrLevel === '심각') levelColor = '#f87171';
 
-             var unreadStyle = isUnread 
-                 ? 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.12);' 
-                 : 'border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(15, 23, 42, 0.6);';
-             var newBadge = isUnread 
-                 ? '<span class="new-badge" style="background:#ef4444; color:#fff; font-size:10px; padding:1px 5px; border-radius:10px; margin-left:6px; font-weight:bold;">NEW</span>' 
-                 : '';
+        	    var unreadStyle = isUnread 
+        	        ? 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.12);' 
+        	        : 'border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(15, 23, 42, 0.6);';
+        	    var newBadge = isUnread 
+        	        ? '<span class="new-badge" style="background:#ef4444; color:#fff; font-size:10px; padding:1px 5px; border-radius:10px; margin-left:6px; font-weight:bold;">NEW</span>' 
+        	        : '';
 
-             html += '<div class="situ-card-item" data-no="' + situNo + '" '
-                  + 'style="border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 8px; ' + unreadStyle + '">'
-                  + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">'
-                  + '<span style="font-weight: 700; color: #f8fafc; font-size: 13px;">🚨 ' + dngrType + newBadge + '</span>'
-                  + '<span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: ' + levelColor + '; border: 1px solid ' + levelColor + '; background: rgba(0,0,0,0.3);">' + dngrLevel + '</span>'
-                  + '</div>'
-                  + '<div style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: flex; justify-content: space-between;">'
-                  + '<span>📍 ' + zoneName + '</span>'
-                  + '<span>👤 ' + finder + '</span>'
-                  + '</div>'
-                  + '<div style="font-size: 11px; color: #64748b; text-align: right;">'
-                  + '<i class="fa-regular fa-clock"></i> ' + dateStr
-                  + '</div>'
-                  + '</div>';
-         });
+        	    // 💡 패딩(10px 12px) 및 세로 여백(6px) 복원하여 적절한 크기로 조정
+        	    html += '<div class="situ-card-item" data-no="' + situNo + '" '
+        	         + 'style="border-radius: 8px; padding: 10px 12px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0px; ' + unreadStyle + '">'
+        	         
+        	         // 1번째 줄
+        	         + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">'
+        	         + '<span style="font-weight: 700; color: #f8fafc; font-size: 13px;">🚨 ' + dngrType + newBadge + '</span>'
+        	         + '<span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: ' + levelColor + '; border: 1px solid ' + levelColor + '; background: rgba(0,0,0,0.3);">' + dngrLevel + '</span>'
+        	         + '</div>'
+        	         
+        	         // 2번째 줄
+        	         + '<div style="font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">'
+        	         + '<span>📍 ' + zoneName + '</span>'
+        	         + '<div style="display: flex; gap: 10px; align-items: center; font-size: 11px; color: #64748b;">'
+        	         + '<span>👤 ' + finder + '</span>'
+        	         + '<span><i class="fa-regular fa-clock"></i> ' + dateStr + '</span>'
+        	         + '</div>'
+        	         + '</div>'
+        	         
+        	         + '</div>';
+        	});
 
          $container.html(html);
          updateEmergencyBlink();
@@ -1989,6 +2059,8 @@ $(document).off('click', '.situ-card-item').on('click', '.situ-card-item', funct
  $('#situ-modal-user').text(item.finder || '알 수 없음');
  $('#situ-modal-content').text(item.situContent || '등록된 상세 내용이 없습니다.');
 
+ $('#situ-admin-comment').val('');
+ 
  if (typeof resetModalPosition === 'function') {
      resetModalPosition();
  }
@@ -2073,6 +2145,71 @@ $(document).on('click', '#situation-modal', function(e) {
  };
 })();
 
+//💡 긴급보고 승인 / 반려 처리 전송 함수
+window.processUrgentAction = function (type) {
+    var situNo = $('#situ-modal-no').text().trim();
+    var adminComment = $('#situ-admin-comment').val() ? $('#situ-admin-comment').val().trim() : '';
+    var actionTypeName = (type === 'APPROVE') ? '승인' : '반려';
+
+    if (!situNo || situNo === '' || situNo === '-') {
+        alert('올바른 요청 ID가 아닙니다.');
+        return;
+    }
+
+    // 반려 처리 시 사유 필수
+    if (type === 'REJECT' && !adminComment) {
+        alert('반려 시에는 검토 의견(사유)을 반드시 입력해주세요.');
+        $('#situ-admin-comment').focus();
+        return;
+    }
+
+    if (!confirm('[' + situNo + '] 건을 최종 [' + actionTypeName + '] 처리하시겠습니까?')) {
+        return;
+    }
+
+    var basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : ((typeof ctx !== 'undefined') ? ctx : '');
+
+    var formData = new URLSearchParams();
+    formData.append('actionId', situNo);
+    formData.append('status', type);
+    formData.append('adminComment', adminComment);
+
+    fetch(basePath + '/admin/fieldAction/process', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
+        body: formData.toString()
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res && res.status === 'success') {
+            alert('성공적으로 ' + actionTypeName + ' 처리되었습니다.');
+            
+            // 모달 닫기
+            if (typeof closeSituationModal === 'function') {
+                closeSituationModal();
+            }
+
+            // 긴급보고 사이드바 목록 재갱신
+            if (typeof renderSituationList === 'function') {
+                renderSituationList();
+            }
+
+            // 현장 조치 관리 페이지 목록도 오픈되어 있다면 재갱신
+            if (typeof loadPendingList === 'function') {
+                loadPendingList();
+            }
+        } else {
+            alert('처리 실패: ' + (res.message || '오류가 발생했습니다.'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('서버 통신 중 오류가 발생했습니다.');
+    });
+};
+
 //7. 페이지 초기 로드
 $(document).ready(function() {
 	// 긴급보고 새로고침 버튼 클릭 이벤트
@@ -2120,6 +2257,65 @@ $(document).ready(function() {
 .mini-btn.danger { background: rgba(239, 68, 68, 0.2); border-color: #f87171; color: #f87171; }
 .mini-btn.danger:hover { background: rgba(239, 68, 68, 0.35); }
 
+/* =========================================================================
+   [점검 이력 상세 모달] 투명 플로팅 창 스타일 (뒷배경 지도 조작 가능)
+   ========================================================================= */
+
+/* 1. 모달 전체 배경 오버레이 (클릭 통과 처리) */
+#checklistDetailModal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: transparent !important;       /* 어두운 배경 제거 */
+    backdrop-filter: none !important;         /* 흐림(Blur) 효과 제거 */
+    pointer-events: none !important;          /* 배경 클릭 통과 -> 뒷배경 지도/화면 조작 가능 */
+    z-index: 99999 !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+/* 2. 모달 실제 콘텐츠 박스 (점검 내용에 맞춘 너비 & 스크롤 및 클릭 가능) */
+#checklistDetailModal .modal-content {
+    background: #090e1a !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 12px !important;
+    width: 500px;                             /* 점검 항목 데이터가 들어가므로 500px 권장 */
+    max-width: 90vw !important;
+    max-height: 85vh !important;
+    padding: 20px !important;
+    color: #fff !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+    pointer-events: auto !important;          /* 모달 박스 내부만 클릭/스크롤 가능 */
+    overflow-y: auto;                         /* 내용이 길어질 경우 내부 스크롤 */
+}
+
+/* 3. 모달 내 입력창/선택창 스타일 (필요 시 적용) */
+#checklistDetailModal .modal-input,
+#checklistDetailModal input,
+#checklistDetailModal select,
+#checklistDetailModal textarea {
+    width: 100%;
+    background: #121929;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#checklistDetailModal .modal-input:focus,
+#checklistDetailModal input:focus,
+#checklistDetailModal select:focus,
+#checklistDetailModal textarea:focus {
+    border-color: #38bdf8;
+}
+
 /* 3. 모달 오버레이 및 창 스타일 (플로팅 창 변경) */
 .modal-overlay {
     display: none;
@@ -2162,7 +2358,36 @@ $(document).ready(function() {
 }
 .modal-input:focus { border-color: #38bdf8; }
 
-/* 1. 화면 전체 검은 배경 오버레이 */
+/* 1. 화면 전체 검은 배경 오버레이 (점검 이력 모달) */
+#checklistDetailModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    z-index: 99999 !important; /* 최상단 레이어 */
+    display: none;             /* 기본 숨김 (JS에서 display: flex로 오픈) */
+    justify-content: center !important; /* 가로 정중앙 */
+    align-items: center !important;     /* 세로 정중앙 */
+}
+
+/* 2. 모달 내 Content 박스 위치 강제 정렬 */
+#checklistDetailModal .modal-content {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: auto !important; /* 강제 정중앙 배치 */
+    max-width: 90vw;
+    max-height: 90vh;        /* 내용이 길어질 경우 화면 넘침 방지 */
+    overflow-y: auto;        /* 스크롤 생성 */
+}
+
+/* 1. 화면 전체 검은 배경 오버레이 긴급보고 */
 #situation-modal {
     position: fixed !important;
     top: 0 !important;
@@ -2178,7 +2403,7 @@ $(document).ready(function() {
     align-items: center !important;     /* 세로 중앙 */
 }
 
-/* 2. 모달 내 Content 박스 위치 강제 정렬 */
+/* 2. 모달 내 Content 박스 위치 강제 정렬 긴급보고 */
 #situation-modal .modal-content {
     position: relative !important;
     top: auto !important;

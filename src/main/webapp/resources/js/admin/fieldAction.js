@@ -42,7 +42,7 @@ function initFieldActionPage() {
                 tbody.innerHTML = '';
 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">검토 대기 중인 조치 건이 없습니다.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">검토 대기 중인 조치 건이 없습니다.</td></tr>';
                     return;
                 }
 
@@ -50,13 +50,15 @@ function initFieldActionPage() {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${item.situNo || ''}</td>
-                        <td>${item.zoneName || ''}</td>
+                        <td>${item.dngrType || ''}</td>
+                        <td>${item.situType || ''}</td>
                         <td>${item.finder || '안전요원'}</td>
                         <td>${item.situContent || ''}</td>
                         <td>${formatDate(item.situDate)}</td>
                         <td><span class="status-badge status-pending">검토 대기</span></td>
                         <td>
-                            <button type="button" class="btn btn-primary" onclick="openDetailModal('${item.situNo}')">상세 검토</button>
+                            <!-- 💡 고유 함수명(openFieldActionDetailModal)으로 변경 -->
+                            <button type="button" class="btn btn-primary" onclick="openFieldActionDetailModal('${item.situNo}')">상세 검토</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -75,7 +77,7 @@ function initFieldActionPage() {
                 tbody.innerHTML = '';
 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">완료된 조치 이력이 없습니다.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">완료된 조치 이력이 없습니다.</td></tr>';
                     return;
                 }
 
@@ -85,16 +87,20 @@ function initFieldActionPage() {
                     const statusClass = isApproved ? 'status-approved' : 'status-rejected';
                     const statusText = isApproved ? '조치 승인' : '조치 반려';
 
+                    const displayFinder = (!item.finder || item.finder === 'admin') ? '안전요원' : item.finder;
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${item.situNo || ''}</td>
-                        <td>${item.zoneName || ''}</td>
-                        <td>${item.finder || ''}</td>
+                        <td>${item.dngrType || ''}</td>
+                        <td>${item.situType || ''}</td>
+                        <td>${displayFinder}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${item.endDate || item.situDate || ''}</td>
                         <td>${item.worker || '관리자'}</td>
                         <td>
-                            <button type="button" class="btn btn-secondary" onclick="openDetailModal('${item.situNo}')">이력 조회</button>
+                            <!-- 💡 고유 함수명(openFieldActionDetailModal)으로 변경 -->
+                            <button type="button" class="btn btn-secondary" onclick="openFieldActionDetailModal('${item.situNo}')">이력 조회</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -102,25 +108,25 @@ function initFieldActionPage() {
             })
             .catch(err => console.error('이력 목록 로드 실패:', err));
     }
-	
-	// 타임스탬프 숫자를 YYYY-MM-DD HH:mm 형식으로 변환
-	function formatDate(time) {
-	    if (!time) return '-';
-	    const date = new Date(Number(time));
-	    if (isNaN(date.getTime())) return time; // 이미 문자열 날짜면 그대로 반환
-	    
-	    const yyyy = date.getFullYear();
-	    const mm = String(date.getMonth() + 1).padStart(2, '0');
-	    const dd = String(date.getDate()).padStart(2, '0');
-	    const hh = String(date.getHours()).padStart(2, '0');
-	    const mi = String(date.getMinutes()).padStart(2, '0');
-	    
-	    return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
-	}
+    
+    function formatDate(time) {
+        if (!time) return '-';
+        const date = new Date(Number(time));
+        if (isNaN(date.getTime())) return time;
+        
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const hh = String(date.getHours()).padStart(2, '0');
+        const mi = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+    }
 
-    // 5. 모달 열기 (비동기 데이터 단건 조회)
-    window.openDetailModal = function (actionId) {
-        console.log("👉 [모달 요청 id]:", actionId);
+    // 5. 모달 열기 (고유 함수명 적용 및 ID 검증 추가)
+    window.openFieldActionDetailModal = function (actionId) {
+        console.log("👉 [현장조치 모달 요청 id]:", actionId);
+        
         if (!actionId) {
             alert('올바른 요청 ID가 아닙니다.');
             return;
@@ -131,7 +137,7 @@ function initFieldActionPage() {
                 if (!res.ok) {
                     throw new Error('서버 응답 오류 (' + res.status + ')');
                 }
-                return res.text(); // 빈 응답 예외 방지
+                return res.text();
             })
             .then(text => {
                 if (!text || text.trim() === '') {
@@ -148,7 +154,6 @@ function initFieldActionPage() {
                     adminCommentEl.value = data.workContent || data.adminComment || '';
                 }
 
-                // 사진 표시 영역 처리
                 const photoBox = document.getElementById('mPhotoBox');
                 if (photoBox) {
                     if (data.situImage) {
@@ -214,7 +219,7 @@ function initFieldActionPage() {
             if (res && res.status === 'success') {
                 alert(`성공적으로 ${actionTypeName} 처리되었습니다.`);
                 window.closeModal();
-                loadPendingList(); // 비동기로 목록 재갱신
+                loadPendingList();
             } else {
                 alert('처리 실패: ' + (res.message || '오류가 발생했습니다.'));
             }

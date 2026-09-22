@@ -17,25 +17,26 @@
 		    <div class="kpi-sub diff-up"></div>
 		</div>
         <div class="kpi-card">
-            <div class="kpi-title">미확인 긴급보고</div>
-            <div class="kpi-value-group">
-                <span class="kpi-value danger">0</span><span class="kpi-unit">건</span>
-            </div>
-            <div class="kpi-sub diff-up"></div>
-        </div>
+    <div class="kpi-title">미확인 긴급보고</div>
+    <div class="kpi-value-group">
+        <!-- 💡 id="kpi-unread-emergency-count" 추가 -->
+        <span id="kpi-unread-emergency-count" class="kpi-value danger">0</span><span class="kpi-unit">건</span>
+    </div>
+    <div class="kpi-sub diff-up"></div>
+</div>
         <div class="kpi-card">
             <div class="kpi-title">근무중 안전요원</div>
             <div class="kpi-value-group">
                 <span class="kpi-value primary"></span><span class="kpi-unit">명</span>
             </div>
-            <div class="kpi-sub status-ok">(!연동됨)</div>
+            <div class="kpi-sub status-ok"></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">비행중 드론</div>
             <div class="kpi-value-group">
                 <span class="kpi-value primary">0</span><span class="kpi-unit">대</span>
             </div>
-            <div class="kpi-sub status-ok">(!연동됨)</div>
+            <div class="kpi-sub status-ok"></div>
         </div>
         
     </section>

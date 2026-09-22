@@ -88,11 +88,30 @@
 		</div>
 
     <div id="panel-check" class="drawer-content">
-        <div class="drawer-header">체크리스트 현황</div>
-        <div class="drawer-body">
-            <p>( 임시 )</p>
+    <!-- 패널 헤더 -->
+    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <span style="font-weight: 700; font-size: 15px; color: #f8fafc;">📋 관제 시스템 체크리스트</span>
+        <button type="button" id="btn-refresh-checklist" title="새로고침" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;">
+            🔄
+        </button>
+    </div>
+    
+    <!-- 체크리스트 아이템 목록이 비동기(AJAX)로 들어올 영역 -->
+    <div class="drawer-body" style="padding: 16px; overflow-y: auto; height: calc(100vh - 140px);">
+        <div id="control-checklist-container" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="text-align: center; color: #94a3b8; padding: 30px 0; font-size: 13px;">
+                체크리스트 항목을 불러오는 중...
+            </div>
         </div>
     </div>
+
+    <!-- 하단 저장 버튼 -->
+    <div class="drawer-footer" style="padding: 12px 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: #1e222d; position: absolute; bottom: 0; width: 100%; box-sizing: border-box;">
+        <button type="button" id="btn-save-control-checklist" style="width: 100%; padding: 10px; background: #3b82f6; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+            체크리스트 저장
+        </button>
+    </div>
+</div>
 
 
     <div id="panel-report" class="drawer-content">
@@ -178,6 +197,200 @@
 </div>
 
 
+<script>
+//==================================================
+//관제사 체크리스트 (TARGET_TYPE = 'CONTROL')
+//==================================================
+
+//1. 관제사 체크리스트 목록 AJAX 조회 (아코디언 목록 형태)
+function loadControlChecklist() {
+ var basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : ((typeof ctx !== 'undefined') ? ctx : '');
+ var $container = $('#control-checklist-container');
+ 
+ if ($container.length === 0) return;
+ $container.html('<div style="text-align:center; color:#94a3b8; padding:30px 0; font-size:13px;">체크리스트를 불러오는 중...</div>');
+
+ $.ajax({
+     url: basePath + '/control/checklist/api/list',
+     type: 'GET',
+     dataType: 'json',
+     cache: false,
+     success: function(data) {
+         console.log('▼ 관제사 체크리스트 데이터 수신 완료:', data);
+         $container.empty();
+
+         if (!data || data.length === 0) {
+             $container.html('<div style="text-align:center; color:#94a3b8; padding:30px 0; font-size:13px;">등록된 관제 점검 항목이 없습니다.</div>');
+             return;
+         }
+
+         var html = '';
+         data.forEach(function(item, index) {
+             var itemNo = item.itemId || item.itemNo || item.ITEM_ID;
+             var title = item.itemTitle || item.ITEM_TITLE || '점검 항목';
+             var question = item.question || item.QUESTION || '';
+
+             html += '<div class="control-chk-card" data-item-no="' + itemNo + '">'
+                  // 헤더: 1. 제목 (클릭 시 아코디언 토글)
+                  + '  <div class="chk-card-header">'
+                  + '    <span class="chk-card-title">' + (index + 1) + '. ' + title + '</span>'
+                  + '    <span class="chk-status-badge">미작성</span>'
+                  + '  </div>'
+                  
+                  // 바디: 클릭 시 펼쳐지는 상세 점검 영역 (사진 디자인)
+                  + '  <div class="chk-card-body">'
+                  + '    <div class="chk-question-text">' + question + '</div>'
+                  
+               // 4가지 상태 선택 버튼 (value 값을 한글로 변경)
+                  + '    <div class="chk-status-group">'
+                  + '      <label class="chk-status-btn">'
+                  + '        <input type="radio" name="status_' + itemNo + '" value="정상">'
+                  + '        <span>정상</span>'
+                  + '      </label>'
+                  + '      <label class="chk-status-btn">'
+                  + '        <input type="radio" name="status_' + itemNo + '" value="주의">'
+                  + '        <span>주의</span>'
+                  + '      </label>'
+                  + '      <label class="chk-status-btn">'
+                  + '        <input type="radio" name="status_' + itemNo + '" value="위험">'
+                  + '        <span>위험</span>'
+                  + '      </label>'
+                  + '      <label class="chk-status-btn">'
+                  + '        <input type="radio" name="status_' + itemNo + '" value="해당없음">'
+                  + '        <span>해당없음</span>'
+                  + '      </label>'
+                  + '    </div>'
+                  
+                  // 비고 입력란
+                  + '    <input type="text" class="chk-remark-input" placeholder="비고를 입력해주세요">'
+                  + '  </div>'
+                  + '</div>';
+         });
+
+         $container.html(html);
+     },
+     error: function(xhr, status, error) {
+         console.error('🚨 체크리스트 조회 실패:', xhr.status, error);
+         $container.html('<div style="text-align:center; color:#f87171; padding:30px 0; font-size:13px;">체크리스트 로드 실패 (상태코드: ' + xhr.status + ')</div>');
+     }
+ });
+}
+window.loadControlChecklist = loadControlChecklist;
+
+//2. 관제사 체크리스트 저장
+function saveControlChecklist() {
+    var basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : ((typeof ctx !== 'undefined') ? ctx : '');
+    var detailList = [];
+    var uncheckedCount = 0;
+
+    $('.control-chk-card').each(function() {
+        var $card = $(this);
+        var itemNo = $card.attr('data-item-no');
+        var selectedStatus = $card.find('input[type="radio"]:checked').val();
+        var remarkText = $card.find('.chk-remark-input').val();
+
+        if (!selectedStatus) {
+            uncheckedCount++;
+        } else {
+            detailList.push({
+                itemNo: String(itemNo),
+                statusCode: selectedStatus,
+                remark: remarkText
+            });
+        }
+    });
+
+    if (uncheckedCount > 0) {
+        alert('선택하지 않은 점검 항목이 ' + uncheckedCount + '개 있습니다. 모든 항목을 확인해 주세요.');
+        return;
+    }
+
+    if (!confirm('체크리스트 점검 결과를 제출하시겠습니까?')) {
+        return;
+    }
+
+    var masterDTO = {
+        detailList: detailList
+    };
+
+    // CSRF 토큰 추출 (Spring Security 대응)
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+
+    $.ajax({
+        // 🎯 [수정] 백엔드 컨트롤러 경로에 맞춰 URL 변경
+        url: basePath + '/control/checklist/api/submit', 
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(masterDTO),
+        beforeSend: function(xhr) {
+            // CSRF 토큰이 존재하는 경우 헤더에 추가
+            if (token && header) {
+                xhr.setRequestHeader(header, token);
+            }
+        },
+        success: function(res) {
+            if (res.success) {
+                alert('체크리스트 점검 결과가 성공적으로 저장되었습니다.');
+                loadControlChecklist();
+            } else {
+                alert('저장 실패: ' + (res.message || '오류가 발생했습니다.'));
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('저장 오류:', xhr.status, error);
+            if (xhr.status === 403) {
+                alert('저장 권한이 없거나 CSRF 인증에 실패했습니다. (403)');
+            } else if (xhr.status === 404) {
+                alert('저장 요청 경로(URL)를 찾을 수 없습니다. (404)');
+            } else {
+                alert('서버 통신 중 오류가 발생했습니다.');
+            }
+        }
+    });
+}
+
+//3. 이벤트 바인딩
+$(document).ready(function() {
+ // [아코디언 토글] 항목 제목 클릭 시 상세 내용 열기/접기
+ $(document).on('click', '.chk-card-header', function() {
+     var $body = $(this).next('.chk-card-body');
+     // 다른 항목은 접고 현재 클릭한 항목만 슬라이드 토글
+     $('.chk-card-body').not($body).slideUp(200);
+     $body.slideToggle(200);
+ });
+
+ // [상태 선택 이벤트] 라디오 버튼 선택 시 헤더 배지 업데이트
+ $(document).on('change', '.chk-status-group input[type="radio"]', function() {
+     var $card = $(this).closest('.control-chk-card');
+     var $badge = $card.find('.chk-status-badge');
+     var val = $(this).val();
+     
+     var textMap = { 'NORMAL': '정상', 'WARN': '주의', 'DANGER': '위험', 'NONE': '해당없음' };
+     $badge.text(textMap[val] || '완료').addClass('selected');
+ });
+
+ // 저장 버튼
+ $(document).off('click', '#btn-save-control-checklist').on('click', '#btn-save-control-checklist', function() {
+     saveControlChecklist();
+ });
+
+ // 새로고침 버튼
+ $(document).off('click', '#btn-refresh-checklist').on('click', '#btn-refresh-checklist', function() {
+     loadControlChecklist();
+ });
+
+ // 패널 열릴 때 목록 자동 로드
+ $(document).on('click', '[data-target="panel-check"], [data-target="#panel-check"]', function() {
+     loadControlChecklist();
+ });
+});
+</script>
+
+
+
+
+
 
 <style>
 /* 뱃지 위치 및 디자인 */
@@ -206,6 +419,191 @@
     animation: blinkGlow 1s infinite !important;
     border-left: 3px solid #e74c3c !important;
 }
+
+/* ==========================================
+   .sub-drawer (260px) 내부 체크리스트 전용 완벽 맞춤 CSS
+   ========================================== */
+
+/* 1. 체크리스트 패널 & 컨테이너 (위치/여백 중복 지정 완전 제거) */
+#panel-check,
+#control-checklist-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;          /* .sub-drawer 패딩(20px)을 활용하므로 0으로 초기화 */
+    margin: 0 !important;
+    position: static !important;     /* right, position 고정값 제거 */
+    box-sizing: border-box !important;
+}
+
+/* 2. 패널 상단 제목 (줄바꿈 방지 & 그라데이션) */
+#panel-check .drawer-header {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;  /* "관제 시스템 체크리스트" 줄바꿈 차단 */
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: linear-gradient(135deg, #ffffff 0%, #38bdf8 60%, #818cf8 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* 3. 체크리스트 카드 (드론 카드 .drone-btn과 동일하게 100% 채움) */
+.control-chk-card {
+    width: 100% !important;
+    margin: 0 0 10px 0 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    transition: background 0.2s, border-color 0.2s !important;
+}
+
+.control-chk-card:hover {
+    background: rgba(56, 189, 248, 0.08) !important;
+    border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+/* 4. 카드 헤더 */
+.chk-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 14px !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+.chk-card-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #f8fafc !important;
+    word-break: keep-all !important;
+    line-height: 1.4 !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* 상태 배지 */
+.chk-status-badge {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    color: #94a3b8 !important;
+    background: rgba(148, 163, 184, 0.12) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    box-sizing: border-box !important;
+}
+
+.chk-status-badge.selected,
+.chk-status-badge.complete {
+    color: #4ade80 !important;
+    background: rgba(34, 197, 94, 0.15) !important;
+    border: 1px solid rgba(74, 222, 128, 0.3) !important;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.2) !important;
+}
+
+/* 5. 상세 점검 내용 바디 */
+.chk-card-body {
+    display: none;
+    padding: 12px 14px !important;
+    background: rgba(0, 0, 0, 0.25) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+.chk-question-text {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+    line-height: 1.5 !important;
+    margin-bottom: 12px !important;
+    word-break: keep-all !important;
+}
+
+/* 상태 선택 버튼 그룹 (2열 배치) */
+.chk-status-group {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.chk-status-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 0 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 8px !important;
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+.chk-status-btn input[type="radio"] {
+    display: none !important;
+}
+
+.chk-status-btn:has(input:checked) {
+    color: #38bdf8 !important;
+    background: rgba(14, 165, 233, 0.15) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important;
+}
+
+/* 비고 입력창 */
+.chk-remark-input {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+}
+
+.chk-remark-input::placeholder {
+    color: #64748b !important;
+}
+
+.chk-remark-input:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* 하단 저장 버튼 */
+.chk-save-btn,
+#btn-save-checklist {
+    width: 100% !important;
+    padding: 12px !important;
+    margin-top: 12px !important;
+    background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3) !important;
+    box-sizing: border-box !important;
+}
+
 </style>
 
 <script src="${pageContext.request.contextPath}/resources/js/drone-sidebar.js"></script>

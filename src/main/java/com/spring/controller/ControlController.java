@@ -1,21 +1,38 @@
 package com.spring.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.spring.dto.ChecklistItemDTO;
 import com.spring.dto.DroneDTO;
+import com.spring.dto.SafetyCheckMasterDTO;
+import com.spring.service.ChecklistService;
 import com.spring.service.DroneService;
-
+import com.spring.service.SseService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class ControlController {
 	
 	@Autowired
 	private DroneService droneService;
+	
+	@Autowired
+	private ChecklistService checklistService;
+	
+	@Autowired
+    private SseService sseService; // 2. SseService 자동 주입
 
     // 1. 메인 첫 진입
     @GetMapping("/control/main")
@@ -70,4 +87,48 @@ public class ControlController {
         return "control/controlMain"; 
     }
     
+ // 관제사 체크리스트 목록 AJAX 조회 API
+    @GetMapping("/control/checklist/api/list")
+    @ResponseBody
+    public List<ChecklistItemDTO> getControlChecklist() {
+        // DB에서 TARGET_TYPE = 'CONTROL'인 항목 10개를 가져옵니다.
+        return checklistService.getItemsByTarget("CONTROL");
+    }
+    
+ // 관제사 체크리스트 결과 저장 API
+    @PostMapping("/control/checklist/api/submit")
+    @ResponseBody
+    public Map<String, Object> submitControlChecklist(@RequestBody SafetyCheckMasterDTO masterDTO, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 로그인 사용자 확인
+            String inspector = (String) session.getAttribute("userId");
+            if (inspector == null || inspector.isEmpty()) {
+                inspector = "control";
+            }
+            masterDTO.setInspector(inspector);
+
+            // DB 저장이 성공했는지 확인
+            boolean isSuccess = checklistService.insertSafetyCheck(masterDTO);
+
+            if (isSuccess) {
+                // 3. DB 저장 성공 즉시 실시간 SSE 이벤트 알림 전송 🚀
+                sseService.sendEvent("CHECKLIST_SUBMITTED", "NEW_CHECKLIST");
+
+                result.put("success", true);
+                result.put("message", "체크리스트가 성공적으로 저장되었습니다.");
+            } else {
+                result.put("success", false);
+                result.put("message", "저장 처리에 실패했습니다.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", "저장 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        return result;
+    }
 }
