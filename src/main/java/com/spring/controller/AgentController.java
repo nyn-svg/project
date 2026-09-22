@@ -319,7 +319,7 @@ public class AgentController {
 			if ("조치완료".equals(situStatus) || "미조치 종결".equals(situStatus)) {
 				dto.setSituStatus("조치완료");
 				situationService.modifySituation(dto);
-				situationService.setEnd(dto); 
+				situationService.setEnd(dto.getSituNo());
 			} else {
 
 				dto.setSituStatus("조치");
