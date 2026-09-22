@@ -70,16 +70,11 @@
 		<Logger name="org.springframework.transaction" level="DEBUG" additivity="false">
 			<AppenderRef ref="Console" />
 		</Logger> 
-		
-			<!-- Spring Web 디버그 로그 (URL 매핑 확인용) -->
-		<Logger name="org.springframework.web" level="DEBUG" additivity="false">
-			<AppenderRef ref="Console" />
-		</Logger>
+	
 
 
 		<Root level="info">
 			<AppenderRef ref="Console" />
 		</Root>
-		
 	</Loggers>
 </Configuration>

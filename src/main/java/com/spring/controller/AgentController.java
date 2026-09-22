@@ -1,9 +1,12 @@
 package com.spring.controller;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -266,7 +269,7 @@ public class AgentController {
 		SituationDTO situation = situationService.getSituationBySituNo(situNo);
 		model.addAttribute("task", situation);
 
-		java.text.SimpleDateFormat cstSdf = new java.text.SimpleDateFormat("yyyy-MM-dd a hh:mm");
+		SimpleDateFormat cstSdf = new SimpleDateFormat("yyyy-MM-dd a hh:mm");
 
 		if (situation != null && situation.getStartDate() != null) {
 			model.addAttribute("customStartDate", cstSdf.format(situation.getStartDate()));
@@ -292,17 +295,17 @@ public class AgentController {
 
 			// ====== 📸 3번째 이미지의 파일 업로드 처리 로직 이식 =====
 			if (photo != null && !photo.isEmpty()) {
-				java.io.File uploadDir = new java.io.File(uploadPath);
+				File uploadDir = new File(uploadPath);
 				if (!uploadDir.exists()) {
 					uploadDir.mkdirs(); // 폴더가 없으면 생성
 				}
 
 				// 파일명 중복 방지를 위한 UUID 파일명 생성
 				String originalFilename = photo.getOriginalFilename();
-				String savedFilename = java.util.UUID.randomUUID().toString() + "_" + originalFilename;
+				String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
 
 				// 서버 디렉토리에 파일 저장
-				java.io.File destFile = new java.io.File(uploadPath, savedFilename);
+				File destFile = new File(uploadPath, savedFilename);
 				photo.transferTo(destFile);
 
 				// DTO에 저장된 파일명 세팅 (안전요원은 조치사진이므로 workImage에 세팅)

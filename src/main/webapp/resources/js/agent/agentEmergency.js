@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. 첨부 사진 미리보기 및 삭제 핸들러 (🚨 예외 처리 및 오타 완벽 복구)
+    // 2. 첨부 사진 미리보기 및 삭제 핸들러
     var photoInput = document.getElementById('photoInput');
     var photoPreview = document.getElementById('photoPreview');
     var previewImg = document.getElementById('previewImg');
@@ -19,13 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (photoInput) {
         photoInput.addEventListener('change', function(e) {
-            // 안전하게 인덱스 0번 처리
-            if (e.target.files && e.target.files[0]) {
-                var file = e.target.files[0];
+            var file = e.target.files[0];
+            if (file) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    if(previewImg) previewImg.src = e.target.result;
-                    if(photoPreview) photoPreview.style.display = 'block';
+                    previewImg.src = e.target.result;
+                    photoPreview.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             }
@@ -34,37 +33,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (btnRemovePhoto) {
         btnRemovePhoto.addEventListener('click', function() {
-            if(photoInput) photoInput.value = '';
-            if(previewImg) previewImg.src = '';
-            if(photoPreview) photoPreview.style.display = 'none';
+            photoInput.value = '';
+            previewImg.src = '';
+            photoPreview.style.display = 'none';
         });
     }
 
-    // 3. 🚨 긴급 등록 AJAX 비동기 전송 처리 및 팝업 연동
+    // 3. 🚨 긴급 등록 AJAX 비동기 전송 처리
     var btnSubmitEmergency = document.getElementById('btnSubmitEmergency');
     if (btnSubmitEmergency) {
         btnSubmitEmergency.addEventListener('click', function(e) {
-            e.preventDefault(); // 기본 submit 트리거 차단
+            e.preventDefault();
 
             // 유효성 검사 (상황 내용 공백 차단)
-            if (!situContent || !situContent.value.trim()) {
+            if (!situContent.value.trim()) {
                 alert("상황 내용을 상세히 입력해주세요.");
-                if(situContent) situContent.focus();
+                situContent.focus();
                 return;
-            }
-
-            // 💡 [최종 안] 신중한 보고를 위한 크롬/모바일 공용 알림 컨펌창
-            var isConfirm = confirm("🚨 긴급 보고는 전송 후 수정이나 조회가 불가능합니다.\n정말로 관제실로 즉시 전송하시겠습니까?");
-            if (!isConfirm) {
-                return; // 취소 누르면 코드 중단
             }
 
             // 멀티파트 파일 전송을 위한 FormData 객체 생성
             var formElement = document.getElementById('emergencyForm');
             var formData = new FormData(formElement);
 
-            // 이미지 파일 수동 확인 및 안전 바인딩
-            if (photoInput && photoInput.files && photoInput.files[0]) {
+            // 이미지 파일 수동 확인 및 바인딩
+            if (photoInput.files && photoInput.files[0]) {
                 formData.append("photo", photoInput.files[0]);
             }
 
@@ -73,22 +66,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 url: contextPath + '/agent/api/report',
                 type: 'POST',
                 data: formData,
-                processData: false, // 필수
-                contentType: false, // 필수
+                processData: false, // 파일 전송 필수 옵션
+                contentType: false, // 파일 전송 필수 옵션
                 success: function(response) {
+                    // 서버단 SituationController가 정상 저장 후 success 오브젝트를 반환할 때
                     if (response.success) {
-                        var realSituNo = response.situNo; // DB 진짜 이력번호
+                        var realSituNo = response.situNo; // 🚨 DB가 부여한 진짜 이력번호 추출
                         
                         var dngrType = document.getElementById('dngrType').value;
                         var dngrLevel = document.getElementById('dngrLevel').value;
                         var zoneName = document.getElementById('zoneName').value;
 
-                        // 결과 정보 쿼리스트링 파라미터 링크 이동 (& 부호 결합 구조)
-                        location.href = contextPath + "/agent/report/complete"
-                                      + "?situNo=" + encodeURIComponent(realSituNo)
-                                      + "&dngrType=" + encodeURIComponent(dngrType)
-                                      + "&dngrLevel=" + encodeURIComponent(dngrLevel)
-                                      + "&zoneName=" + encodeURIComponent(zoneName);
+                        // 결과 정보를 캐치하여 완료 페이지로 파라미터 링크 이동
+						location.href = contextPath + "/agent/report/complete"
+						              + "?situNo=" + encodeURIComponent(realSituNo)
+						              + "&dngrType=" + encodeURIComponent(dngrType)  
+						              + "&dngrLevel=" + encodeURIComponent(dngrLevel)
+						              + "&zoneName=" + encodeURIComponent(zoneName);  
                     } else {
                         alert("보고 등록 실패: " + response.message);
                     }

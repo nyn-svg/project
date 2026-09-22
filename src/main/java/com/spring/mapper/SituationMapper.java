@@ -29,13 +29,10 @@ public interface SituationMapper {
     int startSituation(String situNo);
     
     // 조치 종료일시 기록
-    int endSituation(SituationDTO situation);
+    int endSituation(String situNo);
     
     // 감지 이력 수정 또는 조치 내용 입력
     int updateSituation(SituationDTO situation);
-    
-    // 감지조치이력 삭제
-    int deleteSituation(String situNo);
     
     // 전체 감지조치이력 수
     int getTotalSituationCount();
