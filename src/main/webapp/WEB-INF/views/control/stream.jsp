@@ -502,14 +502,38 @@ function initSSE() {
 	        // 1. 밀집도 화면 갱신
 	        $('#density-rate').text(data.density + '%');
 	        
-	        // 2. 동물 감지 데이터가 있을 경우 화면 갱신
-	        if (data.is_animal && data.animals.length > 0) {
+	     	// 2. animals 배열에 감지된 객체가 있는지 확인
+	        const hasAnimal = data.animals && data.animals.length > 0;
+	        // 감지된 동물이 있다면
+	        if (hasAnimal) {
 	            const firstAnimal = data.animals[0];
 	            const displayName = animalNameMap[firstAnimal.name] || '미등록 야생동물';
 	            
+				// 객체명 및 신뢰도 표시
 	            $('#object-name').text(displayName);
 	            $('#object-conf').text(firstAnimal.conf + '%');
-	            $('#danger-level').text('주의').removeClass('danger-interest').addClass('danger-attention');
+	            
+	         	// 위험 단계 판단 후 표시
+	            if (data.is_animal) {
+	                // 💡 [is_animal: true] 3초 이상 지속 감지
+	                if (data.droneId === 'DRONE-03') { // 사람이 적은 구역
+	                    updateDangerBadge('경계', 'danger-caution');
+	                
+	                } else if (data.droneId === 'DRONE-01' || data.droneId === 'DRONE-02') { // 사람이 많은 구역
+	                    updateDangerBadge('심각', 'danger-severe');
+	                
+	                } else { // 이외에 다른 드론의 경우 (일단 경계 단계)
+	                    updateDangerBadge('경계', 'danger-caution');
+	                }
+	            } else {
+	                // 💡 [is_animal: false & animals 있음] 단순 감지 발생 (3초 미만)
+	                updateDangerBadge('주의', 'danger-attention');
+	            }
+	        } else {
+	            // 💡 [animals 배열이 비어있음] 미감지 기본 상태
+	            $('#object-name').text('-');
+	            $('#object-conf').text('-');
+	            updateDangerBadge('관심', 'danger-interest');
 	        }
 	    }
 	});
