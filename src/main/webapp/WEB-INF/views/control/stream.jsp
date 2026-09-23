@@ -226,12 +226,12 @@
 //==========================================
 
 // SSE 객체 전역 관리
-let eventSource = null;
-let sseReconnectTimer = null;
+var eventSource = null;
+var sseReconnectTimer = null;
 // 자동 전환 타이머 전역 관리
-let autoSwitchTimer = null;
+var autoSwitchTimer = null;
 // 현재 드론아이디 전역 관리
-let currentDroneId = null;
+var currentDroneId = null;
 
 //==========================================
 // 2. SPA 페이지 진입/복원 전역 초기화 함수
@@ -485,6 +485,33 @@ function initSSE() {
 	// 'situation-update(이력 수정/갱신)' 이벤트를 수신하면 목록 자동 갱신
 	eventSource.addEventListener('situation-update', function(e) {
 		getSituationList();
+	});
+	
+	const animalNameMap = {
+		'wild_deer': '고라니 (wild_deer)',
+		'wild_boar': '멧돼지 (wild_boar)'
+	};
+	
+	// 'stream-data(실시간 메타데이터 수신)' 이벤트를 수신하면 메타데이터 영역 갱신
+	eventSource.addEventListener('stream-data', function(e) {
+	    const data = JSON.parse(e.data);
+	    
+	    // 💡 핵심: 서버에서 넘어온 데이터의 droneId가 현재 내가 보고 있는 화면의 droneId와 일치할 때만 화면 갱신
+	    if (data.droneId === currentDroneId) {
+	        
+	        // 1. 밀집도 화면 갱신
+	        $('#density-rate').text(data.density + '%');
+	        
+	        // 2. 동물 감지 데이터가 있을 경우 화면 갱신
+	        if (data.is_animal && data.animals.length > 0) {
+	            const firstAnimal = data.animals[0];
+	            const displayName = animalNameMap[firstAnimal.name] || '미등록 야생동물';
+	            
+	            $('#object-name').text(displayName);
+	            $('#object-conf').text(firstAnimal.conf + '%');
+	            $('#danger-level').text('주의').removeClass('danger-interest').addClass('danger-attention');
+	        }
+	    }
 	});
 
 	eventSource.onerror = function() {

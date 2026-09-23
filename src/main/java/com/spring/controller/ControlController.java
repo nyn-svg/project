@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.dto.ChecklistItemDTO;
+import com.spring.dto.DetectRequestDTO;
 import com.spring.dto.DroneDTO;
 import com.spring.dto.SafetyCheckMasterDTO;
 import com.spring.service.ChecklistService;
 import com.spring.service.DroneService;
 import com.spring.service.SseService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -71,6 +74,19 @@ public class ControlController {
         // 새로고침/직접접속 시 전체 껍데기 + 요청한 페이지 경로 전달
         model.addAttribute("contentPage", viewPath);
         return "control/controlMain";
+    }
+    
+    @PostMapping("/api/sse/stream")
+    @ResponseBody // 화면(JSP) 이동이 아닌 데이터 응답
+    public ResponseEntity<String> receiveStreamData(@RequestBody DetectRequestDTO requestData) {
+        
+        // 1. 데이터 확인
+        String currentDroneId = requestData.getDroneId();
+        
+        // 2. 화면(stream.jsp)으로 실시간 데이터 브로드캐스팅
+        sseService.sendEvent("stream-data", requestData);
+
+        return ResponseEntity.ok("Data received successfully from " + currentDroneId);
     }
     
     // 위험 감지 관리 페이지 이동
