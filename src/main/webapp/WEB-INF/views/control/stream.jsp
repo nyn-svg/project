@@ -502,12 +502,11 @@ function initSSE() {
 	        // 1. 밀집도 화면 갱신
 	        $('#density-rate').text(data.density + '%');
 	        
-	     	// 2. animals 배열에 감지된 객체가 있는지 확인
-	        const hasAnimal = data.animals && data.animals.length > 0;
-	        // 감지된 동물이 있다면
-	        if (hasAnimal) {
-	            const firstAnimal = data.animals[0];
-	            const displayName = animalNameMap[firstAnimal.name] || '미등록 야생동물';
+	     	// 2. animals 배열에서 'agent'가 아닌 첫 번째 야생동물 찾기
+	        const realAnimal = data.animals ? data.animals.find(item => item.name !== 'agent') : null;
+	        if (realAnimal) {
+	            // 'agent'를 제외한 진짜 야생동물이 존재하는 경우
+	            const displayName = animalNameMap[realAnimal.name] || '미등록 야생동물';
 	            
 				// 객체명 및 신뢰도 표시
 	            $('#object-name').text(displayName);
@@ -591,6 +590,14 @@ function showToast(message, type = 'info') {
 			}
 		}, 400);
 	}, 3000);
+}
+
+//위험 단계 배지 UI 갱신 함수
+function updateDangerBadge(levelText, className) {
+    $('#danger-level')
+        .text(levelText)
+        .removeClass('danger-interest danger-attention danger-caution danger-severe danger-unknown')
+        .addClass(className);
 }
 
 // Flask 서버 설정 변경 API 호출
