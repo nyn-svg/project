@@ -134,6 +134,8 @@
 <script>
 $(document).ready(function() {
     let agentCache = [];
+    let currentAgentPage = 1;        // 현재 페이지 번호
+    const AGENT_PAGE_SIZE = 5;       // 페이지당 5개 고정
 
     // 1. 전체 목록 로드
     loadAgentList();
@@ -143,8 +145,9 @@ $(document).ready(function() {
             url: '${pageContext.request.contextPath}/admin/api/agents',
             type: 'GET',
             success: function(data) {
-                agentCache = data;
-                renderAgentList(data);
+                agentCache = data || [];
+                currentAgentPage = 1;
+                renderAgentList(agentCache);
             },
             error: function() {
                 alert('요원 목록을 불러오는 중 오류가 발생했습니다.');
@@ -152,16 +155,26 @@ $(document).ready(function() {
         });
     }
 
- // 2. 목록 렌더링
+ // 2. 목록 렌더링 (5개 단위 페이징 처리)
     function renderAgentList(list) {
         const $container = $('#agent-list-container').empty();
 
         if (!list || list.length === 0) {
-            $container.append('<div class="empty-msg">등록된 요원이 없습니다.</div>');
+            $container.append('<div class="empty-msg" style="text-align:center; padding: 40px 0; color: #94a3b8;">등록된 요원이 없습니다.</div>');
             return;
         }
 
-        list.forEach(function(agent) {
+        // 1) 페이징 계산
+        const totalPages = Math.ceil(list.length / AGENT_PAGE_SIZE) || 1;
+
+        if (currentAgentPage > totalPages) currentAgentPage = totalPages;
+        if (currentAgentPage < 1) currentAgentPage = 1;
+
+        const startIndex = (currentAgentPage - 1) * AGENT_PAGE_SIZE;
+        const pageList = list.slice(startIndex, startIndex + AGENT_PAGE_SIZE);
+
+        // 2) 현재 페이지 데이터 카드 생성
+        pageList.forEach(function(agent) {
             const isEnabled = agent.enabled === 1 || agent.enabled === true || agent.enabled === 'Y';
             const badgeClass = isEnabled ? 'badge-active' : 'badge-inactive';
             const badgeText = isEnabled ? '활성' : '비활성';
@@ -169,19 +182,30 @@ $(document).ready(function() {
             const phoneText = agent.phone ? agent.phone : '-';
             const emailText = agent.email ? agent.email : '-';
 
-            // 💡 권한명 한글 표시 로직
-            let roleText = '안전요원';
-            if (agent.roleName === 'ROLE_CONTROL' || (agent.userId && agent.userId.includes('control'))) {
-                roleText = '관제사';
-            } else if (agent.roleName === 'ROLE_AGENT' || (agent.userId && agent.userId.includes('agent'))) {
-                roleText = '안전요원';
+            // 🎯 [핵심 수정] 관리자 / 관제사 / 안전요원 권한 판별 로직
+            const isAdmin = agent.roleName === 'ROLE_ADMIN' || 
+                            (agent.userId && agent.userId.toLowerCase().includes('admin')) || 
+                            agent.userName === '관리자';
+
+            let nameDisplayHtml = '';
+
+            if (isAdmin) {
+                // 관리자 계정은 괄호 없이 이름만 깔끔하게 표시
+                nameDisplayHtml = agent.userName;
+            } else {
+                // 관제사 및 안전요원은 기존처럼 (권한명) 표기
+                let roleText = '안전요원';
+                if (agent.roleName === 'ROLE_CONTROL' || (agent.userId && agent.userId.toLowerCase().includes('control'))) {
+                    roleText = '관제사';
+                }
+                nameDisplayHtml = agent.userName + ' <small>(' + roleText + ')</small>';
             }
 
             let html = '';
             html += '<div class="agent-item" data-id="' + agent.userId + '">';
             html += '   <div class="agent-item-header">';
-            // 💡 agent.userId 대신 roleText 변수 사용!
-            html += '       <span class="agent-name">' + agent.userName + ' <small>(' + roleText + ')</small></span>';
+            // 🎯 수정된 nameDisplayHtml 적용
+            html += '       <span class="agent-name">' + nameDisplayHtml + '</span>';
             html += '       <span class="badge ' + badgeClass + '">' + badgeText + '</span>';
             html += '   </div>';
             html += '   <div class="agent-item-info">';
@@ -200,6 +224,94 @@ $(document).ready(function() {
 
             $container.append($item);
         });
+
+        // 3) 부족한 개수만큼 투명 더미(Dummy) 카드 생성 (페이징 위치 고정)
+        for (let i = pageList.length; i < AGENT_PAGE_SIZE; i++) {
+            let dummyHtml = '';
+            dummyHtml += '<div class="agent-item" style="visibility: hidden; background: transparent; border-color: transparent; pointer-events: none;">';
+            dummyHtml += '   <div class="agent-item-header">';
+            dummyHtml += '       <span class="agent-name">&nbsp;</span>';
+            dummyHtml += '       <span class="badge">&nbsp;</span>';
+            dummyHtml += '   </div>';
+            dummyHtml += '   <div class="agent-item-info">';
+            dummyHtml += '       <span>&nbsp;</span>';
+            dummyHtml += '       <span>&nbsp;</span>';
+            dummyHtml += '   </div>';
+            dummyHtml += '</div>';
+            $container.append(dummyHtml);
+        }
+
+        // 4) 하단 페이징 컨트롤 생성
+        if (totalPages > 1) {
+            const $pagination = $('<div class="agent-pagination">').css({
+                'display': 'flex',
+                'justify-content': 'center',
+                'align-items': 'center',
+                'gap': '6px',
+                'margin-top': '16px',
+                'padding-top': '8px'
+            });
+
+            const $prevBtn = $('<button type="button">&lt;</button>').css({
+                'background': 'rgba(255, 255, 255, 0.05)',
+                'border': '1px solid rgba(255, 255, 255, 0.1)',
+                'color': currentAgentPage > 1 ? '#fff' : '#475569',
+                'padding': '4px 10px',
+                'border-radius': '6px',
+                'font-size': '12px',
+                'cursor': currentAgentPage > 1 ? 'pointer' : 'default'
+            }).prop('disabled', currentAgentPage === 1);
+
+            $prevBtn.on('click', function() {
+                if (currentAgentPage > 1) {
+                    currentAgentPage--;
+                    renderAgentList(list);
+                }
+            });
+            $pagination.append($prevBtn);
+
+            for (let p = 1; p <= totalPages; p++) {
+                (function(page) {
+                    const isCurrent = (page === currentAgentPage);
+                    const $pageBtn = $('<button type="button">' + page + '</button>').css({
+                        'background': isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)',
+                        'border': isCurrent ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                        'color': isCurrent ? '#fff' : '#a0aec0',
+                        'font-weight': isCurrent ? 'bold' : 'normal',
+                        'padding': '4px 10px',
+                        'border-radius': '6px',
+                        'font-size': '12px',
+                        'cursor': 'pointer'
+                    });
+
+                    $pageBtn.on('click', function() {
+                        currentAgentPage = page;
+                        renderAgentList(list);
+                    });
+                    $pagination.append($pageBtn);
+                })(p);
+            }
+
+            const $nextBtn = $('<button type="button">&gt;</button>').css({
+                'background': 'rgba(255, 255, 255, 0.05)',
+                'border': '1px solid rgba(255, 255, 255, 0.1)',
+                'color': currentAgentPage < totalPages ? '#fff' : '#475569',
+                'padding': '4px 10px',
+                'border-radius': '4px',
+                'font-size': '12px',
+                'cursor': currentAgentPage < totalPages ? 'pointer' : 'default'
+            }).prop('disabled', currentAgentPage === totalPages);
+
+            $nextBtn.on('click', function() {
+                if (currentAgentPage < totalPages) {
+                    currentAgentPage++;
+                    renderAgentList(list);
+                }
+            });
+            $pagination.append($nextBtn);
+
+            $container.append($pagination);
+        }
     }
 
     // 3. 요원 선택 시 (폼 영역 보이기)
@@ -212,16 +324,12 @@ $(document).ready(function() {
         $('#phone').val(agent.phone);
         $('#email').val(agent.email);
         
-        // 권한 정보 세팅 (기본값 ROLE_AGENT)
         $('#roleName').val(agent.roleName || 'ROLE_AGENT');
-        
         $('#enabled').prop('checked', agent.enabled === 1 || agent.enabled === true || agent.enabled === 'Y');
         
-        // 헤더 프로필 정보 업데이트
         $('#preview-name').text(agent.userName);
         $('#preview-id-text').text('ID: ' + agent.userId + ' | ' + (agent.email ? agent.email : '이메일 미등록'));
 
-        // 하단 폼 영역 표시
         $('#form-body-wrapper').fadeIn(200);
 
         const isEnabled = agent.enabled === 1 || agent.enabled === true || agent.enabled === 'Y';
@@ -230,7 +338,7 @@ $(document).ready(function() {
             .text(isEnabled ? '계정 활성' : '계정 비활성');
     }
 
-    // 4. 신규 등록 버튼 (폼 영역 보이기)
+    // 4. 신규 등록 버튼
     $('#btn-reset-form').on('click', function() {
         $('.agent-item').removeClass('active');
         $('#form-mode').val('create');
@@ -238,21 +346,17 @@ $(document).ready(function() {
         $('#userId').val('').prop('readonly', false);
         $('#agent-form')[0].reset();
         
-        // 신규 등록 시 기본 권한을 ROLE_AGENT로 설정
         $('#roleName').val('ROLE_AGENT');
         $('#enabled').prop('checked', true);
 
-        // 헤더 텍스트 변경
         $('#preview-name').text('신규 사용자 작성');
         $('#preview-id-text').text('시스템 계정을 생성하려면 아래 정보를 입력하세요.');
 
-        // 하단 폼 영역 표시
         $('#form-body-wrapper').fadeIn(200);
-
         $('#status-badge').attr('class', 'badge badge-active').text('신규 작성');
     });
 
-    // 5. 폼 제출 (등록/수정 AJAX)
+    // 5. 폼 제출 (등록/수정)
     $('#agent-form').on('submit', function(e) {
         e.preventDefault();
 
@@ -265,7 +369,7 @@ $(document).ready(function() {
             userName: $('#userName').val(),
             phone: $('#phone').val(),
             email: $('#email').val(),
-            roleName: $('#roleName').val(), // 💡 권한 정보 추가 전송!
+            roleName: $('#roleName').val(),
             enabled: $('#enabled').is(':checked') ? 1 : 0
         };
 
@@ -277,7 +381,6 @@ $(document).ready(function() {
             success: function(res) {
                 if (res.success) {
                     alert(mode === 'create' ? '신규 사용자가 등록되었습니다.' : '사용자 정보가 수정되었습니다.');
-                    
                     loadAgentList();
 
                     if (typeof loadAdminAgentList === 'function') {
@@ -301,19 +404,19 @@ $(document).ready(function() {
         });
     });
 
- // 통합 필터링 처리 함수
+    // 6. 통합 필터링
     function filterAgentList() {
+        currentAgentPage = 1;
+
         const kw = $('#search-keyword').val().toLowerCase().trim();
         const selectedRole = $('#filter-role').val();
         const selectedStatus = $('#filter-status').val();
 
         const filtered = agentCache.filter(function(a) {
-            // 1. 이름 또는 ID 검색조건
             const nameMatch = a.userName ? a.userName.toLowerCase().includes(kw) : false;
             const idMatch = a.userId ? a.userId.toLowerCase().includes(kw) : false;
             const keywordMatch = kw === '' || nameMatch || idMatch;
 
-            // 2. 권한 필터조건
             let roleMatch = true;
             if (selectedRole !== 'ALL') {
                 if (selectedRole === 'ROLE_CONTROL') {
@@ -323,7 +426,6 @@ $(document).ready(function() {
                 }
             }
 
-            // 3. 상태 필터조건
             let statusMatch = true;
             const isEnabled = a.enabled === 1 || a.enabled === true || a.enabled === 'Y' || a.enabled === '1';
             if (selectedStatus === 'ACTIVE') {
@@ -332,14 +434,12 @@ $(document).ready(function() {
                 statusMatch = !isEnabled;
             }
 
-            // 3가지 조건 모두 만족해야 목록에 표시
             return keywordMatch && roleMatch && statusMatch;
         });
 
         renderAgentList(filtered);
     }
 
-    // 이벤트 리스너 등록 (검색어 입력, 권한 변경, 상태 변경 시 자동 필터링)
     $('#search-keyword').on('keyup', filterAgentList);
     $('#filter-role').on('change', filterAgentList);
     $('#filter-status').on('change', filterAgentList);

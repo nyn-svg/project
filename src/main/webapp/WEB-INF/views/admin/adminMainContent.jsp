@@ -11,23 +11,21 @@
         <div class="kpi-card">
 		    <div class="kpi-title">신규 안전점검 현황</div>
 		    <div class="kpi-value-group">
-		        <!-- 💡 id="kpi-unread-count" 추가 -->
 		        <span class="kpi-value warning" id="kpi-unread-count">0</span><span class="kpi-unit">개</span>
 		    </div>
 		    <div class="kpi-sub diff-up"></div>
 		</div>
         <div class="kpi-card">
-    <div class="kpi-title">미확인 긴급보고</div>
-    <div class="kpi-value-group">
-        <!-- 💡 id="kpi-unread-emergency-count" 추가 -->
-        <span id="kpi-unread-emergency-count" class="kpi-value danger">0</span><span class="kpi-unit">건</span>
-    </div>
-    <div class="kpi-sub diff-up"></div>
-</div>
+		    <div class="kpi-title">미확인 긴급보고</div>
+		    <div class="kpi-value-group">
+		        <span id="kpi-unread-emergency-count" class="kpi-value danger">0</span><span class="kpi-unit">건</span>
+		    </div>
+		    <div class="kpi-sub diff-up"></div>
+		</div>
         <div class="kpi-card">
             <div class="kpi-title">근무중 안전요원</div>
             <div class="kpi-value-group">
-                <span class="kpi-value primary"></span><span class="kpi-unit">명</span>
+                <span class="kpi-value primary">0</span><span class="kpi-unit">명</span>
             </div>
             <div class="kpi-sub status-ok"></div>
         </div>
@@ -38,7 +36,19 @@
             </div>
             <div class="kpi-sub status-ok"></div>
         </div>
-        
+
+        <!-- 🎯 [신규] 5번째 버튼형 카드: 안전점검 바로가기 -->
+        <a href="${pageContext.request.contextPath}/admin/safetyCheck" class="kpi-card kpi-action-btn">
+            <div class="kpi-action-content">
+                <div class="kpi-action-icon">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+                <div class="kpi-action-info">
+                    <span class="kpi-action-title">안전점검</span>
+                    <span class="kpi-action-sub">상세 조회 <i class="fa-solid fa-arrow-right arrow-anim"></i></span>
+                </div>
+            </div>
+        </a>
     </section>
 
     <!-- 2. 중단 영역 (좌: 지도 관제 / 우: 대응 현황) -->
@@ -464,50 +474,112 @@ function captureAndSendAIFrame(mediaElement, droneId) {
  }, "image/jpeg", 0.8);
 }
 
-// 3. 최근 위험 이벤트 실시간 갱신 로직
+//3. 최근 위험 이벤트 실시간 갱신 로직 (타임스탬프 & DOM 재탐색 보정)
 function initRealtimeEvents() {
-    const $eventList = $('.event-list');
-    if ($eventList.length === 0) return;
+    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
 
-    const zones = ['푸드존', '메인 무대', '산책로 A구역', '동문 입구', '주차장 B구역', '체험 부스'];
-    const dngrTypes = ['인파 밀집', '멧돼지 출현', '고라니 포착', '동선 혼잡', '안전펜스 충돌'];
-    const levels = [
-        { text: '위험', class: 'danger' },
-        { text: '경계', class: 'warning' },
-        { text: '주의', class: 'caution' }
-    ];
-    const statuses = [
-        { text: '처리중', class: '' },
-        { text: '출동', class: '' },
-        { text: '완료', class: 'done' }
-    ];
+    function fetchRealtimeEvents() {
+        // 🎯 렌더링 직전에 화면 상의 .event-list 요소를 새로 탐색 (DOM 유실 방지)
+        const $targetList =$('.event-list');
+        if ($targetList.length === 0) return;
 
-    // window.eventTimer에 타이머 ID 저장
-    window.eventTimer = setInterval(function() {
-        const now = new Date();
-        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + 
-                        String(now.getMinutes()).padStart(2, '0') + ':' + 
-                        String(now.getSeconds()).padStart(2, '0');
+        fetch(basePath + '/admin/fieldAction/api/list?statusType=PENDING')
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    $targetList.html('<li class="event-item" style="justify-content: center; color: #a0aec0; padding: 20px 0;">현재 검토 대기 중인 위험 이벤트가 없습니다.</li>');
+                    return;
+                }
 
-        const randZone = zones[Math.floor(Math.random() * zones.length)];
-        const randType = dngrTypes[Math.floor(Math.random() * dngrTypes.length)];
-        const randLevel = levels[Math.floor(Math.random() * levels.length)];
-        const randStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                // 최근 등록된 상위 4개 데이터 추출
+                const recentList = data.slice(0, 4);
+                let html = '';
 
-        const newHtml = '<li class="event-item" style="display:none;">' +
-                            '<span class="event-time">' + timeStr + '</span>' +
-                            '<span class="event-desc">' + randZone + ' ' + randType + '</span>' +
-                            '<span class="badge-tag ' + randLevel.class + '">' + randLevel.text + '</span>' +
-                            '<span class="action-status ' + randStatus.class + '">' + randStatus.text + '</span>' +
-                        '</li>';
+                recentList.forEach(item => {
+                    // 🎯 1) 시각 파싱 (13자리 타임스탬프 숫자를 HH:mm:ss로 변환)
+                    const timeStr = formatEventTime(item.situDate || item.regDate);
 
-        $eventList.prepend(newHtml);
-        $eventList.find('li:first').slideDown(300);
+                    // 🎯 2) 제출자 정제 (finder가 null/admin이면 '안전요원')
+                    let finder = '안전요원';
+                    if (item.finder && item.finder !== 'null' && item.finder !== 'undefined' && item.finder !== 'false' && item.finder !== 'admin') {
+                        finder = String(item.finder).trim();
+                    }
 
-        if ($eventList.find('li').length > 4) {
-            $eventList.find('li:last').remove();
+                    // 🎯 3) 감지유형 정제 (situType)
+                    let situType = '자동감지';
+                    if (item.situType && item.situType !== 'null' && item.situType !== 'undefined' && item.situType !== 'false') {
+                        situType = String(item.situType).trim();
+                    }
+
+                    // 🎯 4) 위험유형 정제 (dngrType)
+                    let dngrType = '인파위험';
+                    if (item.dngrType && item.dngrType !== 'null' && item.dngrType !== 'undefined' && item.dngrType !== 'false') {
+                        dngrType = String(item.dngrType).trim();
+                    }
+
+                    // 🎯 5) [제출자 (감지유형)] 출력 (예: 안전요원 (자동감지) / agent01 (여기까지더미))
+                    const descText = `${finder} (${situType})`;
+
+                    // 🎯 6) 위험 유형 뱃지 색상
+                    let levelClass = 'danger';
+                    if (dngrType.includes('야생') || dngrType.includes('동물')) {
+                        levelClass = 'warning';
+                    } else if (dngrType.includes('혼잡') || dngrType.includes('주의')) {
+                        levelClass = 'caution';
+                    }
+
+                    html += '<li class="event-item">' +
+                                '<span class="event-time">' + timeStr + '</span>' +
+                                '<span class="event-desc">' + descText + '</span>' +
+                                '<span class="badge-tag ' + levelClass + '">' + dngrType + '</span>' +
+                                '<span class="action-status">검토대기</span>' +
+                            '</li>';
+                });
+
+                // 🎯 최신 탐색된 DOM에 HTML 덮어쓰기
+                $targetList.html(html);
+            })
+            .catch(err => console.error('실시간 위험 이벤트 렌더링 에러:', err));
+    }
+
+    // 최초 1회 즉시 실행
+    fetchRealtimeEvents();
+
+    // 5초 주기로 DB 재조회하여 실시간 갱신
+    if (window.eventTimer) clearInterval(window.eventTimer);
+    window.eventTimer = setInterval(fetchRealtimeEvents, 5000);
+}
+
+// 💡 시간 문자열/타임스탬프 파싱 보조 함수
+function formatEventTime(timeVal) {
+    if (!timeVal || timeVal === 'null' || timeVal === 'undefined') return '00:00:00';
+
+    // 1) 13자리 숫자 타임스탬프 처리 (e.g. 1788447600000)
+    const num = Number(timeVal);
+    if (!isNaN(num) && num > 0) {
+        const d = new Date(num);
+        if (!isNaN(d.getTime())) {
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            const ss = String(d.getSeconds()).padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
         }
-    }, 7000);
+    }
+
+    // 2) "2026-09-04 00:00" 형태의 문자열 처리
+    const str = String(timeVal).trim();
+    if (str.includes(' ')) {
+        const timePart = str.split(' ')[1];
+        if (timePart) {
+            const parts = timePart.split(':');
+            const hh = (parts[0] || '00').padStart(2, '0');
+            const mm = (parts[1] || '00').padStart(2, '0');
+            const ss = (parts[2] || '00').padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
+        }
+    }
+
+    return '00:00:00';
 }
 
 // 4. 대시보드 실시간 실행 및 초기화
@@ -592,4 +664,97 @@ window.chartIdleTimer = setInterval(function() {
 .drone-modal-close:hover { color: #fff; }
 .drone-modal-body { padding: 16px; background: #000; text-align: center; }
 .no-stream-msg { color: #94a3b8; padding: 40px 0; }
+
+
+/* ==========================================
+   상단 KPI 5열 그리드 및 안전점검 버튼 카드
+   ========================================== */
+.kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important; /* 5개 카드 균등 배치 */
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* 액션 버튼 카드 기본 스타일 */
+.kpi-action-btn {
+    text-decoration: none !important;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(59, 130, 246, 0.05) 100%) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    cursor: pointer;
+    transition: all 0.25s ease-in-out !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px !important;
+}
+
+/* 마우스 호버 시 네온 입체 효과 */
+.kpi-action-btn:hover {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(59, 130, 246, 0.15)) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+.kpi-action-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+/* 아이콘 보관함 */
+.kpi-action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #38bdf8;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+}
+
+.kpi-action-btn:hover .kpi-action-icon {
+    background: #38bdf8;
+    color: #0f172a;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+}
+
+/* 텍스트 영역 */
+.kpi-action-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.kpi-action-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.kpi-action-sub {
+    font-size: 12px;
+    color: #38bdf8;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 화살표 애니메이션 */
+.arrow-anim {
+    transition: transform 0.2s ease;
+}
+
+.kpi-action-btn:hover .arrow-anim {
+    transform: translateX(4px);
+}
 </style>

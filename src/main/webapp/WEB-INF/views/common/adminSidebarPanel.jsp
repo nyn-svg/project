@@ -1050,6 +1050,10 @@ function getAgentZoneName(userId) {
     return matchedZone ? matchedZone.name : '미배정';
 }
 
+//🎯 사이드바 요원 페이징 변수 선언
+var currentAdminAgentPage = 1;
+var ADMIN_AGENT_PAGE_SIZE = 7;
+
 // 1. 사이드바 패널용 안전요원 목록 비동기 데이터 조회 (새로고침 대응)
 function loadAdminAgentList() {
     const container = document.getElementById("agentListContainer");
@@ -1080,6 +1084,9 @@ function loadAdminAgentList() {
             return isAgent && isEnabled;
         });
 
+        // 🎯 새로 로드 시 1페이지로 리셋
+        currentAdminAgentPage = 1;
+
         // 화면 출력
         renderAdminAgentList();
     })
@@ -1089,9 +1096,9 @@ function loadAdminAgentList() {
     });
 }
 
-// 2. 화면에 요원 목록을 뿌려주는 함수 (SSE 수신 시에도 이 함수가 호출되어 즉시 반영됨)
+// 2. 화면에 요원 목록을 뿌려주는 함수 (7개 페이징 + 바닥 고정 로직 적용)
 function renderAdminAgentList() {
-	// 💡 [추가] KPI 카드의 안전요원 수 동적 업데이트
+    // KPI 카드의 안전요원 수 동적 업데이트
     const kpiAgentValue = document.querySelector(".kpi-card .kpi-value.primary");
     if (kpiAgentValue) {
         kpiAgentValue.innerText = currentAgentList ? currentAgentList.length : 0;
@@ -1099,21 +1106,31 @@ function renderAdminAgentList() {
     const container = document.getElementById("agentListContainer");
     if (!container) return;
 
-    if (currentAgentList.length === 0) {
-        container.innerHTML = '<div style="color: #a0aec0; font-size: 12px;">등록된 안전요원이 없습니다.</div>';
+    if (!currentAgentList || currentAgentList.length === 0) {
+        container.innerHTML = '<div style="color: #a0aec0; font-size: 12px; padding: 20px 0; text-align: center;">등록된 안전요원이 없습니다.</div>';
         return;
     }
 
+    // 🎯 1) 페이징 계산
+    const totalPages = Math.ceil(currentAgentList.length / ADMIN_AGENT_PAGE_SIZE) || 1;
+
+    if (currentAdminAgentPage > totalPages) currentAdminAgentPage = totalPages;
+    if (currentAdminAgentPage < 1) currentAdminAgentPage = 1;
+
+    const startIndex = (currentAdminAgentPage - 1) * ADMIN_AGENT_PAGE_SIZE;
+    const pageList = currentAgentList.slice(startIndex, startIndex + ADMIN_AGENT_PAGE_SIZE);
+
     let html = '<ul style="list-style: none; padding: 0; margin: 0;">';
     
-    currentAgentList.forEach((agent, index) => {
+    // 🎯 2) 실제 요원 카드 생성 (글로벌 인덱스로 모달 전달)
+    pageList.forEach((agent, localIndex) => {
+        const globalIndex = startIndex + localIndex; // 원래 리스트 상의 전체 인덱스
         const name = agent.userName || "이름 없음";
         const userId = agent.userId || "";
         
-        // 매번 실행 시점의 최신 window.adminMainConfigData를 읽음
         var assignedZoneName = getAgentZoneName(userId);
 
-        html += '<li onclick="openAgentModal(' + index + ')" ' +
+        html += '<li onclick="openAgentModal(' + globalIndex + ')" ' +
             'style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s;" ' +
             'onmouseover="this.style.background=\'rgba(255, 255, 255, 0.1)\'" ' +
             'onmouseout="this.style.background=\'rgba(255, 255, 255, 0.05)\'">' +
@@ -1126,10 +1143,50 @@ function renderAdminAgentList() {
             '</div>' +
             '</li>';
     });
+
+    // 🎯 3) 7개 미만인 경우 동일한 크기의 투명 더미(Dummy) 카드를 채워 페이징 버튼 위치 고정
+    for (let i = pageList.length; i < ADMIN_AGENT_PAGE_SIZE; i++) {
+        html += '<li style="visibility: hidden; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 12px; margin-bottom: 8px; pointer-events: none;">' +
+            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><strong style="font-size: 14px;">&nbsp;</strong></div>' +
+            '<div style="font-size: 12px;"><span>&nbsp;</span></div>' +
+            '</li>';
+    }
     
     html += '</ul>';
 
+    // 🎯 4) 하단 페이징 컨트롤 생성 (페이지가 2개 이상일 때)
+    if (totalPages > 1) {
+        html += '<div class="sidebar-pagination" style="display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 10px; padding-top: 6px;">';
+        
+        // 이전 버튼 (<)
+        const prevDisabled = currentAdminAgentPage === 1;
+        html += '<button type="button" onclick="changeAdminAgentPage(' + (currentAdminAgentPage - 1) + ')" ' +
+            (prevDisabled ? 'disabled ' : '') +
+            'style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: ' + (prevDisabled ? '#475569' : '#fff') + '; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: ' + (prevDisabled ? 'default' : 'pointer') + ';">&lt;</button>';
+
+        // 페이지 번호 버튼 (1, 2, 3...)
+        for (let p = 1; p <= totalPages; p++) {
+            const isCurrent = (p === currentAdminAgentPage);
+            html += '<button type="button" onclick="changeAdminAgentPage(' + p + ')" ' +
+                'style="background: ' + (isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)') + '; border: 1px solid ' + (isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)') + '; color: ' + (isCurrent ? '#fff' : '#a0aec0') + '; font-weight: ' + (isCurrent ? 'bold' : 'normal') + '; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">' + p + '</button>';
+        }
+
+        // 다음 버튼 (>)
+        const nextDisabled = currentAdminAgentPage === totalPages;
+        html += '<button type="button" onclick="changeAdminAgentPage(' + (currentAdminAgentPage + 1) + ')" ' +
+            (nextDisabled ? 'disabled ' : '') +
+            'style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: ' + (nextDisabled ? '#475569' : '#fff') + '; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: ' + (nextDisabled ? 'default' : 'pointer') + ';">&gt;</button>';
+
+        html += '</div>';
+    }
+
     container.innerHTML = html;
+}
+
+// 🎯 3. 페이지 전환 함수
+function changeAdminAgentPage(page) {
+    currentAdminAgentPage = page;
+    renderAdminAgentList();
 }
 
 //3. 모달 열기 함수
@@ -1662,9 +1719,11 @@ $(document).ready(function() {
 
 
 
-//비상연락망 전체 데이터 보관 변수 및 현재 선택된 카테고리
+//비상연락망 전체 데이터 보관 변수, 현재 선택된 카테고리, 페이징 변수
 var rawEmergencyList = [];
 var currentEmergencyCategory = 'ALL';
+var currentEmergencyPage = 1;        // 현재 페이지 번호
+var EMERGENCY_PAGE_SIZE = 7;         // 한 페이지 당 표시할 개수 (7개 고정)
 
 // 1. 비상연락망 목록 불러오기 (AJAX)
 function renderEmergencyContactList() {
@@ -1679,7 +1738,6 @@ function renderEmergencyContactList() {
         dataType: 'json',
         success: function(list) {
             rawEmergencyList = list || [];
-            // 데이터 로드 완료 후 현재 선택된 탭 기준으로 목록 렌더링
             displayFilteredEmergencyList();
         },
         error: function(xhr, status, error) {
@@ -1692,6 +1750,7 @@ function renderEmergencyContactList() {
 // 2. 카테고리 탭 클릭 이벤트 처리
 function filterEmergencyCategory(category, btnElem) {
     currentEmergencyCategory = category;
+    currentEmergencyPage = 1; // 카테고리 변경 시 1페이지로 리셋
 
     // 탭 스타일 전환
     $('.emg-tab-btn').css({
@@ -1706,30 +1765,40 @@ function filterEmergencyCategory(category, btnElem) {
         'font-weight': 'bold'
     }).addClass('active');
 
-    // 필터링된 목록 출력
     displayFilteredEmergencyList();
 }
 
-// 3. 실제 화면 카드 렌더링 함수
+// 3. 실제 화면 카드 렌더링 및 페이징 함수
 function displayFilteredEmergencyList() {
     var $container = $('#emergencyContactListContainer');
     $container.empty();
 
-    // 선택된 카테고리 필터링
+    // 1) 선택된 카테고리 필터링
     var filteredList = rawEmergencyList.filter(function(item) {
         if (currentEmergencyCategory === 'ALL') return true;
         return item.category === currentEmergencyCategory;
     });
 
     if (!filteredList || filteredList.length === 0) {
-        $container.html('<div style="color: #a0aec0; font-size: 12px; padding: 15px 0; text-align: center;">해당 카테고리의 연락처가 없습니다.</div>');
+        $container.html('<div style="color: #a0aec0; font-size: 12px; padding: 15px 0; text-align: center; min-height: 580px;">해당 카테고리의 연락처가 없습니다.</div>');
         return;
     }
 
+    // 2) 페이징 데이터 계산 (7개 단위 추출)
+    var totalPages = Math.ceil(filteredList.length / EMERGENCY_PAGE_SIZE) || 1;
+    
+    if (currentEmergencyPage > totalPages) currentEmergencyPage = totalPages;
+    if (currentEmergencyPage < 1) currentEmergencyPage = 1;
+
+    var startIndex = (currentEmergencyPage - 1) * EMERGENCY_PAGE_SIZE;
+    var pageList = filteredList.slice(startIndex, startIndex + EMERGENCY_PAGE_SIZE);
+
+    // 3) 카드 목록 HTML 렌더링
     var $ul = $('<ul>').css({
         'list-style': 'none',
         'padding': '0',
-        'margin': '0'
+        'margin': '0',
+        'min-height': '580px'  /* 🎯 7개 실제 카드 총 높이 기준 지정 */
     });
 
     var categoryMap = {
@@ -1738,7 +1807,8 @@ function displayFilteredEmergencyList() {
         'MEDICAL': '의료 인프라'
     };
 
-    filteredList.forEach(function(item) {
+    // 실제 데이터 카드 생성
+    pageList.forEach(function(item) {
         var categoryName = categoryMap[item.category] || item.category;
 
         var $li = $('<li>').css({
@@ -1769,13 +1839,103 @@ function displayFilteredEmergencyList() {
         $ul.append($li);
     });
 
+    // 🎯 [핵심] 7개 미만일 경우 부족한 만큼 투명 더미(Dummy) 카드를 넣어 높이를 100% 동일하게 고정
+    for (var i = pageList.length; i < EMERGENCY_PAGE_SIZE; i++) {
+        var $dummyLi = $('<li>').css({
+            'background': 'transparent',
+            'border': '1px solid transparent',
+            'padding': '10px 12px',
+            'margin-bottom': '8px',
+            'visibility': 'hidden' /* 화면엔 안 보이지만 공간은 동일하게 차지 */
+        }).html(
+            '<div style="margin-bottom: 4px;"><span style="font-size: 11px; padding: 2px 6px;">&nbsp;</span></div>' +
+            '<div style="font-size: 13px; font-weight: bold; margin-bottom: 2px;">&nbsp;</div>' +
+            '<div style="font-size: 12px;">&nbsp;</div>'
+        );
+        $ul.append($dummyLi);
+    }
+
     $container.append($ul);
+
+    // 4) 하단 페이징 컨트롤 생성 (전체 페이지가 2개 이상일 때 표출)
+    if (totalPages > 1) {
+        var $pagination = $('<div>').css({
+            'display': 'flex',
+            'justify-content': 'center',
+            'align-items': 'center',
+            'gap': '4px',
+            'margin-top': '12px',
+            'padding-top': '8px'
+        });
+
+        // 이전 버튼 (<)
+        var $prevBtn = $('<button type="button">&lt;</button>').css({
+            'background': 'rgba(255, 255, 255, 0.05)',
+            'border': '1px solid rgba(255, 255, 255, 0.1)',
+            'color': currentEmergencyPage > 1 ? '#fff' : '#475569',
+            'padding': '3px 8px',
+            'border-radius': '4px',
+            'font-size': '11px',
+            'cursor': currentEmergencyPage > 1 ? 'pointer' : 'default'
+        }).prop('disabled', currentEmergencyPage === 1);
+
+        $prevBtn.on('click', function() {
+            if (currentEmergencyPage > 1) {
+                currentEmergencyPage--;
+                displayFilteredEmergencyList();
+            }
+        });
+        $pagination.append($prevBtn);
+
+        // 페이지 번호 버튼 (1, 2, 3...)
+        for (var p = 1; p <= totalPages; p++) {
+            (function(page) {
+                var isCurrent = (page === currentEmergencyPage);
+                var $pageBtn = $('<button type="button">' + page + '</button>').css({
+                    'background': isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)',
+                    'border': isCurrent ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                    'color': isCurrent ? '#fff' : '#a0aec0',
+                    'font-weight': isCurrent ? 'bold' : 'normal',
+                    'padding': '3px 8px',
+                    'border-radius': '4px',
+                    'font-size': '11px',
+                    'cursor': 'pointer'
+                });
+
+                $pageBtn.on('click', function() {
+                    currentEmergencyPage = page;
+                    displayFilteredEmergencyList();
+                });
+                $pagination.append($pageBtn);
+            })(p);
+        }
+
+        // 다음 버튼 (>)
+        var $nextBtn = $('<button type="button">&gt;</button>').css({
+            'background': 'rgba(255, 255, 255, 0.05)',
+            'border': '1px solid rgba(255, 255, 255, 0.1)',
+            'color': currentEmergencyPage < totalPages ? '#fff' : '#475569',
+            'padding': '3px 8px',
+            'border-radius': '4px',
+            'font-size': '11px',
+            'cursor': currentEmergencyPage < totalPages ? 'pointer' : 'default'
+        }).prop('disabled', currentEmergencyPage === totalPages);
+
+        $nextBtn.on('click', function() {
+            if (currentEmergencyPage < totalPages) {
+                currentEmergencyPage++;
+                displayFilteredEmergencyList();
+            }
+        });
+        $pagination.append($nextBtn);
+
+        $container.append($pagination);
+    }
 }
 
-//모달 열기 (등록/수정 공용)
+// 모달 열기 (등록/수정 공용)
 function openEmergencyContactModal(id, category, title, phone, sortOrder) {
     if (id) {
-        // 수정 모드
         $('#emergencyModalTitle').text('비상연락처 수정');
         $('#emgContactId').val(id);
         $('#emgCategory').val(category);
@@ -1783,7 +1943,6 @@ function openEmergencyContactModal(id, category, title, phone, sortOrder) {
         $('#emgPhone').val(phone);
         $('#emgSortOrder').val(sortOrder);
     } else {
-        // 신규 등록 모드
         $('#emergencyModalTitle').text('비상연락처 등록');
         $('#emgContactId').val('');
         $('#emgCategory').val('HOST');
@@ -1836,7 +1995,7 @@ function saveEmergencyContact() {
             if (res) {
                 alert(id ? '수정되었습니다.' : '등록되었습니다.');
                 closeEmergencyContactModal();
-                renderEmergencyContactList(); // 목록 다시 뿌리기
+                renderEmergencyContactList();
             } else {
                 alert('처리에 실패했습니다.');
             }
@@ -1859,7 +2018,7 @@ function deleteEmergencyContact(id) {
         data: { contactId: id },
         success: function(res) {
             if (res) {
-                renderEmergencyContactList(); // 목록 다시 뿌리기
+                renderEmergencyContactList();
             } else {
                 alert('삭제 실패했습니다.');
             }
@@ -1870,7 +2029,7 @@ function deleteEmergencyContact(id) {
     });
 }
 
-//form 태그 제출 이벤트가 실행되지 않도록 강제 차단
+// form 태그 제출 이벤트 강제 차단
 $(document).off('submit', '#drone-form').on('submit', '#drone-form', function(e) {
     e.preventDefault();
     return false;
