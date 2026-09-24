@@ -1,9 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<div class="agent-container">
+<div class="agent-container" style="height: calc(100vh - 100px); min-height: 680px;">
     <!-- 1. 좌측: 사용자 목록 패널 -->
-    <div class="agent-card list-panel">
+    <div class="agent-card list-panel" style="display: flex; flex-direction: column; height: 100%;">
         <div class="panel-header">
             <h3 class="panel-title"><i class="fa-solid fa-users"></i> 사용자 목록</h3>
             <button type="button" class="mini-btn primary" id="btn-reset-form">
@@ -11,133 +11,120 @@
             </button>
         </div>
 
-        <!-- 검색 및 필터 영역 -->
-		<div class="search-box" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-		    <!-- 기존 검색창 (너비 조정) -->
-		    <div class="search-input-wrapper" style="flex: 1; min-width: 140px;">
-		        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-		        <input type="text" id="search-keyword" class="form-input" placeholder="이름 또는 ID..." />
-		    </div>
-		
-		    <!-- 💡 권한 필터 -->
-		    <select id="filter-role" class="form-input" style="width: auto; padding: 6px 10px; font-size: 13px;">
-		        <option value="ALL">전체 권한</option>
-		        <option value="ROLE_AGENT">안전요원</option>
-		        <option value="ROLE_CONTROL">관제사</option>
-		    </select>
-		
-		    <!-- 💡 상태 필터 -->
-		    <select id="filter-status" class="form-input" style="width: auto; padding: 6px 10px; font-size: 13px;">
-		        <option value="ALL">전체 상태</option>
-		        <option value="ACTIVE">활성</option>
-		        <option value="INACTIVE">비활성</option>
-		    </select>
-		</div>
+        <!-- 🎯 [수정] 검색 및 필터 영역 (1줄로 깨짐 없이 고정) -->
+        <div class="search-box" style="display: flex; gap: 6px; align-items: center; margin-bottom: 10px; flex-wrap: nowrap;">
+            <div class="search-input-wrapper" style="flex: 1; min-width: 0;">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-keyword" class="form-input" placeholder="이름/ID..." style="padding-left: 30px; font-size: 12px; text-overflow: ellipsis;" />
+            </div>
 
-        <!-- 사용자 리스트 스크롤 구역 -->
-        <div class="agent-list" id="agent-list-container">
-            <!-- AJAX로 요원 항목들이 동적 생성됩니다 -->
+            <select id="filter-role" class="form-input" style="width: 82px; padding: 6px 4px; font-size: 12px; flex-shrink: 0;">
+                <option value="ALL">전체권한</option>
+                <option value="ROLE_AGENT">안전요원</option>
+                <option value="ROLE_CONTROL">관제사</option>
+            </select>
+
+            <select id="filter-status" class="form-input" style="width: 80px; padding: 6px 4px; font-size: 12px; flex-shrink: 0;">
+                <option value="ALL">전체상태</option>
+                <option value="ACTIVE">활성</option>
+                <option value="INACTIVE">비활성</option>
+            </select>
+        </div>
+
+        <!-- 사용자 리스트 구역 -->
+        <div class="agent-list" id="agent-list-container" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            <!-- AJAX 동적 생성 -->
         </div>
     </div>
 
-    <!-- 2. 우측: 현대적 그리드 배치의 사용자 상세/등록 패널 -->
-    <div class="agent-card detail-panel">
+    <!-- 2. 우측: 상세/등록 패널 (🎯 내부 스크롤 추가로 저장버튼 잘림 방지) -->
+    <div class="agent-card detail-panel" style="display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
         <div class="panel-header">
             <h3 class="panel-title" id="form-title"><i class="fa-solid fa-user-gear"></i> 사용자 상세 정보</h3>
             <span class="badge badge-active" id="status-badge">상태</span>
         </div>
 
-        <form id="agent-form" class="info-form">
-		    <!-- 모드 구분 (create / update) -->
-		    <input type="hidden" id="form-mode" value="create" />
-		
-		    <!-- 항상 보이는 상단 프로필 요약 헤더 -->
-		    <div class="profile-preview-card" id="profile-card">
-		        <div class="avatar-box">
-		            <i class="fa-solid fa-user-shield" id="profile-avatar-icon"></i>
-		        </div>
-		        <div class="profile-info-text">
-		            <h4 id="preview-name">사용자 관리</h4>
-		            <p id="preview-id-text">좌측 목록에서 사용자를 선택하거나 신규 등록을 진행하세요.</p>
-		        </div>
-		    </div>
-		
-		    <!-- [숨김 대상] 사용자를 선택하거나 신규등록 클릭 시에만 나타나는 폼 영역 -->
-		    <div id="form-body-wrapper" style="display: none;">
-		        <!-- 2컬럼 Form Grid 배치 -->
-		        <div class="form-grid">
-		            <!-- 아이디 (1열) -->
-		            <div class="form-group">
-		                <label class="form-label"><i class="fa-solid fa-id-badge"></i> 사용자 ID</label>
-		                <input type="text" id="userId" name="userId" class="form-input" placeholder="아이디 입력" required />
-		            </div>
-		
-		            <!-- 비밀번호 (2열) -->
-		            <div class="form-group">
-		                <label class="form-label"><i class="fa-solid fa-lock"></i> 비밀번호</label>
-		                <input type="password" id="userPw" name="userPw" class="form-input" placeholder="비밀번호 (수정 시 미입력)" />
-		            </div>
-		
-		            <!-- 이름 (1열) -->
-		            <div class="form-group">
-		                <label class="form-label"><i class="fa-solid fa-signature"></i> 이름</label>
-		                <input type="text" id="userName" name="userName" class="form-input" placeholder="성명 입력" required />
-		            </div>
-		
-		            <!-- 연락처 (2열) -->
-		            <div class="form-group">
-		                <label class="form-label"><i class="fa-solid fa-phone"></i> 연락처</label>
-		                <input type="text" id="phone" name="phone" class="form-input" placeholder="010-0000-0000" />
-		            </div>
-		
-		            <!-- 이메일 (전체 너비 차지) -->
-		            <div class="form-group full-width">
-		                <label class="form-label"><i class="fa-solid fa-envelope"></i> 이메일 주소</label>
-		                <input type="email" id="email" name="email" class="form-input" placeholder="example@aurora.com" />
-		            </div>
-		        </div>
-		
-		        <!-- 계정 설정 & 스위치 섹션 -->
-		        <div class="form-section-title">계정 권한 및 상태</div>
-		        
-		        <!-- 💡 [신규 추가] 권한 선택 (안전요원 / 관제사) -->
-		        <div class="form-group" style="margin-bottom: 15px;">
-		            <label class="form-label"><i class="fa-solid fa-user-shield"></i> 사용자 권한</label>
-		            <select id="roleName" name="roleName" class="form-input">
-		                <option value="ROLE_AGENT">안전요원</option>
-		                <option value="ROLE_CONTROL">관제사</option>
-		            </select>
-		        </div>
+        <form id="agent-form" class="info-form" style="flex: 1; display: flex; flex-direction: column;">
+            <input type="hidden" id="form-mode" value="create" />
 
-		        <div class="form-group row-group">
-		            <div class="switch-label-group">
-		                <span class="switch-title">계정 활성화</span>
-		                <span class="switch-desc">비활성화 시 해당 사용자의 로그인 및 관제 시스템 접근이 제한됩니다.</span>
-		            </div>
-		            <label class="switch">
-		                <input type="checkbox" id="enabled" checked />
-		                <span class="slider"></span>
-		            </label>
-		        </div>
-		
-		        <!-- 하단 버튼 영역 -->
-		        <div class="form-actions">
-		            <button type="submit" class="btn-success" id="btn-save">
-		                <i class="fa-solid fa-floppy-disk"></i> 저장하기
-		            </button>
-		        </div>
-		    </div>
-		</form>
+            <!-- 상단 프로필 요약 -->
+            <div class="profile-preview-card" id="profile-card" style="margin-bottom: 12px;">
+                <div class="avatar-box">
+                    <i class="fa-solid fa-user-shield" id="profile-avatar-icon"></i>
+                </div>
+                <div class="profile-info-text">
+                    <h4 id="preview-name">사용자 관리</h4>
+                    <p id="preview-id-text">좌측 목록에서 사용자를 선택하거나 신규 등록을 진행하세요.</p>
+                </div>
+            </div>
+
+            <!-- 🎯 [수정] 폼 바디에 overflow 적용하여 스크롤 생성 -->
+            <div id="form-body-wrapper" style="display: none; flex: 1; overflow-y: auto; padding-right: 4px;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-id-badge"></i> 사용자 ID</label>
+                        <input type="text" id="userId" name="userId" class="form-input" placeholder="아이디 입력" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-lock"></i> 비밀번호</label>
+                        <input type="password" id="userPw" name="userPw" class="form-input" placeholder="비밀번호 (수정 시 미입력)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-signature"></i> 이름</label>
+                        <input type="text" id="userName" name="userName" class="form-input" placeholder="성명 입력" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-phone"></i> 연락처</label>
+                        <input type="text" id="phone" name="phone" class="form-input" placeholder="010-0000-0000" />
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label"><i class="fa-solid fa-envelope"></i> 이메일 주소</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="example@aurora.com" />
+                    </div>
+                </div>
+
+                <div class="form-section-title" style="margin-top: 10px;">계정 권한 및 상태</div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label"><i class="fa-solid fa-user-shield"></i> 사용자 권한</label>
+                    <select id="roleName" name="roleName" class="form-input">
+                        <option value="ROLE_AGENT">안전요원</option>
+                        <option value="ROLE_CONTROL">관제사</option>
+                    </select>
+                </div>
+
+                <div class="form-group row-group" style="margin-bottom: 16px;">
+                    <div class="switch-label-group">
+                        <span class="switch-title">계정 활성화</span>
+                        <span class="switch-desc">비활성화 시 로그인 및 시스템 접근이 제한됩니다.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="enabled" checked />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- 하단 저장 버튼 영역 -->
+                <div class="form-actions" style="margin-top: 10px; margin-bottom: 10px;">
+                    <button type="submit" class="btn-success" id="btn-save">
+                        <i class="fa-solid fa-floppy-disk"></i> 저장하기
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
 $(document).ready(function() {
     let agentCache = [];
-    let currentAgentPage = 1;        // 현재 페이지 번호
-    const AGENT_PAGE_SIZE = 5;       // 페이지당 5개 고정
+    let currentAgentPage = 1;
+    const AGENT_PAGE_SIZE = 5;
 
-    // 1. 전체 목록 로드
     loadAgentList();
 
     function loadAgentList() {
@@ -155,7 +142,6 @@ $(document).ready(function() {
         });
     }
 
- // 2. 목록 렌더링 (5개 단위 페이징 처리)
     function renderAgentList(list) {
         const $container = $('#agent-list-container').empty();
 
@@ -164,7 +150,6 @@ $(document).ready(function() {
             return;
         }
 
-        // 1) 페이징 계산
         const totalPages = Math.ceil(list.length / AGENT_PAGE_SIZE) || 1;
 
         if (currentAgentPage > totalPages) currentAgentPage = totalPages;
@@ -173,7 +158,8 @@ $(document).ready(function() {
         const startIndex = (currentAgentPage - 1) * AGENT_PAGE_SIZE;
         const pageList = list.slice(startIndex, startIndex + AGENT_PAGE_SIZE);
 
-        // 2) 현재 페이지 데이터 카드 생성
+        const $listWrapper = $('<div>').addClass('agent-items-wrapper');
+
         pageList.forEach(function(agent) {
             const isEnabled = agent.enabled === 1 || agent.enabled === true || agent.enabled === 'Y';
             const badgeClass = isEnabled ? 'badge-active' : 'badge-inactive';
@@ -182,18 +168,14 @@ $(document).ready(function() {
             const phoneText = agent.phone ? agent.phone : '-';
             const emailText = agent.email ? agent.email : '-';
 
-            // 🎯 [핵심 수정] 관리자 / 관제사 / 안전요원 권한 판별 로직
             const isAdmin = agent.roleName === 'ROLE_ADMIN' || 
                             (agent.userId && agent.userId.toLowerCase().includes('admin')) || 
                             agent.userName === '관리자';
 
             let nameDisplayHtml = '';
-
             if (isAdmin) {
-                // 관리자 계정은 괄호 없이 이름만 깔끔하게 표시
                 nameDisplayHtml = agent.userName;
             } else {
-                // 관제사 및 안전요원은 기존처럼 (권한명) 표기
                 let roleText = '안전요원';
                 if (agent.roleName === 'ROLE_CONTROL' || (agent.userId && agent.userId.toLowerCase().includes('control'))) {
                     roleText = '관제사';
@@ -204,7 +186,6 @@ $(document).ready(function() {
             let html = '';
             html += '<div class="agent-item" data-id="' + agent.userId + '">';
             html += '   <div class="agent-item-header">';
-            // 🎯 수정된 nameDisplayHtml 적용
             html += '       <span class="agent-name">' + nameDisplayHtml + '</span>';
             html += '       <span class="badge ' + badgeClass + '">' + badgeText + '</span>';
             html += '   </div>';
@@ -215,49 +196,44 @@ $(document).ready(function() {
             html += '</div>';
 
             const $item = $(html);
-
             $item.on('click', function() {
                 $('.agent-item').removeClass('active');
                 $(this).addClass('active');
                 selectAgent(agent);
             });
 
-            $container.append($item);
+            $listWrapper.append($item);
         });
 
-        // 3) 부족한 개수만큼 투명 더미(Dummy) 카드 생성 (페이징 위치 고정)
+        // 부족한 카드 개수만큼 더미 생성
         for (let i = pageList.length; i < AGENT_PAGE_SIZE; i++) {
             let dummyHtml = '';
             dummyHtml += '<div class="agent-item" style="visibility: hidden; background: transparent; border-color: transparent; pointer-events: none;">';
-            dummyHtml += '   <div class="agent-item-header">';
-            dummyHtml += '       <span class="agent-name">&nbsp;</span>';
-            dummyHtml += '       <span class="badge">&nbsp;</span>';
-            dummyHtml += '   </div>';
-            dummyHtml += '   <div class="agent-item-info">';
-            dummyHtml += '       <span>&nbsp;</span>';
-            dummyHtml += '       <span>&nbsp;</span>';
-            dummyHtml += '   </div>';
+            dummyHtml += '   <div class="agent-item-header"><span class="agent-name">&nbsp;</span></div>';
+            dummyHtml += '   <div class="agent-item-info"><span>&nbsp;</span></div>';
             dummyHtml += '</div>';
-            $container.append(dummyHtml);
+            $listWrapper.append(dummyHtml);
         }
 
-        // 4) 하단 페이징 컨트롤 생성
+        $container.append($listWrapper);
+
+        // 🎯 [수정] 페이징 여백 축소 (margin-top: 6px)
         if (totalPages > 1) {
             const $pagination = $('<div class="agent-pagination">').css({
                 'display': 'flex',
                 'justify-content': 'center',
                 'align-items': 'center',
-                'gap': '6px',
-                'margin-top': '16px',
-                'padding-top': '8px'
+                'gap': '4px',
+                'margin-top': '6px',
+                'padding-top': '4px'
             });
 
             const $prevBtn = $('<button type="button">&lt;</button>').css({
                 'background': 'rgba(255, 255, 255, 0.05)',
                 'border': '1px solid rgba(255, 255, 255, 0.1)',
                 'color': currentAgentPage > 1 ? '#fff' : '#475569',
-                'padding': '4px 10px',
-                'border-radius': '6px',
+                'padding': '3px 8px',
+                'border-radius': '4px',
                 'font-size': '12px',
                 'cursor': currentAgentPage > 1 ? 'pointer' : 'default'
             }).prop('disabled', currentAgentPage === 1);
@@ -278,8 +254,8 @@ $(document).ready(function() {
                         'border': isCurrent ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
                         'color': isCurrent ? '#fff' : '#a0aec0',
                         'font-weight': isCurrent ? 'bold' : 'normal',
-                        'padding': '4px 10px',
-                        'border-radius': '6px',
+                        'padding': '3px 8px',
+                        'border-radius': '4px',
                         'font-size': '12px',
                         'cursor': 'pointer'
                     });
@@ -296,7 +272,7 @@ $(document).ready(function() {
                 'background': 'rgba(255, 255, 255, 0.05)',
                 'border': '1px solid rgba(255, 255, 255, 0.1)',
                 'color': currentAgentPage < totalPages ? '#fff' : '#475569',
-                'padding': '4px 10px',
+                'padding': '3px 8px',
                 'border-radius': '4px',
                 'font-size': '12px',
                 'cursor': currentAgentPage < totalPages ? 'pointer' : 'default'
@@ -314,7 +290,6 @@ $(document).ready(function() {
         }
     }
 
-    // 3. 요원 선택 시 (폼 영역 보이기)
     function selectAgent(agent) {
         $('#form-mode').val('update');
         $('#form-title').html('<i class="fa-solid fa-user-pen"></i> 요원 정보 수정');
@@ -338,7 +313,6 @@ $(document).ready(function() {
             .text(isEnabled ? '계정 활성' : '계정 비활성');
     }
 
-    // 4. 신규 등록 버튼
     $('#btn-reset-form').on('click', function() {
         $('.agent-item').removeClass('active');
         $('#form-mode').val('create');
@@ -356,7 +330,6 @@ $(document).ready(function() {
         $('#status-badge').attr('class', 'badge badge-active').text('신규 작성');
     });
 
-    // 5. 폼 제출 (등록/수정)
     $('#agent-form').on('submit', function(e) {
         e.preventDefault();
 
@@ -404,7 +377,6 @@ $(document).ready(function() {
         });
     });
 
-    // 6. 통합 필터링
     function filterAgentList() {
         currentAgentPage = 1;
 

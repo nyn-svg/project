@@ -8,48 +8,99 @@
     
     <!-- 1. 상단 요약 KPI 카드 (5개 영역) -->
     <section class="kpi-grid">
-        <div class="kpi-card">
-		    <div class="kpi-title">신규 안전점검 현황</div>
-		    <div class="kpi-value-group">
-		        <span class="kpi-value warning" id="kpi-unread-count">0</span><span class="kpi-unit">개</span>
-		    </div>
-		    <div class="kpi-sub diff-up"></div>
-		</div>
-        <div class="kpi-card">
-		    <div class="kpi-title">미확인 긴급보고</div>
-		    <div class="kpi-value-group">
-		        <span id="kpi-unread-emergency-count" class="kpi-value danger">0</span><span class="kpi-unit">건</span>
-		    </div>
-		    <div class="kpi-sub diff-up"></div>
-		</div>
-        <div class="kpi-card">
-            <div class="kpi-title">근무중 안전요원</div>
-            <div class="kpi-value-group">
-                <span class="kpi-value primary">0</span><span class="kpi-unit">명</span>
-            </div>
-            <div class="kpi-sub status-ok"></div>
+    <!-- 1. 미확인 위험 이력 (위험 발생 시 경보 Glow 효과) -->
+    <div class="kpi-card ${uncheckedRiskCount > 0 ? 'kpi-warning-glow' : ''}">
+        <div class="kpi-bg-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="kpi-header">
+            <span class="kpi-title">미확인 위험 이력</span>
+            <span class="kpi-status-badge ${uncheckedRiskCount > 0 ? 'badge-warning' : 'badge-neutral'}">
+                <span class="pulse-dot ${uncheckedRiskCount > 0 ? 'warning' : 'neutral'}"></span>
+                ${uncheckedRiskCount > 0 ? 'RISK' : 'NORMAL'}
+            </span>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-title">비행중 드론</div>
-            <div class="kpi-value-group">
-                <span class="kpi-value primary">0</span><span class="kpi-unit">대</span>
-            </div>
-            <div class="kpi-sub status-ok"></div>
+        <div class="kpi-value-group">
+            <span class="kpi-value warning counter" id="kpi-unchecked-risk" data-target="${uncheckedRiskCount != null ? uncheckedRiskCount : 0}">
+                0
+            </span>
+            <span class="kpi-unit">건</span>
         </div>
+    </div>
 
-        <!-- 🎯 [신규] 5번째 버튼형 카드: 안전점검 바로가기 -->
-        <a href="${pageContext.request.contextPath}/admin/safetyCheck" class="kpi-card kpi-action-btn">
-            <div class="kpi-action-content">
-                <div class="kpi-action-icon">
-                    <i class="fa-solid fa-clipboard-check"></i>
-                </div>
-                <div class="kpi-action-info">
-                    <span class="kpi-action-title">안전점검</span>
-                    <span class="kpi-action-sub">상세 조회 <i class="fa-solid fa-arrow-right arrow-anim"></i></span>
-                </div>
+    <!-- 2. 미확인 긴급보고 (긴급 건수 1건 이상 시 Red Glow 이펙트) -->
+    <div class="kpi-card ${unreadEmergencyCount > 0 ? 'kpi-danger-glow' : ''}">
+        <div class="kpi-bg-icon"><i class="fa-solid fa-truck-medical"></i></div>
+        <div class="kpi-header">
+            <span class="kpi-title">미확인 긴급보고</span>
+            <span class="kpi-status-badge ${unreadEmergencyCount > 0 ? 'badge-danger' : 'badge-neutral'}">
+                <span class="pulse-dot ${unreadEmergencyCount > 0 ? 'danger' : 'neutral'}"></span>
+                ${unreadEmergencyCount > 0 ? 'ALERT' : 'NORMAL'}
+            </span>
+        </div>
+        <div class="kpi-value-group">
+            <span class="kpi-value danger counter" id="kpi-unread-emergency-count" data-target="${unreadEmergencyCount != null ? unreadEmergencyCount : 0}">
+                0
+            </span>
+            <span class="kpi-unit">건</span>
+        </div>
+    </div>
+
+    <!-- 3. 근무중 안전요원 -->
+    <div class="kpi-card">
+        <div class="kpi-bg-icon"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="kpi-header">
+            <span class="kpi-title">근무중 안전요원</span>
+            <span class="kpi-status-badge badge-success">
+                <span class="pulse-dot success"></span> LIVE
+            </span>
+        </div>
+        <div class="kpi-value-group">
+            <span class="kpi-value primary counter" data-target="${onDutyCount != null ? onDutyCount : 0}">
+                0
+            </span>
+            <span class="kpi-unit">명</span>
+        </div>
+    </div>
+
+    <!-- 4. 비행중 드론 -->
+    <div class="kpi-card">
+        <div class="kpi-bg-icon"><i class="fa-solid fa-crosshairs"></i></div>
+        <div class="kpi-header">
+            <span class="kpi-title">비행중 드론</span>
+            <span class="kpi-status-badge badge-success">
+                <span class="pulse-dot success"></span> ACTIVE
+            </span>
+        </div>
+        <div class="kpi-value-group">
+            <span class="kpi-value primary counter" data-target="${flyingDroneCount != null ? flyingDroneCount : 0}">
+                0
+            </span>
+            <span class="kpi-unit">대</span>
+        </div>
+    </div>
+
+<!-- 안전점검 바로가기 버튼 (카드 전체 가득 채우기) -->
+<a href="${pageContext.request.contextPath}/admin/safetyCheck" class="kpi-card kpi-action-btn">
+    <!-- 배경 워터마크 아이콘 -->
+    <div class="kpi-bg-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+    
+    <div class="kpi-action-content">
+        <div class="kpi-action-left">
+            <div class="kpi-action-icon">
+                <i class="fa-solid fa-clipboard-check"></i>
             </div>
-        </a>
-    </section>
+            <div class="kpi-action-info">
+                <span class="kpi-action-title">안전점검</span>
+                <span class="kpi-action-sub">상세 조회 바로가기</span>
+            </div>
+        </div>
+        
+        <!-- 우측 액션 화살표 원형 버튼 -->
+        <div class="kpi-action-arrow">
+            <i class="fa-solid fa-chevron-right arrow-anim"></i>
+        </div>
+    </div>
+</a>
+</section>
 
     <!-- 2. 중단 영역 (좌: 지도 관제 / 우: 대응 현황) -->
     <section class="dashboard-middle">
@@ -474,13 +525,12 @@ function captureAndSendAIFrame(mediaElement, droneId) {
  }, "image/jpeg", 0.8);
 }
 
-//3. 최근 위험 이벤트 실시간 갱신 로직 (타임스탬프 & DOM 재탐색 보정)
+//3. 최근 위험 이벤트 실시간 갱신 로직 (JSP EL 충돌 완벽 방지)
 function initRealtimeEvents() {
     const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
 
     function fetchRealtimeEvents() {
-        // 🎯 렌더링 직전에 화면 상의 .event-list 요소를 새로 탐색 (DOM 유실 방지)
-        const $targetList =$('.event-list');
+        const $targetList = $('.event-list');
         if ($targetList.length === 0) return;
 
         fetch(basePath + '/admin/fieldAction/api/list?statusType=PENDING')
@@ -491,36 +541,35 @@ function initRealtimeEvents() {
                     return;
                 }
 
-                // 최근 등록된 상위 4개 데이터 추출
                 const recentList = data.slice(0, 4);
                 let html = '';
 
                 recentList.forEach(item => {
-                    // 🎯 1) 시각 파싱 (13자리 타임스탬프 숫자를 HH:mm:ss로 변환)
+                    // 1) 시각 파싱
                     const timeStr = formatEventTime(item.situDate || item.regDate);
 
-                    // 🎯 2) 제출자 정제 (finder가 null/admin이면 '안전요원')
+                    // 2) 제출자 정제
                     let finder = '안전요원';
                     if (item.finder && item.finder !== 'null' && item.finder !== 'undefined' && item.finder !== 'false' && item.finder !== 'admin') {
                         finder = String(item.finder).trim();
                     }
 
-                    // 🎯 3) 감지유형 정제 (situType)
+                    // 3) 감지유형 정제
                     let situType = '자동감지';
                     if (item.situType && item.situType !== 'null' && item.situType !== 'undefined' && item.situType !== 'false') {
                         situType = String(item.situType).trim();
                     }
 
-                    // 🎯 4) 위험유형 정제 (dngrType)
+                    // 4) 위험유형 정제
                     let dngrType = '인파위험';
                     if (item.dngrType && item.dngrType !== 'null' && item.dngrType !== 'undefined' && item.dngrType !== 'false') {
                         dngrType = String(item.dngrType).trim();
                     }
 
-                    // 🎯 5) [제출자 (감지유형)] 출력 (예: 안전요원 (자동감지) / agent01 (여기까지더미))
-                    const descText = `${finder} (${situType})`;
+                    // 🎯 5) [제출자 (감지유형)] 결합 (+ 연산자 사용으로 JSP 충돌 방지)
+                    const descText = finder + ' (' + situType + ')';
 
-                    // 🎯 6) 위험 유형 뱃지 색상
+                    // 6) 위험 유형 뱃지 색상
                     let levelClass = 'danger';
                     if (dngrType.includes('야생') || dngrType.includes('동물')) {
                         levelClass = 'warning';
@@ -536,25 +585,21 @@ function initRealtimeEvents() {
                             '</li>';
                 });
 
-                // 🎯 최신 탐색된 DOM에 HTML 덮어쓰기
                 $targetList.html(html);
             })
             .catch(err => console.error('실시간 위험 이벤트 렌더링 에러:', err));
     }
 
-    // 최초 1회 즉시 실행
     fetchRealtimeEvents();
 
-    // 5초 주기로 DB 재조회하여 실시간 갱신
     if (window.eventTimer) clearInterval(window.eventTimer);
     window.eventTimer = setInterval(fetchRealtimeEvents, 5000);
 }
 
-// 💡 시간 문자열/타임스탬프 파싱 보조 함수
+// 💡 시간 문자열/타임스탬프 파싱 보조 함수 (+ 연산자 방식 적용)
 function formatEventTime(timeVal) {
     if (!timeVal || timeVal === 'null' || timeVal === 'undefined') return '00:00:00';
 
-    // 1) 13자리 숫자 타임스탬프 처리 (e.g. 1788447600000)
     const num = Number(timeVal);
     if (!isNaN(num) && num > 0) {
         const d = new Date(num);
@@ -562,11 +607,10 @@ function formatEventTime(timeVal) {
             const hh = String(d.getHours()).padStart(2, '0');
             const mm = String(d.getMinutes()).padStart(2, '0');
             const ss = String(d.getSeconds()).padStart(2, '0');
-            return `${hh}:${mm}:${ss}`;
+            return hh + ':' + mm + ':' + ss;
         }
     }
 
-    // 2) "2026-09-04 00:00" 형태의 문자열 처리
     const str = String(timeVal).trim();
     if (str.includes(' ')) {
         const timePart = str.split(' ')[1];
@@ -575,7 +619,7 @@ function formatEventTime(timeVal) {
             const hh = (parts[0] || '00').padStart(2, '0');
             const mm = (parts[1] || '00').padStart(2, '0');
             const ss = (parts[2] || '00').padStart(2, '0');
-            return `${hh}:${mm}:${ss}`;
+            return hh + ':' + mm + ':' + ss;
         }
     }
 
@@ -598,14 +642,31 @@ window.startRealtimeDashboard = function() {
         window.animalChartInstance.destroy(); 
         window.animalChartInstance = null; 
     }
+    
+    // KPI 데이터를 서버에서 가져와 화면에 꽂아주는 통합 함수 작성
+    window.initDashboardKPIs = function() {
+        const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+        
+    
+        // 긴급보고 점멸 및 카운트 갱신 함수가 있다면 여기서 함께 호출
+        if (typeof updateEmergencyBlink === 'function') {
+            updateEmergencyBlink();
+        }
+    };
 
     // 부모 wrapper 높이 지정
     $('.chart-wrapper').css({'position': 'relative', 'height': '200px', 'width': '100%'});
 
+    if (typeof window.initDashboardKPIs === 'function') {
+        window.initDashboardKPIs();
+    }
+    
     // 기능 순차 실행
     initRealtimeDensityChart();
     initRealtimeAnimalChart();
     initRealtimeEvents();
+    
+
 };
 
 // 🚀 AJAX 삽입 후 HTML 렌더링 완료 시간을 위해 100ms 후 실행
@@ -621,6 +682,62 @@ window.chartIdleTimer = setInterval(function() {
     if (typeof updateDensityChart === 'function') updateDensityChart(null);
     if (typeof updateAnimalChart === 'function') updateAnimalChart([]);
 }, 1000);
+
+
+
+//🎯 메인 대시보드 파일(adminMainContent.jsp 또는 메인 JS) 하단에 추가/수정
+
+// 1. 대시보드 데이터 전체를 불러오는 전역 함수 정의
+    window.initMainPage = function() {
+        console.log("🚀 대시보드 DB 데이터 재조회 시작");
+
+        // ① KPI 데이터(신규 점검, 긴급보고, 요원 수, 드론 수) 조회 AJAX/Fetch 호출
+        // (기존에 작성되어 있던 KPI 데이터 조회 함수나 AJAX 구문 실행)
+        if (typeof updateEmergencyBlink === 'function') {
+            updateEmergencyBlink();
+        }
+        
+        // ② 실시간 위험 이벤트 목록 조회
+        if (typeof initRealtimeEvents === 'function') {
+            initRealtimeEvents();
+        }
+
+        // ③ 차트 및 기타 실시간 로직 초기화
+        if (typeof initRealtimeDensityChart === 'function') {
+            initRealtimeDensityChart();
+        }
+        if (typeof initRealtimeAnimalChart === 'function') {
+            initRealtimeAnimalChart();
+        }
+        
+     // KPI 숫자 카운팅 애니메이션 실행 함수
+        function animateKpiCounters() {
+            $('.counter').each(function() {
+                const $this = $(this);
+                const targetValue = parseInt($this.attr('data-target'), 10) || 0;
+
+                $({ countNum: 0 }).animate({ countNum: targetValue }, {
+                    duration: 900, // 0.9초 동안 카운트업
+                    easing: 'swing',
+                    step: function() {
+                        $this.text(Math.floor(this.countNum));
+                    },
+                    complete: function() {
+                        $this.text(this.countNum);
+                    }
+                });
+            });
+        }
+
+        // 메인 페이지 로드 시 카운팅 실행
+        $(document).ready(function() {
+            animateKpiCounters();
+        });
+    };
+
+    // 2. $(document).ready()를 쓰지 않고, 스크립트가 로드되는 즉시 함수 실행!
+    //    (이렇게 하면 F5 새로고침 때도 실행되고, AJAX 비동기 이동 때도 100% 즉시 실행됩니다.)
+    window.initMainPage();
 </script>
 
 
@@ -676,85 +793,316 @@ window.chartIdleTimer = setInterval(function() {
     margin-bottom: 20px;
 }
 
-/* 액션 버튼 카드 기본 스타일 */
+/* 안전점검 카드 - 빈 공간 없이 꽉 채우는 스타일 */
 .kpi-action-btn {
-    text-decoration: none !important;
-    background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(59, 130, 246, 0.05) 100%) !important;
-    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    text-decoration: none;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    display: flex;
+    align-items: center;
+    padding: 22px 24px; /* 여백 확장 */
     cursor: pointer;
-    transition: all 0.25s ease-in-out !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-action-btn:hover {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
+}
+
+/* 내부 컨텐츠 양끝 정렬 (FULL WIDTH) */
+.kpi-action-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 2;
+}
+
+.kpi-action-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* 아이콘 박스 크기 확대 */
+.kpi-action-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px !important;
+    font-size: 22px;
+    color: #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
 }
 
-/* 마우스 호버 시 네온 입체 효과 */
-.kpi-action-btn:hover {
-    background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(59, 130, 246, 0.15)) !important;
-    border-color: #38bdf8 !important;
-    box-shadow: 0 0 18px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1) !important;
-    transform: translateY(-2px);
-}
-
-.kpi-action-content {
+/* 텍스트 크기 및 간격 정돈 */
+.kpi-action-info {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    width: 100%;
+    flex-direction: column;
+    gap: 4px;
 }
 
-/* 아이콘 보관함 */
-.kpi-action-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+.kpi-action-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+}
+
+.kpi-action-sub {
+    font-size: 13px;
+    color: #38bdf8;
+    font-weight: 500;
+}
+
+/* 우측 원형 화살표 버튼 */
+.kpi-action-arrow {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
     background: rgba(56, 189, 248, 0.15);
     border: 1px solid rgba(56, 189, 248, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
     color: #38bdf8;
-    flex-shrink: 0;
-    transition: all 0.25s ease;
+    font-size: 14px;
+    transition: all 0.3s ease;
 }
 
-.kpi-action-btn:hover .kpi-action-icon {
+/* 호버 시 우측 버튼 강조 애니메이션 */
+.kpi-action-btn:hover .kpi-action-arrow {
     background: #38bdf8;
-    color: #0f172a;
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    color: #0b132b;
+    transform: translateX(4px);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
 }
 
-/* 텍스트 영역 */
-.kpi-action-info {
+/* =========================================================
+   하단 영역 (.dashboard-bottom) 전용 비율 교정
+   (상단 KPI 및 중단 지도/현장 카드는 영향 없음)
+   ========================================================= */
+
+/* 1. 하단 전체 컨테이너 (차트 영역 + 우측 이벤트 영역) */
+.dashboard-bottom {
+    display: flex !important;
+    gap: 16px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
+/* 2. 좌측 차트 카드 (남는 공간 전체 사용) */
+.dashboard-bottom .chart-card {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;          /* Flex 자식 너비 초과 방지 */
+    display: flex !important;         /* 내부 chart-box 2개를 가로 배치 */
+    gap: 16px !important;
+    padding: 16px !important;
+}
+
+/* 3. 차트 카드 내부의 각 차트 박스 (밀집도 / 야생동물) 1:1 (50%) 균등 배치 */
+.dashboard-bottom .chart-card .chart-box {
+    flex: 1 1 50% !important;         /* 두 차트에 정확히 50%씩 분할 */
+    min-width: 0 !important;          /* Chart.js 찌그러짐 방지 핵심 */
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.dashboard-bottom .chart-card .chart-box .card-body {
+    flex: 1 !important;
+    position: relative !important;
+    min-height: 180px !important;
+}
+
+/* 4. 우측 최근 위험 이벤트 카드 (340px 너비 고정) */
+.dashboard-bottom .event-card {
+    flex: 0 0 340px !important;
+    width: 340px !important;
+    box-sizing: border-box !important;
+}
+
+/* 5. 우측 위험 이벤트 리스트 내 텍스트 말줄임(...) 및 정렬 */
+.dashboard-bottom .event-list .event-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 12px 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dashboard-bottom .event-list .event-time {
+    flex-shrink: 0 !important;
+    width: 58px !important;
+    font-size: 12px !important;
+}
+
+.dashboard-bottom .event-list .event-desc {
+    flex: 1 !important;
+    min-width: 0 !important;            /* flex 텍스트 말줄임 필수 속성 */
+    white-space: nowrap !important;     /* 줄바꿈 방지 */
+    overflow: hidden !important;        /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis !important; /* ... 표시 */
+    font-size: 13px !important;
+}
+
+.dashboard-bottom .event-list .badge-tag,
+.dashboard-bottom .event-list .action-status {
+    flex-shrink: 0 !important;         /* 뱃지 우측 고정 */
+}
+
+
+
+
+/* ==========================================
+   관제센터 HUD 스타일 KPI 카드 CSS
+   ========================================== */
+
+/* KPI 카드 기본 레이아웃 */
+.kpi-card {
+    position: relative;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 20px 22px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.kpi-action-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.02em;
+.kpi-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.12);
 }
 
-.kpi-action-sub {
-    font-size: 12px;
-    color: #38bdf8;
+/* 🎯 1. 배경 은은한 워터마크 아이콘 */
+.kpi-bg-icon {
+    position: absolute;
+    right: -12px;
+    bottom: -15px;
+    font-size: 85px;
+    color: rgba(255, 255, 255, 0.035);
+    pointer-events: none;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover .kpi-bg-icon {
+    color: rgba(56, 189, 248, 0.1);
+    transform: scale(1.08) rotate(-4deg);
+}
+
+/* 상단 헤더 & 상태 배지 */
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    z-index: 2;
+}
+
+.kpi-title {
+    font-size: 13.5px;
     font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: -0.2px;
+}
+
+.kpi-status-badge {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
 }
 
-/* 화살표 애니메이션 */
-.arrow-anim {
-    transition: transform 0.2s ease;
+/* 배지 색상 라인업 */
+.badge-success { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+.badge-danger  { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+.badge-neutral { background: rgba(255, 255, 255, 0.05); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.1); }
+
+/* 🎯 2. 라이브 깜빡임 펄스 점 (Pulse Dot) */
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
 }
 
-.kpi-action-btn:hover .arrow-anim {
-    transform: translateX(4px);
+.pulse-dot.success { background-color: #4ade80; animation: pulse-green 1.8s infinite; }
+.pulse-dot.warning { background-color: #fbbf24; animation: pulse-yellow 1.8s infinite; }
+.pulse-dot.danger  { background-color: #f87171; animation: pulse-red 1.2s infinite; }
+.pulse-dot.neutral { background-color: #64748b; }
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.8); }
+    70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.8); }
+    70% { box-shadow: 0 0 0 7px rgba(248, 113, 113, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+/* 🎯 3. 미확인 건수 발생 시 카드 발광 (Glow) */
+.kpi-danger-glow {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    animation: danger-glow 2s infinite alternate;
+}
+
+.kpi-warning-glow {
+    border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+@keyframes danger-glow {
+    from { box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
+    to { box-shadow: 0 0 22px rgba(239, 68, 68, 0.35); }
+}
+
+/* 수치 및 단위 타이포그래피 */
+.kpi-value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    z-index: 2;
+}
+
+.kpi-value {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    letter-spacing: -1px;
+}
+
+.kpi-value.primary { color: #38bdf8; text-shadow: 0 0 14px rgba(56, 189, 248, 0.35); }
+.kpi-value.warning { color: #fbbf24; text-shadow: 0 0 14px rgba(251, 191, 36, 0.35); }
+.kpi-value.danger  { color: #f87171; text-shadow: 0 0 14px rgba(248, 113, 113, 0.4); }
+
+.kpi-unit {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
 }
 </style>

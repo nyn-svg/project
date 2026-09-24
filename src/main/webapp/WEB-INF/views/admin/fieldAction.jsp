@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="<c:url value='/resources/css/admin/fieldAction.css'/>">
 
 <div class="action-container">
-   <div class="page-title"><i class="fa-solid fa-clipboard-check"></i> 현장 조치 승인 및 관리</div>
+    <div class="page-title"><i class="fa-solid fa-clipboard-check"></i> 현장 조치 승인 및 관리</div>
 
     <!-- 탭 상단 메뉴 -->
     <div class="tab-menu">
@@ -18,69 +18,99 @@
             미결 조치 검토 <span class="badge-count" id="pendingCount">0</span>
         </button>
         <button class="tab-btn" onclick="switchTab('history')">
-            완료 조치 이력 (아카이빙)
+            완료 조치 이력
         </button>
     </div>
 
     <!-- 1. 미결 조치 검토 영역 -->
-<div id="tab-pending" class="content-card">
-    <div class="filter-bar">
-        <span>안전요원이 제출한 현장 조치 요청 건을 검토 후 승인/반려합니다.</span>
+    <div id="tab-pending" class="content-card">
+        <div class="filter-bar">
+            <span>안전요원이 제출한 현장 조치 요청 건을 검토 후 승인/반려합니다.</span>
+        </div>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">요청ID</th>
+                    <th style="width: 10%;">위험유형</th>
+                    <th style="width: 10%;">감지유형</th>
+                    <th style="width: 11%;">제출자</th>
+                    <th style="width: 24%;">조치 내용</th>
+                    <th style="width: 13%;">제출 일시</th>
+                    <th style="width: 8%;">상태</th>
+                    <th style="width: 9%;">검토 처리</th>
+                </tr>
+            </thead>
+            <tbody id="pendingTbody">
+                <tr>
+                    <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <table class="custom-table">
-        <!-- 1. 미결 조치 검토 테이블 헤더 (총 8컬럼으로 변경) -->
-        <thead>
-            <tr>
-                <th style="width: 15%;">요청ID</th>
-                <th style="width: 10%;">위험유형</th> <!-- 💡 새로 추가됨 (dngrType) -->
-                <th style="width: 10%;">감지유형</th> <!-- 💡 구역명 -> 감지유형 변경 (situType) -->
-                <th style="width: 11%;">제출자</th>
-                <th style="width: 24%;">조치 내용 Summary</th>
-                <th style="width: 13%;">제출 일시</th>
-                <th style="width: 8%;">상태</th>
-                <th style="width: 9%;">검토 처리</th>
-            </tr>
-        </thead>
-        <!-- JS 연동을 위한 id 부여 (colspan=8로 변경) -->
-        <tbody id="pendingTbody">
-            <tr>
-                <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
     <!-- 2. 완료 조치 이력 (아카이빙) 영역 -->
-<div id="tab-history" class="content-card" style="display: none;">
-    <div class="filter-bar">
-        <div>
-            <input type="text" placeholder="검색어 (위험유형, 감지유형, 안전요원명)" style="padding: 6px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 4px;">
-            <button class="btn btn-secondary">검색</button>
+    <div id="tab-history" class="content-card" style="display: none;">
+        <!-- 🎯 상세 항목별 Select 검색 필터 바 -->
+        <div class="filter-bar" style="flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+            <div class="filter-group" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                
+                <!-- 1) 최종 처리상태 필터 -->
+                <select id="historyStatusFilter" class="filter-select" style="padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; outline: none;">
+                    <option value="">전체 처리상태</option>
+                    <option value="APPROVED">최종 승인</option>
+                    <option value="REJECTED">반려 처리</option>
+                </select>
+
+                <!-- 2) 위험유형 필터 -->
+                <select id="historyDngrFilter" class="filter-select" style="padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; outline: none;">
+                    <option value="">전체 위험유형</option>
+                    <option value="인파위험">인파위험</option>
+                    <option value="시설물위험">시설물위험</option>
+                    <option value="화재위험">화재위험</option>
+                    <option value="응급환자">응급환자</option>
+                    <option value="기타">기타</option>
+                </select>
+
+                <!-- 3) 감지유형 필터 -->
+                <select id="historySituFilter" class="filter-select" style="padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; outline: none;">
+                    <option value="">전체 감지유형</option>
+                    <option value="AI_CCTV">AI CCTV</option>
+                    <option value="DRONE">드론 감지</option>
+                    <option value="PATROL">요원 순찰</option>
+                    <option value="REPORT">시민 신고</option>
+                </select>
+
+                <!-- 4) 키워드 검색어 입력창 -->
+                <input type="text" id="historyKeywordInput" placeholder="검색어 (제출자, 관리자, 조치내용)" style="padding: 8px 14px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; min-width: 220px; outline: none;">
+
+                <!-- 5) 검색 및 초기화 버튼 -->
+                <button type="button" class="btn btn-secondary" onclick="resetHistoryFilter()" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-rotate-right"></i> 초기화
+                </button>
+            </div>
+            <span style="font-size: 12.5px; color: #94a3b8;">※ 마감된 이력 데이터 검색 영역입니다.</span>
         </div>
-        <span>최종 마감된 이력 데이터입니다.</span>
+
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">요청ID</th>
+                    <th style="width: 10%;">위험유형</th>
+                    <th style="width: 10%;">감지유형</th>
+                    <th style="width: 10%;">제출자</th>
+                    <th style="width: 10%;">최종 처리상태</th>
+                    <th style="width: 18%;">승인/반려 일시</th>
+                    <th style="width: 17%;">처리자(관리자)</th>
+                    <th style="width: 10%;">상세보기</th>
+                </tr>
+            </thead>
+            <tbody id="historyTbody">
+                <tr>
+                    <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <table class="custom-table">
-        <!-- 2. 완료 조치 이력 테이블 헤더 (총 8컬럼) -->
-        <thead>
-            <tr>
-                <th style="width: 15%;">요청ID</th>
-                <th style="width: 10%;">위험유형</th> <!-- 💡 새로 추가됨 (dngrType) -->
-                <th style="width: 10%;">감지유형</th> <!-- 💡 구역명 -> 감지유형 변경 (situType) -->
-                <th style="width: 10%;">제출자</th>
-                <th style="width: 10%;">최종 처리상태</th>
-                <th style="width: 18%;">승인/반려 일시</th>
-                <th style="width: 17%;">처리자(관리자)</th>
-                <th style="width: 10%;">상세보기</th>
-            </tr>
-        </thead>
-        <!-- JS 연동을 위한 id 부여 (colspan=8로 변경) -->
-        <tbody id="historyTbody">
-            <tr>
-                <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 </div>
 
 <!-- 상세 보기 및 승인/반려 모달 -->

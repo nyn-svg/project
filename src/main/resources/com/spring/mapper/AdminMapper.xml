@@ -55,5 +55,27 @@
         WHERE R.ROLE_NAME = 'ROLE_AGENT'
         ORDER BY U.USER_NAME ASC
     </select>
+    
+    <!-- 1. 미확인 위험 이력 건수 (WORKER가 NULL인 데이터) -->
+    <select id="getUncheckedRiskCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE WORKER IS NULL
+    </select>
+
+    <!-- 2. 미확인 긴급보고 건수 (SITU_TYPE이 '긴급보고'이고 WORKER가 NULL인 데이터) -->
+    <select id="getUnreadEmergencyCount" resultType="int">
+        SELECT COUNT(*)
+        FROM SITUATIONS
+        WHERE SITU_TYPE = '긴급보고'
+          AND WORKER IS NULL
+    </select>
+
+    <!-- 3. 비행중 드론 대수 (DRONE_STATUS가 '비행'인 데이터) -->
+    <select id="getFlyingDroneCount" resultType="int">
+        SELECT COUNT(*)
+        FROM DRONES
+        WHERE DRONE_STATUS = '비행'
+    </select>
 
 </mapper>

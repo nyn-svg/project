@@ -5,6 +5,15 @@ function initFieldActionPage() {
     const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
     const actionDetailModal = document.getElementById('actionDetailModal');
 
+    // 전역 캐시 및 페이징 상태 변수
+    let pendingCache = [];
+    let currentPendingPage = 1;
+
+    let historyCache = [];
+    let currentHistoryPage = 1;
+
+    const PAGE_SIZE = 8; // 🎯 한 페이지 당 8개 고정
+
     // 1. 초기 데이터 로드 (페이지 열릴 때 미결 목록 조회)
     loadPendingList();
 
@@ -29,241 +38,309 @@ function initFieldActionPage() {
         }
     };
 
-	// 전역 캐시 및 페이징 상태 변수
-	let pendingCache = [];
-	let currentPendingPage = 1;
+    // 3. 미결 조치 목록 AJAX 조회
+    function loadPendingList() {
+        fetch(basePath + '/admin/fieldAction/api/list?statusType=PENDING')
+            .then(res => res.json())
+            .then(data => {
+                pendingCache = data || [];
+                currentPendingPage = 1; // 로드 시 1페이지로 초기화
 
-	let historyCache = [];
-	let currentHistoryPage = 1;
+                const countBadge = document.getElementById('pendingCount');
+                if (countBadge) countBadge.textContent = pendingCache.length;
 
-	const PAGE_SIZE = 8; // 🎯 한 페이지 당 8개 고정
+                renderPendingTable();
+            })
+            .catch(err => console.error('미결 목록 로드 실패:', err));
+    }
 
-	// 3. 미결 조치 목록 AJAX 조회
-	function loadPendingList() {
-	    fetch(basePath + '/admin/fieldAction/api/list?statusType=PENDING')
-	        .then(res => res.json())
-	        .then(data => {
-	            pendingCache = data || [];
-	            currentPendingPage = 1; // 로드 시 1페이지로 초기화
+    // 3. 미결 조치 목록 렌더링
+    function renderPendingTable() {
+        const tbody = document.getElementById('pendingTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
 
-	            const countBadge = document.getElementById('pendingCount');
-	            if (countBadge) countBadge.textContent = pendingCache.length;
+        if (!pendingCache || pendingCache.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px 0; color: #a0aec0;">검토 대기 중인 조치 건이 없습니다.</td></tr>';
+            renderPaginationControls('pendingPagination', tbody, 1, 1, changePendingPage);
+            return;
+        }
 
-	            renderPendingTable();
-	        })
-	        .catch(err => console.error('미결 목록 로드 실패:', err));
-	}
+        const totalPages = Math.ceil(pendingCache.length / PAGE_SIZE) || 1;
+        if (currentPendingPage > totalPages) currentPendingPage = totalPages;
+        if (currentPendingPage < 1) currentPendingPage = 1;
 
-	// 3. 미결 조치 목록 렌더링
-	function renderPendingTable() {
-	    const tbody = document.getElementById('pendingTbody');
-	    if (!tbody) return;
-	    tbody.innerHTML = '';
+        const startIndex = (currentPendingPage - 1) * PAGE_SIZE;
+        const pageList = pendingCache.slice(startIndex, startIndex + PAGE_SIZE);
 
-	    if (!pendingCache || pendingCache.length === 0) {
-	        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px 0; color: #a0aec0;">검토 대기 중인 조치 건이 없습니다.</td></tr>';
-	        renderPaginationControls('pendingPagination', tbody, 1, 1, changePendingPage);
-	        return;
-	    }
+        pageList.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.situNo || ''}</td>
+                <td>${item.dngrType || ''}</td>
+                <td>${item.situType || ''}</td>
+                <td>${item.finder || '안전요원'}</td>
+                <td>${item.situContent || ''}</td>
+                <td>${formatDate(item.situDate)}</td>
+                <td><span class="status-badge status-pending">검토 대기</span></td>
+                <td>
+                    <button type="button" class="btn btn-primary" onclick="openFieldActionDetailModal('${item.situNo}')">상세 검토</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
 
-	    const totalPages = Math.ceil(pendingCache.length / PAGE_SIZE) || 1;
-	    if (currentPendingPage > totalPages) currentPendingPage = totalPages;
-	    if (currentPendingPage < 1) currentPendingPage = 1;
+        // 더미 행 추가 (높이 고정 유지)
+        for (let i = pageList.length; i < PAGE_SIZE; i++) {
+            const dummyTr = document.createElement('tr');
+            dummyTr.style.visibility = 'hidden';
+            dummyTr.style.pointerEvents = 'none';
+            dummyTr.innerHTML = `
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>${pendingCache[0] ? pendingCache[0].situContent || '&nbsp;' : '&nbsp;'}</td>
+                <td>&nbsp;</td>
+                <td><span class="status-badge status-pending">&nbsp;</span></td>
+                <td><button type="button" class="btn btn-primary">&nbsp;</button></td>
+            `;
+            tbody.appendChild(dummyTr);
+        }
 
-	    const startIndex = (currentPendingPage - 1) * PAGE_SIZE;
-	    const pageList = pendingCache.slice(startIndex, startIndex + PAGE_SIZE);
+        renderPaginationControls('pendingPagination', tbody, currentPendingPage, totalPages, changePendingPage);
+    }
 
-	    pageList.forEach(item => {
-	        const tr = document.createElement('tr');
-	        tr.innerHTML = `
-	            <td>${item.situNo || ''}</td>
-	            <td>${item.dngrType || ''}</td>
-	            <td>${item.situType || ''}</td>
-	            <td>${item.finder || '안전요원'}</td>
-	            <td>${item.situContent || ''}</td>
-	            <td>${formatDate(item.situDate)}</td>
-	            <td><span class="status-badge status-pending">검토 대기</span></td>
-	            <td>
-	                <button type="button" class="btn btn-primary" onclick="openFieldActionDetailModal('${item.situNo}')">상세 검토</button>
-	            </td>
-	        `;
-	        tbody.appendChild(tr);
-	    });
+    function changePendingPage(page) {
+        currentPendingPage = page;
+        renderPendingTable();
+    }
 
-	    // 🎯 [핵심 수정] 더미 행에도 동일한 버튼/뱃지 구조를 넣어 높이를 100% 일치시킵니다.
-	    for (let i = pageList.length; i < PAGE_SIZE; i++) {
-	        const dummyTr = document.createElement('tr');
-	        dummyTr.style.visibility = 'hidden';
-	        dummyTr.style.pointerEvents = 'none';
-	        dummyTr.innerHTML = `
-	            <td>&nbsp;</td>
-	            <td>&nbsp;</td>
-	            <td>&nbsp;</td>
-	            <td>&nbsp;</td>
-	            <td>${pendingCache[0] ? pendingCache[0].situContent || '&nbsp;' : '&nbsp;'}</td>
-	            <td>&nbsp;</td>
-	            <td><span class="status-badge status-pending">&nbsp;</span></td>
-	            <td><button type="button" class="btn btn-primary">&nbsp;</button></td>
-	        `;
-	        tbody.appendChild(dummyTr);
-	    }
+    // 4. 완료 이력 목록 AJAX 조회
+    function loadHistoryList() {
+        fetch(basePath + '/admin/fieldAction/api/list?statusType=HISTORY')
+            .then(res => res.json())
+            .then(data => {
+                historyCache = data || [];
+                currentHistoryPage = 1; // 로드 시 1페이지로 초기화
 
-	    renderPaginationControls('pendingPagination', tbody, currentPendingPage, totalPages, changePendingPage);
-	}
+                renderHistoryTable();
+            })
+            .catch(err => console.error('이력 목록 로드 실패:', err));
+    }
 
-	function changePendingPage(page) {
-	    currentPendingPage = page;
-	    renderPendingTable();
-	}
+    // 🎯 4-1. 완료 이력 필터링 및 검색 함수
+    function getFilteredHistoryList() {
+        const statusVal = document.getElementById('historyStatusFilter') ? document.getElementById('historyStatusFilter').value.trim() : '';
+        const dngrVal = document.getElementById('historyDngrFilter') ? document.getElementById('historyDngrFilter').value.trim() : '';
+        const situVal = document.getElementById('historySituFilter') ? document.getElementById('historySituFilter').value.trim() : '';
+        const keywordVal = document.getElementById('historyKeywordInput') ? document.getElementById('historyKeywordInput').value.trim().toLowerCase() : '';
 
-	// 4. 완료 이력 목록 AJAX 조회
-	function loadHistoryList() {
-	    fetch(basePath + '/admin/fieldAction/api/list?statusType=HISTORY')
-	        .then(res => res.json())
-	        .then(data => {
-	            historyCache = data || [];
-	            currentHistoryPage = 1; // 로드 시 1페이지로 초기화
+        return historyCache.filter(item => {
+            const status = item.situStatus || '';
+            const isApproved = (status === 'APPROVE' || status === '조치' || status === '종료');
 
-	            renderHistoryTable();
-	        })
-	        .catch(err => console.error('이력 목록 로드 실패:', err));
-	}
+            // 1) 상태 필터 (APPROVED / REJECTED)
+            if (statusVal === 'APPROVED' && !isApproved) return false;
+            if (statusVal === 'REJECTED' && isApproved) return false;
 
-	// 4. 완료 이력 목록 렌더링
-	function renderHistoryTable() {
-	    const tbody = document.getElementById('historyTbody');
-	    if (!tbody) return;
-	    tbody.innerHTML = '';
+            // 2) 위험유형 필터
+            if (dngrVal !== '' && !(item.dngrType || '').includes(dngrVal)) return false;
 
-	    if (!historyCache || historyCache.length === 0) {
-	        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px 0; color: #a0aec0;">완료된 조치 이력이 없습니다.</td></tr>';
-	        renderPaginationControls('historyPagination', tbody, 1, 1, changeHistoryPage);
-	        return;
-	    }
+            // 3) 감지유형 필터
+            if (situVal !== '' && !(item.situType || '').includes(situVal)) return false;
 
-	    const totalPages = Math.ceil(historyCache.length / PAGE_SIZE) || 1;
-	    if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
-	    if (currentHistoryPage < 1) currentHistoryPage = 1;
+            // 4) 키워드 검색 (요청ID, 제출자, 관리자, 조치내용)
+            if (keywordVal !== '') {
+                const idMatch = (item.situNo || '').toString().toLowerCase().includes(keywordVal);
+                const finderMatch = (item.finder || '').toLowerCase().includes(keywordVal);
+                const workerMatch = (item.worker || '').toLowerCase().includes(keywordVal);
+                const contentMatch = (item.situContent || '').toLowerCase().includes(keywordVal);
 
-	    const startIndex = (currentHistoryPage - 1) * PAGE_SIZE;
-	    const pageList = historyCache.slice(startIndex, startIndex + PAGE_SIZE);
+                if (!idMatch && !finderMatch && !workerMatch && !contentMatch) {
+                    return false;
+                }
+            }
 
-	    pageList.forEach(item => {
-	        const status = item.situStatus || '';
-	        const isApproved = (status === 'APPROVE' || status === '조치' || status === '종료');
-	        const statusClass = isApproved ? 'status-approved' : 'status-rejected';
-	        const statusText = isApproved ? '조치 승인' : '조치 반려';
+            return true;
+        });
+    }
 
-	        const displayFinder = (!item.finder || item.finder === 'admin') ? '안전요원' : item.finder;
+    // 4-2. 완료 이력 목록 렌더링
+    function renderHistoryTable() {
+        const tbody = document.getElementById('historyTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
 
-	        const tr = document.createElement('tr');
-	        tr.innerHTML = `
-	            <td>${item.situNo || ''}</td>
-	            <td>${item.dngrType || ''}</td>
-	            <td>${item.situType || ''}</td>
-	            <td>${displayFinder}</td>
-	            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-	            <td>${item.endDate || item.situDate || ''}</td>
-	            <td>${item.worker || '관리자'}</td>
-	            <td>
-	                <button type="button" class="btn btn-secondary" onclick="openFieldActionDetailModal('${item.situNo}')">이력 조회</button>
-	            </td>
-	        `;
-	        tbody.appendChild(tr);
-	    });
+        const filteredList = getFilteredHistoryList();
 
-	    // 🎯 [핵심 수정] 더미 행에도 동일한 버튼/뱃지 구조를 넣어 높이를 100% 일치시킵니다.
-	    for (let i = pageList.length; i < PAGE_SIZE; i++) {
-	        const dummyTr = document.createElement('tr');
-	        dummyTr.style.visibility = 'hidden';
-	        dummyTr.style.pointerEvents = 'none';
-	        dummyTr.innerHTML = `
-	            <td>&nbsp;</td>
-	            <td>&nbsp;</td>
-	            <td>&nbsp;</td>
-	            <td>&nbsp;</td>
-	            <td><span class="status-badge status-approved">&nbsp;</span></td>
-	            <td>&nbsp;</td>
-	            <td>&nbsp;</td>
-	            <td><button type="button" class="btn btn-secondary">&nbsp;</button></td>
-	        `;
-	        tbody.appendChild(dummyTr);
-	    }
+        if (!filteredList || filteredList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px 0; color: #a0aec0;">조건에 해당하는 조치 이력이 없습니다.</td></tr>';
+            renderPaginationControls('historyPagination', tbody, 1, 1, changeHistoryPage);
+            return;
+        }
 
-	    renderPaginationControls('historyPagination', tbody, currentHistoryPage, totalPages, changeHistoryPage);
-	}
+        const totalPages = Math.ceil(filteredList.length / PAGE_SIZE) || 1;
+        if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
+        if (currentHistoryPage < 1) currentHistoryPage = 1;
 
-	function changeHistoryPage(page) {
-	    currentHistoryPage = page;
-	    renderHistoryTable();
-	}
+        const startIndex = (currentHistoryPage - 1) * PAGE_SIZE;
+        const pageList = filteredList.slice(startIndex, startIndex + PAGE_SIZE);
 
-	// 🎯 공통 페이징 버튼 UI 생성 함수
-	function renderPaginationControls(containerId, tbodyElem, currentPage, totalPages, onPageChange) {
-	    let container = document.getElementById(containerId);
-	    
-	    // 페이지네이션 영역이 없으면 테이블 바로 다음에 동적 생성
-	    if (!container) {
-	        container = document.createElement('div');
-	        container.id = containerId;
-	        container.className = 'table-pagination';
-	        container.style.cssText = 'display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 16px; padding-top: 8px;';
-	        const table = tbodyElem.closest('table');
-	        if (table && table.parentNode) {
-	            table.parentNode.insertBefore(container, table.nextSibling);
-	        }
-	    }
+        pageList.forEach(item => {
+            const status = item.situStatus || '';
+            const isApproved = (status === 'APPROVE' || status === '조치' || status === '종료');
+            const statusClass = isApproved ? 'status-approved' : 'status-rejected';
+            const statusText = isApproved ? '조치 승인' : '조치 반려';
 
-	    container.innerHTML = '';
+            const displayFinder = (!item.finder || item.finder === 'admin') ? '안전요원' : item.finder;
 
-	    if (totalPages <= 1) return;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.situNo || ''}</td>
+                <td>${item.dngrType || ''}</td>
+                <td>${item.situType || ''}</td>
+                <td>${displayFinder}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${item.endDate || item.situDate || ''}</td>
+                <td>${item.worker || '관리자'}</td>
+                <td>
+                    <button type="button" class="btn btn-secondary" onclick="openFieldActionDetailModal('${item.situNo}')">이력 조회</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
 
-	    // 이전 버튼 (<)
-	    const prevBtn = document.createElement('button');
-	    prevBtn.type = 'button';
-	    prevBtn.textContent = '<';
-	    prevBtn.disabled = (currentPage === 1);
-	    prevBtn.style.cssText = `background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: ${currentPage > 1 ? '#fff' : '#475569'}; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: ${currentPage > 1 ? 'pointer' : 'default'};`;
-	    prevBtn.onclick = () => onPageChange(currentPage - 1);
-	    container.appendChild(prevBtn);
+        // 더미 행 추가 (높이 고정 유지)
+        for (let i = pageList.length; i < PAGE_SIZE; i++) {
+            const dummyTr = document.createElement('tr');
+            dummyTr.style.visibility = 'hidden';
+            dummyTr.style.pointerEvents = 'none';
+            dummyTr.innerHTML = `
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td><span class="status-badge status-approved">&nbsp;</span></td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td><button type="button" class="btn btn-secondary">&nbsp;</button></td>
+            `;
+            tbody.appendChild(dummyTr);
+        }
 
-	    // 페이지 번호 버튼 (1, 2, 3...)
-	    for (let p = 1; p <= totalPages; p++) {
-	        const pageBtn = document.createElement('button');
-	        pageBtn.type = 'button';
-	        pageBtn.textContent = p;
-	        const isCurrent = (p === currentPage);
-	        pageBtn.style.cssText = `background: ${isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)'}; border: 1px solid ${isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)'}; color: ${isCurrent ? '#fff' : '#a0aec0'}; font-weight: ${isCurrent ? 'bold' : 'normal'}; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;`;
-	        pageBtn.onclick = () => onPageChange(p);
-	        container.appendChild(pageBtn);
-	    }
+        renderPaginationControls('historyPagination', tbody, currentHistoryPage, totalPages, changeHistoryPage);
+    }
 
-	    // 다음 버튼 (>)
-	    const nextBtn = document.createElement('button');
-	    nextBtn.type = 'button';
-	    nextBtn.textContent = '>';
-	    nextBtn.disabled = (currentPage === totalPages);
-	    nextBtn.style.cssText = `background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: ${currentPage < totalPages ? '#fff' : '#475569'}; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: ${currentPage < totalPages ? 'pointer' : 'default'};`;
-	    nextBtn.onclick = () => onPageChange(currentPage + 1);
-	    container.appendChild(nextBtn);
-	}
+    function changeHistoryPage(page) {
+        currentHistoryPage = page;
+        renderHistoryTable();
+    }
 
-	// 날짜 포맷 함수 (기존 유구)
-	function formatDate(time) {
-	    if (!time) return '-';
-	    const date = new Date(Number(time));
-	    if (isNaN(date.getTime())) return time;
-	    
-	    const yyyy = date.getFullYear();
-	    const mm = String(date.getMonth() + 1).padStart(2, '0');
-	    const dd = String(date.getDate()).padStart(2, '0');
-	    const hh = String(date.getHours()).padStart(2, '0');
-	    const mi = String(date.getMinutes()).padStart(2, '0');
-	    
-	    return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
-	}
+    // 🎯 4-3. 전역 검색 실행 및 필터 초기화 함수 등록
+    window.searchHistory = function () {
+        currentHistoryPage = 1;
+        renderHistoryTable();
+    };
 
-    // 5. 모달 열기 (고유 함수명 적용 및 ID 검증 추가)
+    window.resetHistoryFilter = function () {
+        const statusFilter = document.getElementById('historyStatusFilter');
+        const dngrFilter = document.getElementById('historyDngrFilter');
+        const situFilter = document.getElementById('historySituFilter');
+        const keywordInput = document.getElementById('historyKeywordInput');
+
+        if (statusFilter) statusFilter.value = '';
+        if (dngrFilter) dngrFilter.value = '';
+        if (situFilter) situFilter.value = '';
+        if (keywordInput) keywordInput.value = '';
+
+        currentHistoryPage = 1;
+        renderHistoryTable();
+    };
+
+    // 🎯 4-4. 이벤트 리스너 등록 (Select 변경 시 즉시 검색, Enter키 검색)
+    const historyStatusFilter = document.getElementById('historyStatusFilter');
+    const historyDngrFilter = document.getElementById('historyDngrFilter');
+    const historySituFilter = document.getElementById('historySituFilter');
+    const historyKeywordInput = document.getElementById('historyKeywordInput');
+
+    if (historyStatusFilter) historyStatusFilter.addEventListener('change', window.searchHistory);
+    if (historyDngrFilter) historyDngrFilter.addEventListener('change', window.searchHistory);
+    if (historySituFilter) historySituFilter.addEventListener('change', window.searchHistory);
+    if (historyKeywordInput) {
+        historyKeywordInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                window.searchHistory();
+            }
+        });
+    }
+
+    // 🎯 공통 페이징 버튼 UI 생성 함수
+    function renderPaginationControls(containerId, tbodyElem, currentPage, totalPages, onPageChange) {
+        let container = document.getElementById(containerId);
+        
+        if (!container) {
+            container = document.createElement('div');
+            container.id = containerId;
+            container.className = 'table-pagination';
+            container.style.cssText = 'display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 16px; padding-top: 8px;';
+            const table = tbodyElem.closest('table');
+            if (table && table.parentNode) {
+                table.parentNode.insertBefore(container, table.nextSibling);
+            }
+        }
+
+        container.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        // 이전 버튼 (<)
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.textContent = '<';
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.style.cssText = `background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: ${currentPage > 1 ? '#fff' : '#475569'}; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: ${currentPage > 1 ? 'pointer' : 'default'};`;
+        prevBtn.onclick = () => onPageChange(currentPage - 1);
+        container.appendChild(prevBtn);
+
+        // 페이지 번호 버튼 (1, 2, 3...)
+        for (let p = 1; p <= totalPages; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.type = 'button';
+            pageBtn.textContent = p;
+            const isCurrent = (p === currentPage);
+            pageBtn.style.cssText = `background: ${isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.05)'}; border: 1px solid ${isCurrent ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)'}; color: ${isCurrent ? '#fff' : '#a0aec0'}; font-weight: ${isCurrent ? 'bold' : 'normal'}; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;`;
+            pageBtn.onclick = () => onPageChange(p);
+            container.appendChild(pageBtn);
+        }
+
+        // 다음 버튼 (>)
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.textContent = '>';
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.style.cssText = `background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: ${currentPage < totalPages ? '#fff' : '#475569'}; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: ${currentPage < totalPages ? 'pointer' : 'default'};`;
+        nextBtn.onclick = () => onPageChange(currentPage + 1);
+        container.appendChild(nextBtn);
+    }
+
+    // 날짜 포맷 함수
+    function formatDate(time) {
+        if (!time) return '-';
+        const date = new Date(Number(time));
+        if (isNaN(date.getTime())) return time;
+        
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const hh = String(date.getHours()).padStart(2, '0');
+        const mi = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+    }
+
+    // 5. 모달 열기
     window.openFieldActionDetailModal = function (actionId) {
         console.log("👉 [현장조치 모달 요청 id]:", actionId);
         

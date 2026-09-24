@@ -1,8 +1,10 @@
 package com.spring.service;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.spring.dto.UserDTO;
 import com.spring.mapper.AdminMapper; // 본인 프로젝트 Mapper 경로
 
@@ -35,5 +37,19 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<UserDTO> getAllAgentList() {
         return adminMapper.getAllAgentList();
+    }
+    @Override
+    public int getUncheckedRiskCount() {
+        return adminMapper.getUncheckedRiskCount();
+    }
+
+    @Override
+    public int getUnreadEmergencyCount() {
+        return adminMapper.getUnreadEmergencyCount(); // Mapper 쿼리 호출
+    }
+
+    @Override
+    public int getFlyingDroneCount() {
+        return adminMapper.getFlyingDroneCount(); // Mapper 쿼리 호출
     }
 }

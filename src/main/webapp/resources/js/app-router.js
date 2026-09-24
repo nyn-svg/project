@@ -55,11 +55,21 @@ function updateHeaderActiveByUrl() {
 
 // 최초 진입 시 실행
 $(document).ready(function() {
-    // 페이지 새로고침 (F5 / 주소창 입력) 시, 헤더 매뉴 활성화
+    // 페이지 새로고침 (F5 / 주소창 입력) 시, 헤더 메뉴 활성화
 	updateHeaderActiveByUrl();
 	
 	// 페이지 새로고침 (F5 / 주소창 입력) 시, 최초 1회 콘텐츠 및 초기화 함수 실행
 	const currentPath = window.location.pathname;
+
+    // 🎯 [신규] 메인 대시보드 페이지 새로고침 진입 시 초기화
+    if (currentPath.includes('/main') || currentPath === '/' || currentPath.endsWith('/admin/')) {
+        if (typeof window.startRealtimeDashboard === 'function') {
+            window.startRealtimeDashboard();
+        } else if (typeof window.initMainPage === 'function') {
+            window.initMainPage();
+        }
+    }
+
 	if (currentPath.includes('/realtime')) {
 		if (typeof window.initRealtimePage === 'function') {
 			 window.initRealtimePage();
@@ -89,8 +99,6 @@ $(document).ready(function() {
 			window.destroyStreamPage = null; // 사용 후 함수 초기화
 		}
 		
-		// 다른 페이지로 이동하기 전에 Lock 해제 (추가 예정)
-		
         $.ajax({
             url: url,
             type: 'GET',
@@ -98,7 +106,6 @@ $(document).ready(function() {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             success: function(response) {
-				// 💡 응답받은 전체 HTML에서 #main-container 내부 알맹이만 추출
 				var $parsed = $('<div>').html(response);
 				var newContent = $parsed.find('#main-container').html();
 				
@@ -108,11 +115,15 @@ $(document).ready(function() {
 					$('#main-container').html(response);
 				}
 				
-				// 서버 요청 없이 주소창의 URL만 바꾸는 기능
                 history.pushState(null, null, url);
-				
-				// 페이지 내 비동기(AJAX) 이동 시, 헤더 메뉴 활성화
 				updateHeaderActiveByUrl();
+
+				// loadContent 함수 내 success 콜백
+				if (url.includes('/main') || url === '/' || url.endsWith('/admin/')) {
+				    if (typeof window.initMainPage === 'function') {
+				        window.initMainPage(); // 🎯 정확한 전역 함수 호출
+				    }
+				}
 
                 // 비동기 이동 후 페이지별 초기화 함수 실행
                 if (typeof initAreaManagement === 'function') {
@@ -154,13 +165,10 @@ $(document).ready(function() {
             $this.addClass('active');
         }
 		
-		// 다른 페이지로 이동하기 전에 기존 스트리밍 자원 및 타이머 정리
 		if (typeof window.destroyStreamPage === 'function') {
 			window.destroyStreamPage();
-			window.destroyStreamPage = null; // 사용 후 함수 초기화
+			window.destroyStreamPage = null;
 		}
-		
-		// 다른 페이지로 이동하기 전에 Lock 해제 (추가 예정)
 
         $.ajax({
             url: targetUrl,
@@ -175,9 +183,15 @@ $(document).ready(function() {
                     $('#main-container').html(response);
                 }
 				
-				// 서버 요청 없이 주소창의 URL만 바꾸는 기능
 				history.pushState(null, '', targetUrl);
 				
+				// .header-link 클릭 이벤트 내 success 콜백
+				if (targetUrl.includes('/main') || targetUrl === '/' || targetUrl.endsWith('/admin/')) {
+				    if (typeof window.initMainPage === 'function') {
+				        window.initMainPage(); // 🎯 정확한 전역 함수 호출
+				    }
+				}
+
 				if (typeof initAreaManagement === 'function') {
 					initAreaManagement();
 				}
@@ -199,7 +213,6 @@ $(document).ready(function() {
 	
 	// 브라우저 뒤로가기 및 앞으로가기 처리
 	$(window).on('popstate', function() {
-		// 현재 변경된 URL의 화면을 비동기로 다시 로드
 		loadContent(location.pathname);
 	});
 });
