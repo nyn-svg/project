@@ -131,51 +131,23 @@
 		    </div>
 		</div>
 
-        <!-- 실시간 위험 대응 현황 -->
-        <div class="dashboard-card status-card">
-            <div class="card-header">
-                <span class="card-title">안전점검 제출 현황</span>
-            </div>
-            <div class="card-body">
-                <ul class="status-list">
-                    <li class="status-item">
-                        <span class="status-label"><i class="fa-solid fa-circle-exclamation color-warning"></i> 위험</span>
-                        <span class="status-count">0 건</span>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                    </li>
-                    <li class="status-item">
-                        <span class="status-label"><i class="fa-solid fa-triangle-exclamation color-caution"></i> 주의</span>
-                        <span class="status-count">1 건</span>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                    </li>
-                    <li class="status-item">
-                        <span class="status-label"><i class="fa-solid fa-circle-info color-info"></i> 양호</span>
-                        <span class="status-count">2 건</span>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                    </li>
-                </ul>
-
-                <hr class="card-divider" />
-
-                <ul class="status-list sub-list">
-                    <li class="status-item">
-                        <span class="status-label">미확인 긴급보고</span>
-                        <span class="status-count danger">0 건</span>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                    </li>
-                    <li class="status-item">
-                        <span class="status-label">조치필요 업무지시</span>
-                        <span class="status-count">0 건</span>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                    </li>
-                    <li class="status-item">
-                        <span class="status-label">조치중 업무지시</span>
-                        <span class="status-count">0 건</span>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        <!-- 실시간 관제 이벤트 터미널 로그 -->
+			<div class="dashboard-card terminal-card">
+			    <div class="card-header">
+			        <span class="card-title"><i class="fa-solid fa-terminal"></i> 실시간 관제 이벤트 로그</span>
+			        <span class="terminal-status-badge">
+			            <span class="pulse-dot success"></span> LIVE STREAM
+			        </span>
+			    </div>
+			    <div class="card-body terminal-body" id="terminalLogContainer">
+			        <ul class="terminal-log-list" id="terminalLogList">
+			            <!-- JS를 통해 실시간 데이터가 상시 스크롤 및 추가되는 영역 -->
+			        </ul>
+			        <div class="terminal-prompt">
+			            <span class="prompt-symbol">&gt;</span> <span class="typing-text">Real-time system monitoring active</span><span class="terminal-cursor">_</span>
+			        </div>
+			    </div>
+			</div>
     </section>
 
     <!-- 3. 하단 영역 (좌: 차트 2종 / 우: 최근 위험 이벤트) -->
@@ -738,6 +710,80 @@ window.chartIdleTimer = setInterval(function() {
     // 2. $(document).ready()를 쓰지 않고, 스크립트가 로드되는 즉시 함수 실행!
     //    (이렇게 하면 F5 새로고침 때도 실행되고, AJAX 비동기 이동 때도 100% 즉시 실행됩니다.)
     window.initMainPage();
+    
+    
+    
+    
+    /**
+     * 실시간 관제 터미널 콘솔 스크립트 (JSP EL 충돌 방지 적용)
+     */
+    (function initTerminalLog() {
+        const logList = document.getElementById('terminalLogList');
+        const logContainer = document.getElementById('terminalLogContainer');
+        
+        if (!logList || !logContainer) return;
+
+        const MAX_LOG_COUNT = 25; // 화면에 유지할 최대 로그 수
+
+        // 로그 1건 추가 함수
+        window.addTerminalLog = function(type, message) {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const timeStr = '[' + hh + ':' + mm + ':' + ss + ']';
+
+            let tagClass = 'info';
+            let tagText = 'SYSTEM';
+
+            switch(type) {
+                case 'WARN':   tagClass = 'warn';   tagText = 'CAUTION'; break;
+                case 'DANGER': tagClass = 'danger'; tagText = 'ALERT'; break;
+                case 'ACTION': tagClass = 'action'; tagText = 'ACTION'; break;
+                default:       tagClass = 'info';   tagText = 'INFO'; break;
+            }
+
+            const li = document.createElement('li');
+            li.className = 'log-item';
+            
+            // JSP EL과 충돌나지 않도록 백틱 대신 문자열 연결(+) 사용
+            li.innerHTML = '<span class="log-time">' + timeStr + '</span>' +
+                           '<span class="log-tag ' + tagClass + '">' + tagText + '</span>' +
+                           '<span class="log-text">' + message + '</span>';
+
+            logList.appendChild(li);
+
+            // 최대 개수 초과 시 오래된 로그 제거
+            if (logList.children.length > MAX_LOG_COUNT) {
+                logList.removeChild(logList.firstElementChild);
+            }
+
+            // 최하단으로 자동 스크롤
+            logContainer.scrollTop = logContainer.scrollHeight;
+        };
+
+        // 🎯 [시뮬레이션] 주기적으로 랜덤 현장 이벤트 출력
+        const demoEvents = [
+            { type: 'INFO', msg: 'A구역 드론 #1 - 정상 정찰 비행 중' },
+            { type: 'INFO', msg: '안전요원 김철수 - B구역 순찰 데이터 수신' },
+            { type: 'WARN', msg: 'C구역 AI CCTV - 밀집도 65% 감지 (주의)' },
+            { type: 'ACTION', msg: '현장요원 이영희 - [시설물점검] 조치 완료 제출' },
+            { type: 'INFO', msg: '메인 관제 서버 - 데이터 실시간 동기화 완료' },
+            { type: 'DANGER', msg: 'D구역 비상신호 발생 - 확인 필요' }
+        ];
+
+        // 초기 데모 데이터 삽입
+        addTerminalLog('INFO', '관제 터미널 스트리밍 엔진 시작...');
+        addTerminalLog('INFO', '실시간 센서 및 드론 노드 연결 완료.');
+
+        // 3.5초마다 더미 데이터 1건씩 흘려보내며 모션 연출
+        setInterval(function() {
+            const randomEvt = demoEvents[Math.floor(Math.random() * demoEvents.length)];
+            addTerminalLog(randomEvt.type, randomEvt.msg);
+        }, 3500);
+
+    })();
+    
 </script>
 
 
@@ -784,107 +830,138 @@ window.chartIdleTimer = setInterval(function() {
 
 
 /* ==========================================
-   상단 KPI 5열 그리드 및 안전점검 버튼 카드
+   실시간 관제 터미널 콘솔 스타일
    ========================================== */
-.kpi-grid {
-    display: grid !important;
-    grid-template-columns: repeat(5, 1fr) !important; /* 5개 카드 균등 배치 */
-    gap: 16px;
-    margin-bottom: 20px;
-}
 
-/* 안전점검 카드 - 빈 공간 없이 꽉 채우는 스타일 */
-.kpi-action-btn {
-    text-decoration: none;
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    display: flex;
-    align-items: center;
-    padding: 22px 24px; /* 여백 확장 */
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.kpi-action-btn:hover {
-    background: rgba(56, 189, 248, 0.16);
-    border-color: #38bdf8;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
-}
-
-/* 내부 컨텐츠 양끝 정렬 (FULL WIDTH) */
-.kpi-action-content {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 2;
-}
-
-.kpi-action-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-/* 아이콘 박스 크기 확대 */
-.kpi-action-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    background: rgba(56, 189, 248, 0.2);
-    border: 1px solid rgba(56, 189, 248, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    color: #38bdf8;
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-}
-
-/* 텍스트 크기 및 간격 정돈 */
-.kpi-action-info {
+.terminal-card {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    height: 100%;
+    min-height: 380px;
+    background: rgba(6, 13, 31, 0.75) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.kpi-action-title {
-    font-size: 17px;
+.terminal-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.terminal-status-badge {
+    font-size: 10px;
     font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.3px;
-}
-
-.kpi-action-sub {
-    font-size: 13px;
-    color: #38bdf8;
-    font-weight: 500;
-}
-
-/* 우측 원형 화살표 버튼 */
-.kpi-action-arrow {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: rgba(56, 189, 248, 0.15);
-    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #4ade80;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: #38bdf8;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    gap: 6px;
+    letter-spacing: 0.5px;
 }
 
-/* 호버 시 우측 버튼 강조 애니메이션 */
-.kpi-action-btn:hover .kpi-action-arrow {
-    background: #38bdf8;
-    color: #0b132b;
-    transform: translateX(4px);
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+.terminal-body {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+    font-size: 12.5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 터미널 커스텀 스크롤바 */
+.terminal-body::-webkit-scrollbar {
+    width: 5px;
+}
+.terminal-body::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.25);
+    border-radius: 3px;
+}
+
+.terminal-log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 로그 항목 및 애니메이션 */
+.log-item {
+    line-height: 1.5;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: logFadeIn 0.3s forwards ease-out;
+    word-break: break-all;
+}
+
+@keyframes logFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.log-time {
+    color: #64748b;
+    margin-right: 6px;
+}
+
+/* 로그 태그별 네온 스타일 */
+.log-tag {
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
+    font-size: 11px;
+}
+
+.log-tag.info    { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.log-tag.warn    { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.log-tag.danger  { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.log-tag.action  { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+
+.log-text {
+    color: #cbd5e1;
+}
+
+/* 맨 밑 프로젝션 커서 하단 */
+.terminal-prompt {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    color: #38bdf8;
+    font-size: 12px;
+}
+
+.prompt-symbol {
+    font-weight: bold;
+    margin-right: 6px;
+}
+
+.terminal-cursor {
+    display: inline-block;
+    font-weight: bold;
+    color: #38bdf8;
+    animation: cursorBlink 0.8s infinite;
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }
 
 /* =========================================================
