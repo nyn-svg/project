@@ -37,14 +37,14 @@ public class ControlController {
 	@Autowired
     private SseService sseService; // 2. SseService 자동 주입
 
-    // 1. 메인 첫 진입
+    // 1. (구)메인 진입
     @GetMapping("/control/main")
     public String index(Model model) {
         model.addAttribute("contentPage", "/WEB-INF/views/control/controlMainContent.jsp");
         return "control/controlMain";
     }
     
-    // 실시간 감지 페이지 이동
+    // 실시간 감지 페이지 이동 (첫 페이지)
     @GetMapping("/control/realtime")
     public String realtimePage(Model model) {
     	

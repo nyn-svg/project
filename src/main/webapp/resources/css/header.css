@@ -126,5 +126,47 @@
     border-color: rgba(255, 255, 255, 0.25);
 }
 
+/* ==========================================
+   날씨 위젯 스타일
+   ========================================== */
+.header-weather-area {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+   
+.weather-header-widget {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #cbd5e1;
+}
 
+.weather-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
+.weather-item.main-status {
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.weather-divider {
+    color: #475569;
+    font-size: 11px;
+}
+
+.weather-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffffff;
+}

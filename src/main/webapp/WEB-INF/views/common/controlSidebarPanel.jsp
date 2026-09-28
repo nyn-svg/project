@@ -23,11 +23,6 @@
             <span class="nav-label">체크리스트</span>
             <span id="check-badge" class="quick-badge" style="display: none;"></span>
         </button>
-        <button class="quick-nav-item" data-target="panel-report">
-            <span class="nav-icon"><i class="fa-solid fa-laptop-file"></i></span>
-            <span class="nav-label">전자문서</span>
-            <span id="report-badge" class="quick-badge" style="display: none;"></span>
-        </button>
         <!-- 🎯 5) 사이드바 하단 고정 로그아웃 버튼 -->
 	    <button type="button" class="quick-nav-item btn-sidebar-logout" onclick="location.href='${pageContext.request.contextPath}/logout'">
 	        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
@@ -38,88 +33,77 @@
 
 <!-- 2-2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
 <div id="sub-drawer" class="sub-drawer collapsed">
-    <!-- 드론 관제 패널 -->
-<!-- 드론 관제 패널 -->
-<div id="panel-drones" class="drawer-content active">
-<!-- 헤더 전체 높이를 40px로 고정하고 flex 수직 중앙 정렬 -->
-<div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 관리</span>
-    
-    <!-- 버튼 우측 컨테이너 (높이 및 flex 유지) -->
-    <div class="header-btn-group" style="display: flex; align-items: center; height: 100%;">
-        <!-- 일반 모드 시 노출 -->
-        <div id="mode-default-btns" style="display: flex; align-items: center;">
-            <button id="btn-edit-mode" class="mini-btn">
-            <i class="fa-solid fa-gear"></i>
-            </button>
-        </div>
-        
-        <!-- 편집 모드 전환 시 노출 -->
-        <div id="mode-edit-btns" style="display: none; gap: 4px; align-items: center;">
-            <button id="btn-open-add-modal" class="mini-btn primary">+ 신규</button>
-            <button id="btn-cancel-edit" class="mini-btn danger">취소</button>
-        </div>
-    </div>
-</div>
-
-    <!-- 2. 드론 목록 영역 (JS가 여기에 dynamic하게 버튼을 뿌려줍니다) -->
-    <div class="drawer-body">
-        
-
-        <div id="drone-list-container" style="display: flex; flex-direction: column; gap: 10px;">
-            <!-- JavaScript로 드론 목록이 렌더링됩니다 -->
-        </div>
-    </div>
-</div>
-
-
-    <div id="panel-agent" class="drawer-content">
-		    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
-		        <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">실시간 긴급보고</span>
-		        <span id="situ-count-badge" style="color: #ff5252 !important; font-size: 13px !important; font-weight: 700 !important; -webkit-text-fill-color: #ff5252 !important;">(0건)</span>
-		    </div>
+	<!-- 드론 관제 패널 -->
+	<div id="panel-drones" class="drawer-content active">
+		<!-- 헤더 전체 높이를 40px로 고정하고 flex 수직 중앙 정렬 -->
+		<div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
+		    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 관리</span>
 		    
-		    <div class="drawer-body">
-		        <!-- 실시간 카드 리스트 컨테이너 -->
-		        <div id="situation-list-container" style="display: flex; flex-direction: column; gap: 10px;">
-		            <!-- JS가 SSE 이벤트를 받아 여기에 카드를 동적으로 추가합니다 -->
+		    <!-- 버튼 우측 컨테이너 (높이 및 flex 유지) -->
+		    <div class="header-btn-group" style="display: flex; align-items: center; height: 100%;">
+		        <!-- 일반 모드 시 노출 -->
+		        <div id="mode-default-btns" style="display: flex; align-items: center;">
+		            <button id="btn-edit-mode" class="mini-btn">
+		            	<i class="fa-solid fa-gear"></i>
+		            </button>
+		        </div>
+		        
+		        <!-- 편집 모드 전환 시 노출 -->
+		        <div id="mode-edit-btns" style="display: none; gap: 4px; align-items: center;">
+		            <button id="btn-open-add-modal" class="mini-btn primary">+ 신규</button>
+		            <button id="btn-cancel-edit" class="mini-btn danger">취소</button>
 		        </div>
 		    </div>
 		</div>
+	
+	    <!-- 2. 드론 목록 영역 (JS가 여기에 dynamic하게 버튼을 뿌려줍니다) -->
+	    <div class="drawer-body">
+	        <div id="drone-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+	            <!-- JavaScript로 드론 목록이 렌더링됩니다 -->
+	        </div>
+	    </div>
+	</div>
+
+
+    <div id="panel-agent" class="drawer-content">
+		<div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
+			<span style="font-size: 15px; font-weight: 700; white-space: nowrap;">실시간 긴급보고</span>
+			<span id="situ-count-badge" style="color: #ff5252 !important; font-size: 13px !important; font-weight: 700 !important; -webkit-text-fill-color: #ff5252 !important;">(0건)</span>
+		</div>
+		    
+		<div class="drawer-body">
+			<!-- 실시간 카드 리스트 컨테이너 -->
+			<div id="situation-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+				<!-- JS가 SSE 이벤트를 받아 여기에 카드를 동적으로 추가합니다 -->
+			</div>
+		</div>
+	</div>
 
     <div id="panel-check" class="drawer-content">
-    <!-- 패널 헤더 -->
-    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-        <span style="font-weight: 700; font-size: 15px; color: #f8fafc;">📋 관제 시스템 체크리스트</span>
-        <button type="button" id="btn-refresh-checklist" title="새로고침" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;">
-            🔄
-        </button>
-    </div>
-    
-    <!-- 체크리스트 아이템 목록이 비동기(AJAX)로 들어올 영역 -->
-    <div class="drawer-body" style="padding: 16px; overflow-y: auto; height: calc(100vh - 140px);">
-        <div id="control-checklist-container" style="display: flex; flex-direction: column; gap: 12px;">
-            <div style="text-align: center; color: #94a3b8; padding: 30px 0; font-size: 13px;">
-                체크리스트 항목을 불러오는 중...
-            </div>
-        </div>
-    </div>
-
-    <!-- 하단 저장 버튼 -->
-    <div class="drawer-footer" style="padding: 12px 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: #1e222d; position: absolute; bottom: 0; width: 100%; box-sizing: border-box;">
-        <button type="button" id="btn-save-control-checklist" style="width: 100%; padding: 10px; background: #3b82f6; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
-            체크리스트 저장
-        </button>
-    </div>
-</div>
-
-
-    <div id="panel-report" class="drawer-content">
-        <div class="drawer-header">전자문서</div>
-        <div class="drawer-body">
-            <p>( 임시 )</p>
-        </div>
-    </div>
+	    <!-- 패널 헤더 -->
+	    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+	        <span style="font-weight: 700; font-size: 15px; color: #f8fafc;">📋 관제 시스템 체크리스트</span>
+	        <button type="button" id="btn-refresh-checklist" title="새로고침" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;">
+	            🔄
+	        </button>
+	    </div>
+	    
+	    <!-- 체크리스트 아이템 목록이 비동기(AJAX)로 들어올 영역 -->
+	    <div class="drawer-body" style="padding: 16px; overflow-y: auto; height: calc(100vh - 140px);">
+	        <div id="control-checklist-container" style="display: flex; flex-direction: column; gap: 12px;">
+	            <div style="text-align: center; color: #94a3b8; padding: 30px 0; font-size: 13px;">
+	                체크리스트 항목을 불러오는 중...
+	            </div>
+	        </div>
+	    </div>
+	
+	    <!-- 하단 저장 버튼 -->
+	    <div class="drawer-footer" style="padding: 12px 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: #1e222d; position: absolute; bottom: 0; width: 100%; box-sizing: border-box;">
+	        <button type="button" id="btn-save-control-checklist" style="width: 100%; padding: 10px; background: #3b82f6; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+	            체크리스트 저장
+	        </button>
+	    </div>
+	</div>
 </div>
 
 <!-- sidebar.jsp 최하단 위치, 새 드론 등록 모달창 -->
@@ -153,10 +137,6 @@
         </div>
     </div>
 </div>
-
-
-
-
 
 <!-- situation-modal: sidebar.jsp 최하단에 위치 -->
 <div id="situation-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
@@ -195,7 +175,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
 //==================================================
@@ -386,10 +365,6 @@ $(document).ready(function() {
  });
 });
 </script>
-
-
-
-
 
 
 <style>

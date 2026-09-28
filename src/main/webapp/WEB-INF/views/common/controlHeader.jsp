@@ -8,10 +8,12 @@
     </a>
 
     <nav class="header-nav">
-        <a href="${pageContext.request.contextPath}/control/main" class="nav-link header-link">홈</a>
         <a href="${pageContext.request.contextPath}/control/realtime" class="nav-link header-link">실시간 관제</a>
         <a href="${pageContext.request.contextPath}/detection" class="nav-link header-link">위험 감지 관리</a>
-    	<a href="${pageContext.request.contextPath}/actionLog" class="nav-link header-link">전자문서</a>
     </nav>
     
+    <!-- 기상 위젯 추가 (weatherWidget.jsp, 절대 경로 지정) -->
+    <div class="header-weather-area">
+        <jsp:include page="/WEB-INF/views/common/weatherWidget.jsp" />
+    </div>
 </header>
