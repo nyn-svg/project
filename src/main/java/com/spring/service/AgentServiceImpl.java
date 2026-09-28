@@ -3,6 +3,7 @@ package com.spring.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.spring.annotation.AdminLog; // 🎯 1. import 추가
 import com.spring.dto.AgentDTO;
 import com.spring.dto.UserDTO;
 import com.spring.mapper.AgentMapper;
@@ -18,6 +19,8 @@ public class AgentServiceImpl implements AgentService {
         return agentMapper.findAgentById(userId);
     }
 
+    // 🎯 2. DB 수정이 일어나는 메서드 위에 어노테이션 추가
+    @AdminLog(value = "요원 근무 상태 변경", type = "ACTION")
     @Override
     public boolean changeAgentStatus(String userId, String workStatus) {
         return agentMapper.updateAgentStatus(userId, workStatus) > 0;
@@ -29,12 +32,11 @@ public class AgentServiceImpl implements AgentService {
             com.spring.dto.UserDTO dto = new com.spring.dto.UserDTO();
             dto.setUserId(userId);
             
-            // 로그인한 요원의 상세 정보(AgentDTO)에서 구역명을 가져와 UserDTO에 안전하게 채워줍니다.
             com.spring.dto.AgentDTO agentInfo = agentMapper.findAgentById(userId);
             if(agentInfo != null) {
                 dto.setWorkArea(agentInfo.getWorkArea());
             } else {
-                dto.setWorkArea("A"); // 방어용 기본값
+                dto.setWorkArea("A");
             }
             return dto;
         } catch(Exception e) {

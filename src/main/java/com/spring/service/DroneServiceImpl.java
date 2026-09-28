@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.spring.annotation.AdminLog;
 import com.spring.dto.DroneDTO;
 import com.spring.mapper.DroneMapper;
 
@@ -29,6 +29,7 @@ public class DroneServiceImpl implements DroneService {
 		return droneMapper.findActiveDrones();
 	}
 
+	@AdminLog(value = "드론 신규 등록", type = "ACTION")
 	@Override
 	public boolean registerDrone(DroneDTO drone) {
 		int droneResult = droneMapper.insertDrone(drone);
@@ -36,6 +37,7 @@ public class DroneServiceImpl implements DroneService {
 		return droneResult > 0;
 	}
 
+	@AdminLog(value = "드론 정보 수정", type = "INFO")
 	@Override
 	public boolean modifyDrone(DroneDTO drone) {
 		return droneMapper.updateDrone(drone) > 0;

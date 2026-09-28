@@ -1,19 +1,22 @@
 package com.spring.service;
 
 import java.util.List;
+import com.spring.annotation.AdminLog; // 🎯 import 추가
 import com.spring.dto.EmergencyContactDTO;
 
 public interface EmergencyContactService {
 
-    // 1. 전체 비상연락망 목록 조회
     List<EmergencyContactDTO> getContactList();
 
-    // 2. 비상연락처 신규 등록
+    // 🎯 비상연락망 신규 등록
+    @AdminLog(value = "비상연락망 등록", type = "ACTION")
     boolean addContact(EmergencyContactDTO dto);
 
-    // 3. 비상연락처 수정
+    // 🎯 비상연락망 정보 수정
+    @AdminLog(value = "비상연락망 수정", type = "INFO")
     boolean modifyContact(EmergencyContactDTO dto);
 
-    // 4. 비상연락처 삭제
+    // 🎯 비상연락망 정보 삭제
+    @AdminLog(value = "비상연락망 삭제", type = "WARN")
     boolean removeContact(Long contactId);
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
+import com.spring.annotation.AdminLog;
 import com.spring.dto.SituationDTO;
 import com.spring.mapper.SituationMapper;
 
@@ -83,12 +83,13 @@ public class SituationServiceImpl implements SituationService {
         
         return result > 0;
     }
-
+    @AdminLog(value = "상황 대응 개시", type = "ACTION")
     @Override
     public boolean setStart(String situNo) {
         return situationMapper.startSituation(situNo) > 0;
     }
 
+    @AdminLog(value = "상황 대응 종료", type = "INFO")
     @Override
     public boolean setEnd(SituationDTO situation) {
     	int result = situationMapper.endSituation(situation);
@@ -100,6 +101,7 @@ public class SituationServiceImpl implements SituationService {
     	return result > 0;
 	}
 
+    @AdminLog(value = "상황 정보 수정", type = "INFO")
     @Override
     public boolean modifySituation(SituationDTO situation) {
         int result = situationMapper.updateSituation(situation);
@@ -120,6 +122,7 @@ public class SituationServiceImpl implements SituationService {
         return result > 0;
     }
     
+    @AdminLog(value = "상황 삭제", type = "WARN")
     @Override
 	public boolean removeSituation(String situNo) {
 		int result = situationMapper.deleteSituation(situNo);
@@ -156,7 +159,9 @@ public class SituationServiceImpl implements SituationService {
         return situationMapper.getFieldActionList(statusType); 
     }
 
+    @AdminLog(value = "현장 조치 처리", type = "ACTION")
     @Override
+    @Transactional // 1. 트랜잭션 어노테이션 추가
     public boolean processFieldAction(String actionId, String status, String adminComment, String adminId) {
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("actionId", actionId);
@@ -164,8 +169,7 @@ public class SituationServiceImpl implements SituationService {
         paramMap.put("adminComment", adminComment);
         paramMap.put("adminId", adminId);
 
-        int result = situationMapper.processFieldAction(paramMap);
-        return result > 0;
+        return situationMapper.processFieldAction(paramMap) > 0;
     }
     
     @Override

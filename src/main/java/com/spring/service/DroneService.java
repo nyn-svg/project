@@ -1,7 +1,7 @@
 package com.spring.service;
 
 import java.util.List;
-
+import com.spring.annotation.AdminLog;
 import com.spring.dto.DroneDTO;
 
 public interface DroneService {
@@ -16,9 +16,11 @@ public interface DroneService {
 	List<DroneDTO> getActiveDroneList();
 	
 	// 새 드론 등록
+	@AdminLog(value = "드론 신규 등록", type = "ACTION")
 	boolean registerDrone(DroneDTO drone);
 	
 	// 드론 정보 수정
+	@AdminLog(value = "드론 정보 수정", type = "INFO")
 	boolean modifyDrone(DroneDTO drone);
 	
 	// 전체 드론 수

@@ -48,7 +48,7 @@
     <div class="kpi-card">
         <div class="kpi-bg-icon"><i class="fa-solid fa-user-shield"></i></div>
         <div class="kpi-header">
-            <span class="kpi-title">근무중 안전요원</span>
+            <span class="kpi-title">안전요원</span>
             <span class="kpi-status-badge badge-success">
                 <span class="pulse-dot success"></span> LIVE
             </span>
@@ -132,22 +132,45 @@
 		</div>
 
         <!-- 실시간 관제 이벤트 터미널 로그 -->
-			<div class="dashboard-card terminal-card">
-			    <div class="card-header">
-			        <span class="card-title"><i class="fa-solid fa-terminal"></i> 실시간 관제 이벤트 로그</span>
-			        <span class="terminal-status-badge">
-			            <span class="pulse-dot success"></span> LIVE STREAM
-			        </span>
-			    </div>
-			    <div class="card-body terminal-body" id="terminalLogContainer">
-			        <ul class="terminal-log-list" id="terminalLogList">
-			            <!-- JS를 통해 실시간 데이터가 상시 스크롤 및 추가되는 영역 -->
-			        </ul>
-			        <div class="terminal-prompt">
-			            <span class="prompt-symbol">&gt;</span> <span class="typing-text">Real-time system monitoring active</span><span class="terminal-cursor">_</span>
-			        </div>
-			    </div>
-			</div>
+		<div class="dashboard-card terminal-card">
+		    <div class="card-header">
+		        <span class="card-title"><i class="fa-solid fa-terminal"></i> 이벤트 로그</span>
+		        
+		        <div class="terminal-controls">
+		            <select id="terminalTypeSelect" class="terminal-select">
+		                <option value="ALL">전체</option>
+		                <option value="INFO">INFO</option>
+		                <option value="ACTION">ACTION</option>
+		                <option value="WARN">CAUTION</option>
+		                <option value="DANGER">ALERT</option>
+		            </select>
+		            <input type="text" id="terminalSearchInput" class="terminal-search" placeholder="검색..." />
+		            <span class="terminal-status-badge">
+		                <span class="pulse-dot success"></span> LIVE
+		            </span>
+		        </div>
+		    </div>
+		
+		    <div class="terminal-body-wrapper" style="position: relative;">
+		        <!-- 🎯 [위치/문구 수정] 우측 상/하단 코너 미니 알림 배지 -->
+		        <div id="terminalScrollTopIndicator" class="terminal-scroll-indicator top" style="display: none;">
+		            ▲ 이전 로그
+		        </div>
+		
+		        <div class="card-body terminal-body" id="terminalLogContainer">
+		            <ul class="terminal-log-list" id="terminalLogList">
+		                <!-- JS 데이터 영역 -->
+		            </ul>
+		            <div class="terminal-prompt">
+		                <span class="prompt-symbol">&gt;</span> <span class="typing-text">Real-time system monitoring active</span><span class="terminal-cursor">_</span>
+		            </div>
+		        </div>
+		
+		        <div id="terminalScrollBottomIndicator" class="terminal-scroll-indicator bottom" style="display: none;">
+		            ▼ 최신 로그
+		        </div>
+		    </div>
+		</div>
     </section>
 
     <!-- 3. 하단 영역 (좌: 차트 2종 / 우: 최근 위험 이벤트) -->
@@ -249,6 +272,12 @@ window.animalChartInstance = window.animalChartInstance || null;
 
 //1. 실시간 인파 밀집도 차트 초기화
 function initRealtimeDensityChart() {
+
+	if (typeof Chart === 'undefined') {
+        console.warn("[Chart Debug] Chart.js 라이브러리가 로드되지 않았습니다.");
+        return false;
+    }
+	
  const canvas = document.getElementById('densityChart');
  if (!canvas) {
      console.warn("[Chart Debug] #densityChart Canvas 요소를 찾을 수 없습니다.");
@@ -301,6 +330,11 @@ function initRealtimeDensityChart() {
 
 //2. 실시간 야생동물 AI 감지 신호 차트 초기화
 function initRealtimeAnimalChart() {
+	if (typeof Chart === 'undefined') {
+        console.warn("[Chart Debug] Chart.js 라이브러리가 로드되지 않았습니다.");
+        return false;
+    }
+	
  const canvas = document.getElementById('animalChart');
  if (!canvas) {
      console.warn("[Chart Debug] #animalChart Canvas 요소를 찾을 수 없습니다.");
@@ -715,28 +749,50 @@ window.chartIdleTimer = setInterval(function() {
     
     
     /**
-     * 실시간 관제 터미널 콘솔 스크립트 (JSP EL 충돌 방지 적용)
+     * 실시간 관제 터미널 콘솔 스크립트 (점멸/깜빡임 완벽 해결 버전)
      */
     (function initTerminalLog() {
         const logList = document.getElementById('terminalLogList');
         const logContainer = document.getElementById('terminalLogContainer');
+        const typeSelect = document.getElementById('terminalTypeSelect');
+        const searchInput = document.getElementById('terminalSearchInput');
+        const topIndicator = document.getElementById('terminalScrollTopIndicator');
+        const bottomIndicator = document.getElementById('terminalScrollBottomIndicator');
         
         if (!logList || !logContainer) return;
 
-        const MAX_LOG_COUNT = 25; // 화면에 유지할 최대 로그 수
+        const MAX_LOG_COUNT = 100;
+        const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+        const STORAGE_KEY = 'admin_terminal_logs';
+        
+        let activeEventSource = null;
+        let allLogs = []; // 전체 로그 객체 배열 { type, message, timeStr }
 
-        // 로그 1건 추가 함수
-        window.addTerminalLog = function(type, message) {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const timeStr = '[' + hh + ':' + mm + ':' + ss + ']';
+        // 🎯 [1] 스크롤 위치 감지 (위/아래 알림 배지 토글)
+        function updateScrollIndicators() {
+            const scrollTop = logContainer.scrollTop;
+            const scrollHeight = logContainer.scrollHeight;
+            const clientHeight = logContainer.clientHeight;
 
+            topIndicator.style.display = (scrollTop > 10) ? 'block' : 'none';
+            bottomIndicator.style.display = (scrollTop + clientHeight < scrollHeight - 10) ? 'block' : 'none';
+        }
+
+        logContainer.addEventListener('scroll', updateScrollIndicators);
+
+        // 🎯 [2] 필터 조건 충족 여부 검사
+        function isMatchFilter(item, selectedType, keyword) {
+            const matchType = (selectedType === 'ALL') || (item.type === selectedType);
+            const matchKey = (keyword === '') || (item.message.toLowerCase().includes(keyword));
+            return matchType && matchKey;
+        }
+
+        // 🎯 [3] 단일 로그 DOM 생성 및 append 전용 함수 (깜빡임 방지 핵심!)
+        function appendSingleLogDOM(item) {
             let tagClass = 'info';
             let tagText = 'SYSTEM';
 
-            switch(type) {
+            switch(item.type) {
                 case 'WARN':   tagClass = 'warn';   tagText = 'CAUTION'; break;
                 case 'DANGER': tagClass = 'danger'; tagText = 'ALERT'; break;
                 case 'ACTION': tagClass = 'action'; tagText = 'ACTION'; break;
@@ -745,43 +801,153 @@ window.chartIdleTimer = setInterval(function() {
 
             const li = document.createElement('li');
             li.className = 'log-item';
-            
-            // JSP EL과 충돌나지 않도록 백틱 대신 문자열 연결(+) 사용
-            li.innerHTML = '<span class="log-time">' + timeStr + '</span>' +
+            li.innerHTML = '<span class="log-time">' + item.timeStr + '</span>' +
                            '<span class="log-tag ' + tagClass + '">' + tagText + '</span>' +
-                           '<span class="log-text">' + message + '</span>';
+                           '<span class="log-text">' + item.message + '</span>';
 
             logList.appendChild(li);
 
-            // 최대 개수 초과 시 오래된 로그 제거
+            // 표시 노드 수가 초과되면 맨 위 노드 1개만 깔끔하게 제거
             if (logList.children.length > MAX_LOG_COUNT) {
                 logList.removeChild(logList.firstElementChild);
             }
+        }
 
-            // 최하단으로 자동 스크롤
-            logContainer.scrollTop = logContainer.scrollHeight;
+        // 🎯 [4] 화면 전체 재렌더링 (검색어/유형 변경시에만 호출됨)
+        function renderFilteredLogs() {
+            logList.innerHTML = ''; // 필터링 시에만 화면 비움
+            
+            const selectedType = typeSelect ? typeSelect.value : 'ALL';
+            const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+            allLogs.forEach(function(item) {
+                if (isMatchFilter(item, selectedType, keyword)) {
+                    appendSingleLogDOM(item);
+                }
+            });
+
+            updateScrollIndicators();
+        }
+
+        // 필터/검색 변경 이벤트 연결
+        if (typeSelect) typeSelect.addEventListener('change', renderFilteredLogs);
+        if (searchInput) searchInput.addEventListener('input', renderFilteredLogs);
+
+        // 🎯 [5] 실시간 새 로그 추가 (전체 재렌더링 없이 1개만 살짝 추가 -> 점멸 해제)
+        function addNewLog(type, message, timeStr) {
+            const logObj = { type: type, message: message, timeStr: timeStr };
+            allLogs.push(logObj);
+
+            if (allLogs.length > MAX_LOG_COUNT) {
+                allLogs.shift();
+            }
+
+            // sessionStorage 업데이트
+            try {
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(allLogs));
+            } catch (e) {}
+
+            // 현재 선택된 필터/검색어에 맞는 경우에만 단일 DOM 추가
+            const selectedType = typeSelect ? typeSelect.value : 'ALL';
+            const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+            if (isMatchFilter(logObj, selectedType, keyword)) {
+                appendSingleLogDOM(logObj);
+                updateScrollIndicators();
+                // 새 로그 추가 시 하단 스크롤 이동
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        }
+
+        // 🎯 [6] 이전 저장된 로그 복원
+        function loadSavedLogs() {
+            try {
+                const saved = sessionStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    allLogs = JSON.parse(saved);
+                    renderFilteredLogs();
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                } else {
+                    window.addTerminalLog('INFO', '관제 터미널 스트리밍 엔진 시작...');
+                }
+            } catch (e) {
+                window.addTerminalLog('INFO', '관제 터미널 스트리밍 엔진 시작...');
+            }
+        }
+
+        // 외부 전역 함수 등록
+        window.addTerminalLog = function(type, message) {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const timeStr = '[' + hh + ':' + mm + ':' + ss + ']';
+
+            addNewLog(type, message, timeStr);
         };
 
-        // 🎯 [시뮬레이션] 주기적으로 랜덤 현장 이벤트 출력
-        const demoEvents = [
-            { type: 'INFO', msg: 'A구역 드론 #1 - 정상 정찰 비행 중' },
-            { type: 'INFO', msg: '안전요원 김철수 - B구역 순찰 데이터 수신' },
-            { type: 'WARN', msg: 'C구역 AI CCTV - 밀집도 65% 감지 (주의)' },
-            { type: 'ACTION', msg: '현장요원 이영희 - [시설물점검] 조치 완료 제출' },
-            { type: 'INFO', msg: '메인 관제 서버 - 데이터 실시간 동기화 완료' },
-            { type: 'DANGER', msg: 'D구역 비상신호 발생 - 확인 필요' }
-        ];
+        // SSE 데이터 스트림 연결
+        function connectSseStream() {
+            if (activeEventSource) {
+                activeEventSource.close();
+                activeEventSource = null;
+            }
 
-        // 초기 데모 데이터 삽입
-        addTerminalLog('INFO', '관제 터미널 스트리밍 엔진 시작...');
-        addTerminalLog('INFO', '실시간 센서 및 드론 노드 연결 완료.');
+            const sseUrl = basePath + '/api/sse/subscribe';
+            const eventSource = new EventSource(sseUrl);
+            activeEventSource = eventSource;
 
-        // 3.5초마다 더미 데이터 1건씩 흘려보내며 모션 연출
-        setInterval(function() {
-            const randomEvt = demoEvents[Math.floor(Math.random() * demoEvents.length)];
-            addTerminalLog(randomEvt.type, randomEvt.msg);
-        }, 3500);
+            eventSource.addEventListener('terminal-log', function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    window.addTerminalLog(data.type || 'INFO', data.message || '');
+                } catch (err) {}
+            });
 
+            eventSource.addEventListener('situation-report', function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    const msg = '[긴급보고] ' + (data.situContent || '현장 긴급 상황이 접수되었습니다.');
+                    window.addTerminalLog('DANGER', msg);
+                } catch (err) {}
+            });
+
+            eventSource.addEventListener('situation-alert', function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    const dngrType = data.dngrType || '위험';
+                    const msg = '[' + dngrType + '] ' + (data.situContent || '새로운 위험 요소가 감지되었습니다.');
+                    window.addTerminalLog('WARN', msg);
+                } catch (err) {}
+            });
+
+            eventSource.addEventListener('situation-update', function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    const msg = '상황 정보 업데이트 (요청No.' + (data.situNo || '-') + ')';
+                    window.addTerminalLog('INFO', msg);
+                } catch (err) {}
+            });
+
+            eventSource.onerror = function() {
+                eventSource.close();
+                activeEventSource = null;
+                setTimeout(connectSseStream, 5000);
+            };
+        }
+
+        window.closeTerminalSse = function() {
+            if (activeEventSource) {
+                activeEventSource.close();
+                activeEventSource = null;
+            }
+        };
+
+        window.addEventListener('beforeunload', window.closeTerminalSse);
+        window.addEventListener('pagehide', window.closeTerminalSse);
+
+        loadSavedLogs();
+        connectSseStream();
     })();
     
 </script>
@@ -797,389 +963,3 @@ window.chartIdleTimer = setInterval(function() {
         }
     }, 50);
 </script>
-<style>
-/* 모달 레이아웃 스타일 */
-.drone-modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.75);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 9999;
-}
-.drone-modal-content {
-    background: #1e293b;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    width: 640px;
-    max-width: 90%;
-    overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-.drone-modal-header {
-    padding: 14px 20px;
-    background: #0f172a;
-    display: flex; justify-content: space-between; align-items: center;
-    color: #fff; font-weight: bold;
-}
-.drone-modal-close {
-    background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer;
-}
-.drone-modal-close:hover { color: #fff; }
-.drone-modal-body { padding: 16px; background: #000; text-align: center; }
-.no-stream-msg { color: #94a3b8; padding: 40px 0; }
-
-
-/* ==========================================
-   실시간 관제 터미널 콘솔 스타일
-   ========================================== */
-
-.terminal-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 380px;
-    background: rgba(6, 13, 31, 0.75) !important;
-    border: 1px solid rgba(56, 189, 248, 0.3) !important;
-    border-radius: 18px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.terminal-card .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.terminal-status-badge {
-    font-size: 10px;
-    font-weight: 700;
-    color: #4ade80;
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    padding: 3px 10px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    letter-spacing: 0.5px;
-}
-
-.terminal-body {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-    font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
-    font-size: 12.5px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* 터미널 커스텀 스크롤바 */
-.terminal-body::-webkit-scrollbar {
-    width: 5px;
-}
-.terminal-body::-webkit-scrollbar-thumb {
-    background: rgba(56, 189, 248, 0.25);
-    border-radius: 3px;
-}
-
-.terminal-log-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* 로그 항목 및 애니메이션 */
-.log-item {
-    line-height: 1.5;
-    opacity: 0;
-    transform: translateY(10px);
-    animation: logFadeIn 0.3s forwards ease-out;
-    word-break: break-all;
-}
-
-@keyframes logFadeIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.log-time {
-    color: #64748b;
-    margin-right: 6px;
-}
-
-/* 로그 태그별 네온 스타일 */
-.log-tag {
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 8px;
-    font-size: 11px;
-}
-
-.log-tag.info    { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-.log-tag.warn    { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.log-tag.danger  { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-.log-tag.action  { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-
-.log-text {
-    color: #cbd5e1;
-}
-
-/* 맨 밑 프로젝션 커서 하단 */
-.terminal-prompt {
-    margin-top: 14px;
-    padding-top: 10px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.1);
-    color: #38bdf8;
-    font-size: 12px;
-}
-
-.prompt-symbol {
-    font-weight: bold;
-    margin-right: 6px;
-}
-
-.terminal-cursor {
-    display: inline-block;
-    font-weight: bold;
-    color: #38bdf8;
-    animation: cursorBlink 0.8s infinite;
-}
-
-@keyframes cursorBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-
-/* =========================================================
-   하단 영역 (.dashboard-bottom) 전용 비율 교정
-   (상단 KPI 및 중단 지도/현장 카드는 영향 없음)
-   ========================================================= */
-
-/* 1. 하단 전체 컨테이너 (차트 영역 + 우측 이벤트 영역) */
-.dashboard-bottom {
-    display: flex !important;
-    gap: 16px !important;
-    width: 100% !important;
-    align-items: stretch !important;
-}
-
-/* 2. 좌측 차트 카드 (남는 공간 전체 사용) */
-.dashboard-bottom .chart-card {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;          /* Flex 자식 너비 초과 방지 */
-    display: flex !important;         /* 내부 chart-box 2개를 가로 배치 */
-    gap: 16px !important;
-    padding: 16px !important;
-}
-
-/* 3. 차트 카드 내부의 각 차트 박스 (밀집도 / 야생동물) 1:1 (50%) 균등 배치 */
-.dashboard-bottom .chart-card .chart-box {
-    flex: 1 1 50% !important;         /* 두 차트에 정확히 50%씩 분할 */
-    min-width: 0 !important;          /* Chart.js 찌그러짐 방지 핵심 */
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-.dashboard-bottom .chart-card .chart-box .card-body {
-    flex: 1 !important;
-    position: relative !important;
-    min-height: 180px !important;
-}
-
-/* 4. 우측 최근 위험 이벤트 카드 (340px 너비 고정) */
-.dashboard-bottom .event-card {
-    flex: 0 0 340px !important;
-    width: 340px !important;
-    box-sizing: border-box !important;
-}
-
-/* 5. 우측 위험 이벤트 리스트 내 텍스트 말줄임(...) 및 정렬 */
-.dashboard-bottom .event-list .event-item {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 8px !important;
-    padding: 12px 8px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-.dashboard-bottom .event-list .event-time {
-    flex-shrink: 0 !important;
-    width: 58px !important;
-    font-size: 12px !important;
-}
-
-.dashboard-bottom .event-list .event-desc {
-    flex: 1 !important;
-    min-width: 0 !important;            /* flex 텍스트 말줄임 필수 속성 */
-    white-space: nowrap !important;     /* 줄바꿈 방지 */
-    overflow: hidden !important;        /* 넘치는 텍스트 숨김 */
-    text-overflow: ellipsis !important; /* ... 표시 */
-    font-size: 13px !important;
-}
-
-.dashboard-bottom .event-list .badge-tag,
-.dashboard-bottom .event-list .action-status {
-    flex-shrink: 0 !important;         /* 뱃지 우측 고정 */
-}
-
-
-
-
-/* ==========================================
-   관제센터 HUD 스타일 KPI 카드 CSS
-   ========================================== */
-
-/* KPI 카드 기본 레이아웃 */
-.kpi-card {
-    position: relative;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    padding: 20px 22px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.kpi-card:hover {
-    border-color: rgba(56, 189, 248, 0.35);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.12);
-}
-
-/* 🎯 1. 배경 은은한 워터마크 아이콘 */
-.kpi-bg-icon {
-    position: absolute;
-    right: -12px;
-    bottom: -15px;
-    font-size: 85px;
-    color: rgba(255, 255, 255, 0.035);
-    pointer-events: none;
-    z-index: 1;
-    transition: all 0.3s ease;
-}
-
-.kpi-card:hover .kpi-bg-icon {
-    color: rgba(56, 189, 248, 0.1);
-    transform: scale(1.08) rotate(-4deg);
-}
-
-/* 상단 헤더 & 상태 배지 */
-.kpi-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-    z-index: 2;
-}
-
-.kpi-title {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #94a3b8;
-    letter-spacing: -0.2px;
-}
-
-.kpi-status-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 9px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-}
-
-/* 배지 색상 라인업 */
-.badge-success { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-.badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
-.badge-danger  { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
-.badge-neutral { background: rgba(255, 255, 255, 0.05); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.1); }
-
-/* 🎯 2. 라이브 깜빡임 펄스 점 (Pulse Dot) */
-.pulse-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.pulse-dot.success { background-color: #4ade80; animation: pulse-green 1.8s infinite; }
-.pulse-dot.warning { background-color: #fbbf24; animation: pulse-yellow 1.8s infinite; }
-.pulse-dot.danger  { background-color: #f87171; animation: pulse-red 1.2s infinite; }
-.pulse-dot.neutral { background-color: #64748b; }
-
-@keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.8); }
-    70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
-}
-
-@keyframes pulse-red {
-    0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.8); }
-    70% { box-shadow: 0 0 0 7px rgba(248, 113, 113, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
-}
-
-/* 🎯 3. 미확인 건수 발생 시 카드 발광 (Glow) */
-.kpi-danger-glow {
-    border-color: rgba(239, 68, 68, 0.4) !important;
-    animation: danger-glow 2s infinite alternate;
-}
-
-.kpi-warning-glow {
-    border-color: rgba(245, 158, 11, 0.4) !important;
-}
-
-@keyframes danger-glow {
-    from { box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
-    to { box-shadow: 0 0 22px rgba(239, 68, 68, 0.35); }
-}
-
-/* 수치 및 단위 타이포그래피 */
-.kpi-value-group {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    z-index: 2;
-}
-
-.kpi-value {
-    font-size: 34px;
-    font-weight: 800;
-    line-height: 1;
-    font-family: 'Segoe UI', -apple-system, sans-serif;
-    letter-spacing: -1px;
-}
-
-.kpi-value.primary { color: #38bdf8; text-shadow: 0 0 14px rgba(56, 189, 248, 0.35); }
-.kpi-value.warning { color: #fbbf24; text-shadow: 0 0 14px rgba(251, 191, 36, 0.35); }
-.kpi-value.danger  { color: #f87171; text-shadow: 0 0 14px rgba(248, 113, 113, 0.4); }
-
-.kpi-unit {
-    font-size: 13px;
-    font-weight: 600;
-    color: #64748b;
-}
-</style>

@@ -10,16 +10,6 @@
         WHERE R.ROLE_NAME = 'ROLE_AGENT'
     </select>
 
-    <!-- 2. 근무중 요원 수 -->
-    <select id="getOnDutyAgentCount" resultType="int">
-        SELECT COUNT(*) 
-        FROM USERS U
-        JOIN USER_ROLES R ON U.USER_ID = R.USER_ID
-        JOIN AGENT_DETAIL A ON U.USER_ID = A.USER_ID
-        WHERE R.ROLE_NAME = 'ROLE_AGENT'
-          AND A.WORK_STATUS = '근무중'
-    </select>
-
     <!-- 3. 휴식/외출 요원 수 -->
     <select id="getBreakAgentCount" resultType="int">
         SELECT COUNT(*) 
@@ -77,5 +67,13 @@
         FROM DRONES
         WHERE DRONE_STATUS = '비행'
     </select>
+    
+    <!-- 근무중 안전요원 수 조회 (ENABLED=1 및 USER_ID가 agent로 시작) -->
+	<select id="getOnDutyAgentCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM USERS
+	    WHERE ENABLED = 1
+	      AND USER_ID LIKE 'agent%'
+	</select>
 
 </mapper>

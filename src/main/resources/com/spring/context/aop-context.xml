@@ -10,6 +10,10 @@
 		http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
 
+	<!-- 🎯 [추가] @Aspect 어노테이션 기반 AOP 자동 프록시 생성 활성화 -->
+	<aspectj-autoproxy proxy-target-class="true" />
+
+	<!-- 기존 선언적 트랜잭션(txAdvice) 설정 유지 -->
 	<tx:advice id="txAdvice" transaction-manager="transactionManager">
 		<tx:attributes>
 			<tx:method name="*" propagation="REQUIRED"/>

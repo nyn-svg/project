@@ -21,8 +21,6 @@ window.initAdminMainMap = function() {
     // 3. 지도 데이터 로드 및 렌더링
     loadAdminMainMapData();
 
-    // 4. [추가] 실시간 SSE 수신기 가동!
-    window.initAdminMainSse();
 };
 
 // 최초 일반 페이지 로드 시 대응

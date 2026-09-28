@@ -2,7 +2,7 @@ package com.spring.service;
 
 import java.util.List;
 import java.util.Map;
-
+import com.spring.annotation.AdminLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +58,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 	}
 
 	// 사전점검 제출 데이터 저장 구현 (추가)
+	@AdminLog(value = "사전점검 제출", type = "ACTION")
 	@Override
 	@Transactional
 	public boolean insertSafetyCheck(SafetyCheckMasterDTO masterDTO) {

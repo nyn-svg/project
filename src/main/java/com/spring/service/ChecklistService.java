@@ -2,7 +2,7 @@ package com.spring.service;
 
 import java.util.List;
 import java.util.Map;
-
+import com.spring.annotation.AdminLog;
 import com.spring.dto.ChecklistHistoryDTO;
 import com.spring.dto.ChecklistItemDTO;
 import com.spring.dto.SafetyCheckMasterDTO;
@@ -28,6 +28,7 @@ public interface ChecklistService {
     List<ChecklistHistoryDTO> getChecklistHistoryDetail(String userId, String checkDateStr);
     
     // 7. 사전 점검 제출 결과 DB 저장
+    @AdminLog(value = "사전점검 제출", type = "ACTION")
     boolean insertSafetyCheck(SafetyCheckMasterDTO masterDTO);
     
     List<Map<String, Object>> getTodayPatrolByArea(String workArea);

@@ -477,3 +477,543 @@ main,
     -ms-overflow-style: none !important; /* IE, Edge 구버전 */
     scrollbar-width: none !important;    /* Firefox */
 }
+
+/* 모달 레이아웃 스타일 */
+.drone-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 9999;
+}
+.drone-modal-content {
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 640px;
+    max-width: 90%;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.drone-modal-header {
+    padding: 14px 20px;
+    background: #0f172a;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #fff; font-weight: bold;
+}
+.drone-modal-close {
+    background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer;
+}
+.drone-modal-close:hover { color: #fff; }
+.drone-modal-body { padding: 16px; background: #000; text-align: center; }
+.no-stream-msg { color: #94a3b8; padding: 40px 0; }
+
+
+/* ==========================================
+   실시간 관제 터미널 콘솔 스타일
+   ========================================== */
+
+.terminal-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 380px;
+    background: rgba(6, 13, 31, 0.75) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.terminal-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.terminal-status-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #4ade80;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.5px;
+}
+
+.terminal-body {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+    font-size: 12.5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 터미널 커스텀 스크롤바 */
+.terminal-body::-webkit-scrollbar {
+    width: 5px;
+}
+.terminal-body::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.25);
+    border-radius: 3px;
+}
+
+.terminal-log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 로그 항목 및 애니메이션 */
+.log-item {
+    line-height: 1.5;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: logFadeIn 0.3s forwards ease-out;
+    word-break: break-all;
+}
+
+@keyframes logFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.log-time {
+    color: #64748b;
+    margin-right: 6px;
+}
+
+/* 로그 태그별 네온 스타일 */
+.log-tag {
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
+    font-size: 11px;
+}
+
+.log-tag.info    { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.log-tag.warn    { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.log-tag.danger  { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.log-tag.action  { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+
+.log-text {
+    color: #cbd5e1;
+}
+
+/* 맨 밑 프로젝션 커서 하단 */
+.terminal-prompt {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    color: #38bdf8;
+    font-size: 12px;
+}
+
+.prompt-symbol {
+    font-weight: bold;
+    margin-right: 6px;
+}
+
+.terminal-cursor {
+    display: inline-block;
+    font-weight: bold;
+    color: #38bdf8;
+    animation: cursorBlink 0.8s infinite;
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* =========================================================
+   하단 영역 (.dashboard-bottom) 전용 비율 교정
+   (상단 KPI 및 중단 지도/현장 카드는 영향 없음)
+   ========================================================= */
+
+/* 1. 하단 전체 컨테이너 (차트 영역 + 우측 이벤트 영역) */
+.dashboard-bottom {
+    display: flex !important;
+    gap: 16px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
+/* 2. 좌측 차트 카드 (남는 공간 전체 사용) */
+.dashboard-bottom .chart-card {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;          /* Flex 자식 너비 초과 방지 */
+    display: flex !important;         /* 내부 chart-box 2개를 가로 배치 */
+    gap: 16px !important;
+    padding: 16px !important;
+}
+
+/* 3. 차트 카드 내부의 각 차트 박스 (밀집도 / 야생동물) 1:1 (50%) 균등 배치 */
+.dashboard-bottom .chart-card .chart-box {
+    flex: 1 1 50% !important;         /* 두 차트에 정확히 50%씩 분할 */
+    min-width: 0 !important;          /* Chart.js 찌그러짐 방지 핵심 */
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.dashboard-bottom .chart-card .chart-box .card-body {
+    flex: 1 !important;
+    position: relative !important;
+    min-height: 180px !important;
+}
+
+/* 4. 우측 최근 위험 이벤트 카드 (340px 너비 고정) */
+.dashboard-bottom .event-card {
+    flex: 0 0 340px !important;
+    width: 340px !important;
+    box-sizing: border-box !important;
+}
+
+/* 5. 우측 위험 이벤트 리스트 내 텍스트 말줄임(...) 및 정렬 */
+.dashboard-bottom .event-list .event-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 12px 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dashboard-bottom .event-list .event-time {
+    flex-shrink: 0 !important;
+    width: 58px !important;
+    font-size: 12px !important;
+}
+
+.dashboard-bottom .event-list .event-desc {
+    flex: 1 !important;
+    min-width: 0 !important;            /* flex 텍스트 말줄임 필수 속성 */
+    white-space: nowrap !important;     /* 줄바꿈 방지 */
+    overflow: hidden !important;        /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis !important; /* ... 표시 */
+    font-size: 13px !important;
+}
+
+.dashboard-bottom .event-list .badge-tag,
+.dashboard-bottom .event-list .action-status {
+    flex-shrink: 0 !important;         /* 뱃지 우측 고정 */
+}
+
+
+
+
+/* ==========================================
+   관제센터 HUD 스타일 KPI 카드 CSS
+   ========================================== */
+
+/* KPI 카드 기본 레이아웃 */
+.kpi-card {
+    position: relative;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 20px 22px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kpi-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.12);
+}
+
+/* 🎯 1. 배경 은은한 워터마크 아이콘 */
+.kpi-bg-icon {
+    position: absolute;
+    right: -12px;
+    bottom: -15px;
+    font-size: 85px;
+    color: rgba(255, 255, 255, 0.035);
+    pointer-events: none;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover .kpi-bg-icon {
+    color: rgba(56, 189, 248, 0.1);
+    transform: scale(1.08) rotate(-4deg);
+}
+
+/* 상단 헤더 & 상태 배지 */
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    z-index: 2;
+}
+
+.kpi-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: -0.2px;
+}
+
+.kpi-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+
+/* 배지 색상 라인업 */
+.badge-success { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+.badge-danger  { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+.badge-neutral { background: rgba(255, 255, 255, 0.05); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.1); }
+
+/* 🎯 2. 라이브 깜빡임 펄스 점 (Pulse Dot) */
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pulse-dot.success { background-color: #4ade80; animation: pulse-green 1.8s infinite; }
+.pulse-dot.warning { background-color: #fbbf24; animation: pulse-yellow 1.8s infinite; }
+.pulse-dot.danger  { background-color: #f87171; animation: pulse-red 1.2s infinite; }
+.pulse-dot.neutral { background-color: #64748b; }
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.8); }
+    70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.8); }
+    70% { box-shadow: 0 0 0 7px rgba(248, 113, 113, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+/* 🎯 3. 미확인 건수 발생 시 카드 발광 (Glow) */
+.kpi-danger-glow {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    animation: danger-glow 2s infinite alternate;
+}
+
+.kpi-warning-glow {
+    border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+@keyframes danger-glow {
+    from { box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
+    to { box-shadow: 0 0 22px rgba(239, 68, 68, 0.35); }
+}
+
+/* 수치 및 단위 타이포그래피 */
+.kpi-value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    z-index: 2;
+}
+
+.kpi-value {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    letter-spacing: -1px;
+}
+
+.kpi-value.primary { color: #38bdf8; text-shadow: 0 0 14px rgba(56, 189, 248, 0.35); }
+.kpi-value.warning { color: #fbbf24; text-shadow: 0 0 14px rgba(251, 191, 36, 0.35); }
+.kpi-value.danger  { color: #f87171; text-shadow: 0 0 14px rgba(248, 113, 113, 0.4); }
+
+.kpi-unit {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* 1. 바로가기 카드 전체 (a 태그 기본 스타일 제거 및 Flex 설정) */
+.kpi-card.kpi-action-btn {
+    display: flex;
+    align-items: center;
+    text-decoration: none !important; /* 밑줄 제거 */
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* 2. 내부 콘텐츠 배치 (좌측 정보 - 우측 화살표 양끝 정렬) */
+.kpi-action-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    z-index: 1; /* 배경 워터마크 아이콘보다 위에 표시 */
+}
+
+/* 3. 좌측 영역 (아이콘 + 텍스트 세트) */
+.kpi-action-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 4. 좌측 포인트 아이콘 박스 */
+.kpi-action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.15); /* 은은한 배경색 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #818cf8; /* 아이콘 색상 */
+}
+
+/* 5. 텍스트 영역 (제목 / 서브 타이틀 세로 정렬) */
+.kpi-action-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.kpi-action-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff; /* 흰색 타이틀 */
+    white-space: nowrap;
+}
+
+.kpi-action-sub {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55); /* 연한 서브 텍스트 */
+    white-space: nowrap;
+}
+
+/* 6. 우측 화살표 원형 버튼 */
+.kpi-action-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+/* 7. 카드 호버 이펙트 (마우스 올렸을 때) */
+.kpi-card.kpi-action-btn:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+}
+
+.kpi-card.kpi-action-btn:hover .kpi-action-arrow {
+    background: #6366f1;
+    color: #ffffff;
+}
+
+.kpi-card.kpi-action-btn:hover .arrow-anim {
+    transform: translateX(3px); /* 화살표 살짝 움직임 */
+}
+
+/* 🎯 아이디(#terminalLogContainer)에 직접 10줄 높이 고정 적용 */
+#terminalLogContainer {
+    height: 500px !important;       /* 10줄 분량 높이 엄격 고정 */
+    max-height: 500px !important;   /* 외부 지도가 늘어나는 현상 완벽 방지 */
+    overflow-y: auto !important;    /* 넘치는 로그는 내부 스크롤 처리 */
+    box-sizing: border-box;
+    overscroll-behavior: contain !important;
+}
+
+/* 터미널 카드 자체의 높이 상한선 방어 */
+.terminal-card {
+    max-height: 700px !important;   /* 헤더 포함 전체 터미널 카드 높이 고정 */
+    overflow: hidden;
+}
+/* 🎯 헤더 내 검색 & 셀렉트박스 스타일 */
+.terminal-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.terminal-select, .terminal-search {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    outline: none;
+}
+
+.terminal-search {
+    width: 90px;
+}
+
+.terminal-search:focus, .terminal-select:focus {
+    border-color: #3b82f6;
+}
+
+/* 🎯 위/아래 데이터 존재 안내 인디케이터 바 */
+.terminal-scroll-indicator {
+    position: absolute;
+    right: 14px; /* 스크롤바 바로 옆 우측 구석 배치 */
+    background: rgba(15, 23, 42, 0.9);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    z-index: 10;
+    pointer-events: none; /* 마우스 클릭/스크롤 방해 금지 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    backdrop-filter: blur(2px);
+    white-space: nowrap;
+}
+
+.terminal-scroll-indicator.top {
+    top: 6px;
+}
+
+.terminal-scroll-indicator.bottom {
+    bottom: 26px;
+}
+

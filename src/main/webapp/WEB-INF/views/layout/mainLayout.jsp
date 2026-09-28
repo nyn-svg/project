@@ -8,7 +8,6 @@
     <title>AI 기반 행사장 안전관제 시스템</title>
     
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/global.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/guideMain.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/layout.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/drone-sidebar.css">

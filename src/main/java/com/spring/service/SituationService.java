@@ -2,7 +2,7 @@ package com.spring.service;
 
 import java.util.List;
 import java.util.Map;
-
+import com.spring.annotation.AdminLog;
 import com.spring.dto.SituationDTO;
 
 public interface SituationService {
@@ -26,15 +26,19 @@ public interface SituationService {
 	boolean registerSituation(SituationDTO situation);
 	
 	// 조치 시작일시 기록
+	@AdminLog(value = "상황 대응 개시", type = "ACTION")
 	boolean setStart(String situNo);
 	
 	// 조치 종료일시 기록
+	@AdminLog(value = "상황 대응 종료", type = "INFO")
 	boolean setEnd(SituationDTO situation);
 	
 	// 감지 이력 수정 또는 조치 내용 입력
+	@AdminLog(value = "상황 정보 수정", type = "INFO")
 	boolean modifySituation(SituationDTO situation);
 	
 	// 감지조치이력 삭제
+	@AdminLog(value = "상황 삭제", type = "WARN")
 	boolean removeSituation(String situNo);
 
 	// 전체 감지조치이력 수
@@ -53,6 +57,7 @@ public interface SituationService {
 	List<SituationDTO> getFieldActionList(String statusType);
 
 	// 현장 조치 승인/반려 처리
+	@AdminLog(value = "현장 조치 처리", type = "ACTION")
 	boolean processFieldAction(String actionId, String status, String adminComment, String adminId);
 	
 	// [안전요원 모바일 조치보고 리스트 - 무한 스크롤 페이징 기능 추가]
