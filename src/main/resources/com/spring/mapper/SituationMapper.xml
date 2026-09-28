@@ -186,7 +186,9 @@
             WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
             WORK_IMAGE		= #{workImage, jdbcType=VARCHAR},
             ZONE_NAME		= #{zoneName, jdbcType=VARCHAR},
-            WORKER			= #{worker, jdbcType=VARCHAR}
+            WORKER			= #{worker, jdbcType=VARCHAR},
+            SITU_STATUS 	= #{situStatus, jdbcType=VARCHAR},
+			END_DATE 		= #{endDate, jdbcType=TIMESTAMP}
         WHERE SITU_NO = #{situNo}
 	</update>
 	

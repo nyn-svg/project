@@ -164,7 +164,7 @@
 						</div>
 
 						<div class="quick-text">
-							<strong> 긴급 보고 </strong> <span> 긴급 조치 보고 </span>
+							<strong> 긴급 보고 </strong> <span> 긴급 상황조치 보고 </span>
 						</div>
 						<i class="fa-solid fa-chevron-right quick-arrow"></i>
 					</button>

@@ -7,7 +7,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>긴급 보고</title>
+<title>긴급상황 조치 보고</title>
 
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,7 +22,7 @@
 			<button type="button" class="btn-back" onclick="history.back()">
 				<i class="fa-solid fa-chevron-left"></i>
 			</button>
-			<h1 class="header-title">긴급 보고</h1>
+			<h1 class="header-title">긴급상황 조치 보고</h1>
 			<div class="header-dummy"></div>
 		</header>
 
