@@ -18,8 +18,8 @@
 </div>
 
 <script>
-	// OpenWeatherMap 무료 API 예시
-	const API_KEY = 'bf10741c48337a3f94ade76db101e3da';
+	// OpenWeatherMap 무료 API
+	const API_KEY = '단톡방 공지 댓글 참조';
 	const LAT = 37.5665; // 현장 위도
 	const LON = 126.9780; // 현장 경도
 
