@@ -14,9 +14,6 @@
     <div class="mobile-container">
         <!-- 상단 헤더 -->
         <header class="mobile-header">
-            <button type="button" class="btn-back" onclick="location.href='${pageContext.request.contextPath}/agent/main'">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
             <h1 class="header-title">보고 등록 완료</h1>
             <div class="header-dummy"></div>
         </header>
@@ -28,7 +25,7 @@
                     <i class="fa-solid fa-check"></i>
                 </div>
                 <h2 class="complete-title">보고가 등록되었습니다.</h2>
-                <p class="complete-sub">행사장 안전 관제 시스템에 보고 완료되었습니다.</p>
+                <p class="complete-sub">관제실 서버에 보고 완료되었습니다.</p>
             </div>
 
             <!-- 요약 정보 테이블 카드 -->

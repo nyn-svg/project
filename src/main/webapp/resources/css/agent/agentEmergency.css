@@ -33,6 +33,10 @@ body {
     border-radius: 32px;
 }
 
+.mobile-content::-webkit-scrollbar {
+    display: none !important;
+}
+
 /* ==================================================
    2. 상단 밝은 플랫 헤더
 ================================================== */
@@ -128,70 +132,9 @@ body {
     color: #1a1f2c;
 }
 
-/* 💡 신규 추가: 필수 입력란에 부여할 붉은 별표 */
 .required-star {
     color: #ef4444;
     margin-left: 2px;
-}
-
-/* 고급 셀렉트 박스 (Select) */
-.form-select {
-    width: 100%;
-    height: 48px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0 16px;
-    font-size: 14px;
-    color: #1a1f2c;
-    font-weight: 500;
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 16px;
-    transition: border-color 0.2s;
-}
-
-.form-select:focus {
-    border-color: #2563eb;
-}
-
-/* 상황 내용 텍스트에리어 */
-.textarea-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.form-textarea {
-    width: 100%;
-    height: 140px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
-    font-size: 14px;
-    color: #1a1f2c;
-    font-weight: 500;
-    resize: none;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.form-textarea:focus {
-    border-color: #2563eb;
-}
-
-.char-count {
-    position: absolute;
-    bottom: 14px;
-    right: 16px;
-    font-size: 12px;
-    color: #94a3b8;
-    font-weight: 500;
 }
 
 /* ==================================================
@@ -203,12 +146,10 @@ body {
     align-items: center;
 }
 
-/* 기본 파일 선택 input 숨기기 */
 #photoInput {
     display: none;
 }
 
-/* 카메라 추가 버튼 */
 .btn-photo-add {
     width: 80px;
     height: 80px;
@@ -227,7 +168,6 @@ body {
 .camera-icon { font-size: 18px; color: #64748b; }
 .btn-photo-add span { font-size: 11px; font-weight: 600; color: #64748b; }
 
-/* 업로드 미리보기 래퍼 */
 .photo-preview-wrapper {
     position: relative;
     width: 80px;
@@ -244,7 +184,6 @@ body {
     object-fit: cover;
 }
 
-/* X 삭제 버튼 */
 .btn-remove-photo {
     position: absolute;
     top: 4px; right: 4px;
@@ -260,7 +199,6 @@ body {
     cursor: pointer;
 }
 
-/* 일시 및 발견인 조회용 박스 (정렬용 통합 프레임) */
 .location-toggle-row {
     display: flex;
     justify-content: space-between;
@@ -277,15 +215,6 @@ body {
     gap: 8px; 
 }
 
-/* 💡 신규 추가: 이력번호 등 읽기전용 상위 프레임 전용 비활성화 처리 */
-.form-group-disabled {
-    opacity: 0.85;
-}
-
-.bg-disabled-gray {
-    background-color: #f1f5f9;
-}
-
 .bg-disabled-light {
     background-color: #f8fafc;
 }
@@ -296,17 +225,6 @@ body {
     color: #475569;
 }
 
-.text-disabled-guide {
-    font-size: 13px;
-    font-weight: 600;
-    color: #94a3b8;
-}
-
-.icon-disabled-lead {
-    color: #64748b;
-}
-
-/* 배지 공통 프레임 */
 .badge-status {
     font-size: 11px; 
     font-weight: 600; 
@@ -319,16 +237,11 @@ body {
     background-color: #f1f5f9; 
 }
 
-.badge-red {
-    color: #ef4444; 
-    background-color: #fdf2f2; 
-}
-
 /* ==================================================
    5. 최하단 고정 액션 버튼 레이아웃
 ================================================== */
 .form-btn-group {
-    margin-top: auto; /* 하단 자동 밀어내기 */
+    margin-top: auto;
     display: grid;
     grid-template-columns: 1fr 1.2fr;
     gap: 12px;
@@ -358,7 +271,6 @@ body {
     color: #64748b;
 }
 
-/* 선명한 긴급 등록용 레드 마감 처리 */
 .btn-emergency-submit {
     background-color: #ef4444;
     color: #ffffff;
@@ -367,4 +279,119 @@ body {
 
 .btn-emergency-submit:active {
     background-color: #dc2626;
+}
+
+/* ==================================================
+   6. 버튼 선택형 칩(Chip) 컴포넌트 스타일 (구조 조정)
+================================================= */
+.chip-container {
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+/* 보고 유형 레이아웃 (2열 배치) */
+.grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* 🎯 위험 단계 레이아웃: 2열 압축 정렬로 스크롤 축소 */
+#dngrLevelChips {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+/* '심각' 단계 버튼만 전체 너비를 다 차지하게 가로 확장 */
+#dngrLevelChips button[data-value="심각"] {
+    grid-column: span 2;
+}
+
+/* 공통 버튼 베이스 스타일 */
+.btn-chip, .btn-chip-level, .btn-template-chip {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    outline: none;
+}
+
+/* 1. 보고 유형 버튼 스타일 */
+.btn-chip {
+    height: 48px;
+    padding: 0 16px;
+}
+.btn-chip:active, .btn-chip.active {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+/* 2. 위험 단계 버튼 스타일 */
+.btn-chip-level {
+    height: 46px;
+    padding: 0 16px;
+    font-weight: 500;
+}
+.btn-chip-level.lvl-danger.active {
+    border-color: #ef4444; background-color: #fdf2f2; color: #b91c1c; font-weight: 700;
+}
+.btn-chip-level.lvl-warning.active {
+    border-color: #f97316; background-color: #fff7ed; color: #c2410c; font-weight: 700;
+}
+.btn-chip-level.lvl-caution.active {
+    border-color: #eab308; background-color: #fefce8; color: #a16207; font-weight: 700;
+}
+.btn-chip-level.lvl-notice.active {
+    border-color: #22c55e; background-color: #f0fdf4; color: #15803d; font-weight: 700;
+}
+.btn-chip-level.lvl-unknown.active {
+    border-color: #94a3b8; background-color: #f8fafc; color: #475569; font-weight: 700;
+}
+
+/* 3. 🎯 상황 내용 안내 배너 및 캡슐형 정렬 그리드 */
+.template-guide-banner {
+    font-size: 13px;
+    color: #1e3a8a;
+    background-color: #eff6ff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.template-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 정교한 2열 바둑판 배열 */
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.btn-template-chip {
+    height: 46px;
+    justify-content: center; /* 텍스트 중앙 미러링 */
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+/* 🎯 상황 내용 조치 문구가 선택(Active)되었을 때 스타일 */
+.btn-template-chip.active {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
 }

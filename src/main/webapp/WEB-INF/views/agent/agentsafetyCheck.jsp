@@ -35,11 +35,11 @@
 			</div>
 
 			<div class="info-row">
-				<span class="info-label">점검 구역</span> <span class="info-value">${empty sessionScope.workArea ? 'A구역(공연장 일대)' : sessionScope.workArea}</span>
+				<span class="info-label">점검 구역</span> <span class="info-value">${user.workArea}</span>
 			</div>
 
 			<div class="info-row">
-				<span class="info-label">점검자</span> <span class="info-value">${empty sessionScope.userId ? 'agent01' : sessionScope.userId}</span>
+				<span class="info-label">점검자</span> <span class="info-value">${user.userName}</span>
 			</div>
 		</section>
 
@@ -82,12 +82,6 @@
 					</label> <label class="status-option"> <input type="radio"
 						name="check_${item.itemId}" value="해당없음"> <span>해당없음</span>
 					</label>
-				</div>
-
-				<!-- 비고란 -->
-				<div class="remark-box">
-					<input type="text" class="remark-input"
-						name="remark_${item.itemId}" placeholder="비고를 입력해주세요">
 				</div>
 			</div>
 			</c:forEach>

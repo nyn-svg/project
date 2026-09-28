@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.dto.AreaSaveRequestDTO;
+import com.spring.mapper.AgentMapper;
 import com.spring.mapper.AreaMapper;
 import com.spring.service.SseService;
 
@@ -28,6 +30,8 @@ public class AdminAreaController {
 
     @Autowired
     private AreaMapper areaMapper;
+    @Autowired
+    private AgentMapper agentMapper;
     @Autowired
     private SseService sseService;
 
@@ -54,6 +58,24 @@ public class AdminAreaController {
             }
 
             if (result > 0) {
+            	
+            	// 1. 💡 질문하신 [오라클 11g 호환형] 자바단 파싱 및 동기화 코드 삽입 위치
+                try {
+                    JsonNode rootNode = objectMapper.readTree(configJson);
+                    JsonNode zonesNode = rootNode.path("zones");
+                    if (zonesNode.isArray()) {
+                        for (JsonNode zone : zonesNode) {
+                            String workArea = zone.path("name").asText();
+                            String userId = zone.path("agentId").asText();
+                            if (userId != null && !userId.trim().isEmpty()) {
+                                agentMapper.syncAgentWorkArea(userId, workArea); // 주입된 매퍼 호출
+                            }
+                        }
+                    }
+                } catch (Exception jsonEx) {
+                    System.err.println("안전요원 구역 동기화 중 오류 발생: " + jsonEx.getMessage());
+                    jsonEx.printStackTrace();
+                }
 
                 // 💡 [핵심 수정] SSE 알림 전송 중 소켓 에러가 터져도 DB 저장 응답에 영향을 주지 않도록 격리
                 try {

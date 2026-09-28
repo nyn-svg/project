@@ -191,9 +191,18 @@ public class AgentController {
 
 // 사전점검
    @GetMapping("/safetyCheck")
-   public String safetyCheckPage(Model model) {
+   public String safetyCheckPage(HttpSession session, Model model) {
+       String loginUserId = (String) session.getAttribute("userId");
+       if (loginUserId == null) {
+          loginUserId = "agent01";
+       }
+
+       AgentDTO user = agentService.getAgentInfo(loginUserId);
+       model.addAttribute("user", user);
+
        List<ChecklistItemDTO> checklist = checklistService.getItemsByTarget("AGENT");
        model.addAttribute("checklist", checklist);
+       
        return "agent/agentsafetyCheck";
    }
 

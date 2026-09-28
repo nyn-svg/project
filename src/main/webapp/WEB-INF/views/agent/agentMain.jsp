@@ -164,7 +164,7 @@
 						</div>
 
 						<div class="quick-text">
-							<strong> 긴급 보고 </strong> <span> 긴급 조치 보고 </span>
+							<strong> 긴급 조치 보고 </strong> <span> 긴급 상황조치 보고 </span>
 						</div>
 						<i class="fa-solid fa-chevron-right quick-arrow"></i>
 					</button>
@@ -205,10 +205,6 @@
 							</div>
 							<div class="modal-body-area">
 								<ul id="contactListArea" class="contact-modal-list"></ul>
-							</div>
-							<div class="modal-footer-row">
-								<button type="button" class="modal-confirm-btn"
-									id="btnConfirmContactModal">확인</button>
 							</div>
 						</div>
 					</div>
