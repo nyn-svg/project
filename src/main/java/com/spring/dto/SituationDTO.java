@@ -16,7 +16,7 @@ public class SituationDTO {
     private String situType;	// 감지유형 (자동감지, 수동감지, 긴급보고)
     private String dngrType;    // 위험유형 (인파위험, 야생동물, 인명사고, 시설고장/파손, 시설점검, 연계필요, 기타)
     private String dngrLevel;   // 위험단계 (관심, 주의, 경계, 심각, 판단불가)
-    private String situStatus;  // 조치상태 (감지, 조치, 완료, 미해결, 취소)
+    private String situStatus;  // 조치상태 (감지, 조치, 조치완료, 미해결, 취소)
     private String situContent; // 감지내용
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date situDate;      // 감지일시 (감지 - 이력 최초 생성)

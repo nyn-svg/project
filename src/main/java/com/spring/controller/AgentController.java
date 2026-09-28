@@ -335,7 +335,7 @@ public class AgentController {
          // 3. [탭 연동 정렬] 무한 스크롤 카운트 조건절 규칙인 '조치완료' 문자열 기호로 완벽 일치화
          if ("COMPLETED".equals(situStatus) || "조치완료".equals(situStatus) || "완료".equals(situStatus)) {
             dto.setSituStatus("조치완료");
-            situationService.setEnd(situNo); // 마감 완료 날짜 자동 연동 호출
+            situationService.setEnd(dto); // 마감 완료 날짜 자동 연동 호출
          } else {
             dto.setSituStatus("조치");
          }
