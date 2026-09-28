@@ -2,7 +2,6 @@
 	pageEncoding="UTF-8"%>
 
 <!-- 1. 상단 알림창 디자인 (타임라인 게이지 바 추가) -->
-<!-- 1. 상단 알림창 디자인 (타임라인 게이지 바 추가) -->
 <style>
 .toast-popup-top {
 	position: fixed;
@@ -174,7 +173,7 @@
 <!-- 3. 실시간 SSE 통신 및 애니메이션 제어 스크립트 -->
 <script>
 let toastAutoCloseTimer = null;
-let currentSituation = null; // 💡 현재 활성화된 알림 데이터를 전역/상위 범위에서 관리
+let currentSituation = null; // 현재 활성화된 알림 데이터를 전역 범위에서 관리
 
 document.addEventListener("DOMContentLoaded", function () {
     // 1. SSE 연결
@@ -194,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 2. 페이지 로드 시점 보관함 데이터 기반 배지 카운트 복원 초기화
     updateBellCount();
 
-    // 3. 💡 [확인] 및 [닫기] 버튼 이벤트 핸들러를 최초 1회만 고정 등록
+    // 3. [확인] 및 [닫기] 버튼 이벤트 핸들러를 최초 1회만 고정 등록
     document.getElementById("btn-toast-confirm").onclick = function () {
         if (!currentSituation) return;
         if (toastAutoCloseTimer) clearTimeout(toastAutoCloseTimer); 
@@ -232,7 +231,7 @@ function showTopToastNotification(situation) {
     toastWindow.classList.remove("hide", "activeProgress");
     void toastWindow.offsetWidth; // 애니메이션 리셋용 트릭
 
-    // 현재 수신한 알림 데이터를 상위 변수에 저장 (닫기 핸들러가 쓸 수 있도록)
+    // 현재 수신한 알림 데이터를 상위 변수에 명확히 바인딩
     currentSituation = situation;
 
     // 데이터 렌더링
@@ -244,45 +243,50 @@ function showTopToastNotification(situation) {
     toastWindow.style.display = "block"; 
     toastWindow.classList.add("activeProgress");
 
-    // 💡 30초 자동 타임아웃 -> 가짜 클릭 대신 공통 함수 직접 실행
+    // 💡 10초 자동 타임아웃 -> 가짜 클릭 대신 공통 함수 직접 실행
     toastAutoCloseTimer = setTimeout(function() {
         console.log("10초 타임아웃 완료 - 자동 닫기 실행");
         executeToastClose(); 
     }, 10000);
 }
 
-// 💡 [공통] 토스트를 닫고 보관함에 저장하는 핵심 함수
+// 💡 [공통] 토스트를 닫고 보관함에 저장하는 핵심 함수 (타이밍 이슈 완벽 보완)
 function executeToastClose() {
-    if (toastAutoCloseTimer) clearTimeout(toastAutoCloseTimer); 
+    if (toastAutoCloseTimer) {
+        clearTimeout(toastAutoCloseTimer); 
+        toastAutoCloseTimer = null;
+    }
 
     const toastWindow = document.getElementById("realtime-toast");
     if (!toastWindow || toastWindow.style.display === "none") return;
 
+    // ✨ [순서 변경] 애니메이션이 실행되어 화면에서 사라지기 전에 세션 스토리지에 미리 데이터를 적립합니다.
+    if (currentSituation) {
+        let savedList = JSON.parse(sessionStorage.getItem("alarmStorageList")) || [];
+        
+        const isDuplicate = savedList.some(item => item.situNo === currentSituation.situNo);
+        if (!isDuplicate) {
+            savedList.push({
+                situNo: currentSituation.situNo,
+                dngrType: currentSituation.dngrType,
+                dngrLevel: currentSituation.dngrLevel,
+                situContent: currentSituation.situContent || "내용 없음",
+                saveTime: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+            });
+            sessionStorage.setItem("alarmStorageList", JSON.stringify(savedList));
+            console.log("보관함에 성공적으로 알림 적립 완료:", currentSituation.situNo);
+        }
+    }
+
+    // 종 배지 카운트는 데이터가 저장된 직후 바로 반영하여 반응성을 높입니다.
+    updateBellCount();
+
+    // 데이터를 안전하게 다 대피시켰으므로 서서히 사라지는 애니메이션(400ms) 실행
     toastWindow.classList.add("hide");
 
     setTimeout(() => {
-        // currentSituation이 존재할 때만 보관함 저장 진행
-        if (currentSituation) {
-            let savedList = JSON.parse(sessionStorage.getItem("alarmStorageList")) || [];
-            
-            const isDuplicate = savedList.some(item => item.situNo === currentSituation.situNo);
-            if (!isDuplicate) {
-                savedList.push({
-                    situNo: currentSituation.situNo,
-                    dngrType: currentSituation.dngrType,
-                    dngrLevel: currentSituation.dngrLevel,
-                    situContent: currentSituation.situContent || "내용 없음",
-                    saveTime: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-                });
-                sessionStorage.setItem("alarmStorageList", JSON.stringify(savedList));
-            }
-        }
-
-        // 종 배지 카운트 업데이트
-        updateBellCount();
-        
         toastWindow.style.display = "none"; 
-        currentSituation = null; // 사용 후 초기화
+        currentSituation = null; // 모든 작업이 완벽히 끝난 뒤 변수 리셋
     }, 400); 
 }
 

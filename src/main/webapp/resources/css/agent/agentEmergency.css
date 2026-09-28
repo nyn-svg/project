@@ -33,6 +33,10 @@ body {
     border-radius: 32px;
 }
 
+.mobile-content::-webkit-scrollbar {
+    display: none !important;
+}
+
 /* ==================================================
    2. 상단 밝은 플랫 헤더
 ================================================== */
