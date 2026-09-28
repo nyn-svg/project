@@ -62,12 +62,11 @@ public class SituationServiceImpl implements SituationService {
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        // 💡 [핵심 해결] Java 문자열 비교는 .equals() 사용
                         if ("긴급보고".equals(type)) {
-                            // 이벤트명: "situation-report"
+                            // 긴급보고 → 이벤트명: "situation-report"
                             sseService.sendEvent("situation-report", situation);
                         } else { 
-                            // 자동감지, 수동감지 -> 이벤트명: "situation-alert"
+                            // 자동감지, 수동감지 → 이벤트명: "situation-alert"
                             sseService.sendEvent("situation-alert", situation);
                         }
                     }
@@ -91,9 +90,15 @@ public class SituationServiceImpl implements SituationService {
     }
 
     @Override
-    public boolean setEnd(String situNo) {
-        return situationMapper.endSituation(situNo) > 0;
-    }
+    public boolean setEnd(SituationDTO situation) {
+    	int result = situationMapper.endSituation(situation);
+    	
+    	if (result > 0) {
+        	sseService.sendEvent("situation-end", "END_STATUS");
+        }
+    	
+    	return result > 0;
+	}
 
     @Override
     public boolean modifySituation(SituationDTO situation) {
@@ -114,6 +119,17 @@ public class SituationServiceImpl implements SituationService {
         
         return result > 0;
     }
+    
+    @Override
+	public boolean removeSituation(String situNo) {
+		int result = situationMapper.deleteSituation(situNo);
+		
+		if (result > 0) {
+			sseService.sendEvent("situation-delete", "DEL_DATA");
+		}
+				
+		return result > 0;
+	}
 
     @Override
     public int getTotalSituationCount() {

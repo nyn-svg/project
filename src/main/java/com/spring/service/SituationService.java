@@ -29,10 +29,13 @@ public interface SituationService {
 	boolean setStart(String situNo);
 	
 	// 조치 종료일시 기록
-	boolean setEnd(String situNo);
+	boolean setEnd(SituationDTO situation);
 	
 	// 감지 이력 수정 또는 조치 내용 입력
 	boolean modifySituation(SituationDTO situation);
+	
+	// 감지조치이력 삭제
+	boolean removeSituation(String situNo);
 
 	// 전체 감지조치이력 수
 	int getTotalSituationCount();
