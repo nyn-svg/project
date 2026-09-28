@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -211,7 +212,27 @@
 					</c:choose>
 				</div>
 				<div class="img-action-bar">
-					<input type="file" name="workPhoto" class="form-control" onchange="previewFile(this, '#workImgPreview', '#noWorkImgText')">
+					<div class="custom-file-upload">
+					    <input type="file" id="workImage" name="workPhoto" accept="image/*" onchange="previewFile(this, '#workImgPreview', '#noWorkImgText')">
+					    
+					    <!-- 커스텀 버튼 역할 -->
+					    <label for="workImage" class="btn-download">
+					        <i class="fa-solid fa-cloud-arrow-up"></i> 이미지 첨부하기
+					    </label>
+					    
+					    <!-- 선택된 파일명이 표시되는 영역 -->
+					    <c:set var="ext" value="${fn:substringAfter(situation.workImage, '.')}" />
+					    <span id="fileNameText" class="file-name-text ${not empty situation.workImage ? 'active' : ''}">
+					        <c:choose>
+					            <c:when test="${not empty situation.workImage}">
+					                Resolution_${situation.situNo}.${ext}
+					            </c:when>
+					            <c:otherwise>
+					                선택된 파일 없음
+					            </c:otherwise>
+					        </c:choose>
+					    </span>
+					</div>
 				</div>
 			</div>
 
@@ -233,13 +254,30 @@
 		// 파일 선택 시 이미지 미리보기 함수
 		function previewFile(input, targetImgSelector, noImgTextSelector) {
 			const file = input.files[0];
+			const $fileName = $('#fileNameText');
+			
 			if (file) {
+				// 1. 이미지가 아닌 경우 예외 처리
+				if (!file.type.startsWith('image/')) {
+		            alert('이미지 파일(jpg, png, gif 등)만 등록 가능합니다.');
+		            input.value = ''; // 선택 초기화
+		            $(targetImgSelector).hide();
+		            if (noImgTextSelector) $(noImgTextSelector).show();
+		            
+		            $fileName.text('선택된 파일 없음').removeClass('active');
+		            return;
+		        }
+				
+				// 2. 이미지 미리보기 및 파일명 표시
 				const reader = new FileReader();
 				reader.onload = function(e) {
 					$(targetImgSelector).attr('src', e.target.result).show();
 					if(noImgTextSelector) $(noImgTextSelector).hide();
 				}
 				reader.readAsDataURL(file);
+				
+				// 3. 파일명 표시 및 active 클래스 추가
+		        $fileName.text(file.name).addClass('active');
 			}
 		}
 

@@ -234,7 +234,7 @@
 		
 		<!-- 감지 첨부 사진 영역 -->
 		<div class="info-box full-width">
-			<div class="info-label">감지 사진</div>
+			<div class="info-label">감지 사진 (드론 정보: ${situation.droneId})</div>
 			<div class="img-container">
 				<c:choose>
 		            <c:when test="${not empty situation.situImage}">
@@ -248,7 +248,7 @@
 		    </div>
 		    <c:if test="${not empty situation.situImage}">
 		        <div class="img-action-bar">
-		            <a href="${pageContext.request.contextPath}/upload/${situation.situImage}" download="situ_${situation.situNo}" class="btn-download">
+		            <a href="${pageContext.request.contextPath}/upload/${situation.situImage}" download="Situation_${situation.situNo}" class="btn-download">
 		                <i class="fa-solid fa-floppy-disk"></i> 이미지 다운로드
 		            </a>
 		        </div>

@@ -491,6 +491,35 @@ textarea.form-control {
     line-height: 1.4;
 }
 
+/* 파일 업로드 컨테이너 */
+.custom-file-upload {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+}
+
+/* 브라우저 기본 input 커스텀을 위해 숨김 */
+.custom-file-upload input[type="file"] {
+    display: none;
+}
+
+/* 파일명 표시 텍스트 */
+.file-name-text {
+    color: #94a3b8;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+    text-align: left;
+}
+/* 파일이 선택되었을 때 */
+.file-name-text.active {
+    color: #e2e8f0;
+}
+
 /* 추가: 삭제(취소) 안내 페이지 */
 .target-summary {
     background: #0f172a;
