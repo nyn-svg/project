@@ -244,12 +244,14 @@ public class SituationController {
     @PostMapping("/detection/modify")
     public String postDetectionModify(SituationDTO situation, @RequestParam(value = "workPhoto", required = false) MultipartFile workPhoto, HttpServletRequest request, Principal principal) {
     	try {
+            String situNo = situation.getSituNo();
+            
     		// 1. 로그인 사용자 아이디 설정 (조치인 : WORKER)
             if (principal != null) {
                 situation.setWorker(principal.getName());
             } else {
                 // 세션이 만료되었거나 로그인 정보가 없는 경우에도 실패 화면으로 처리
-                return "status/fail"; 
+                return "status/fail";
             }
     		
             // 2. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
@@ -270,19 +272,25 @@ public class SituationController {
 
                 // DTO에 저장된 파일명 세팅
                 situation.setWorkImage(savedFilename);
+            } else if (situationService.getSituationBySituNo(situNo).getWorkImage() != null) {
+            	situation.setWorkImage(situationService.getSituationBySituNo(situNo).getWorkImage());
             }
+            
             // 3. 상태 변경 확인
-            String situNo = situation.getSituNo();
             String before = situationService.getSituationBySituNo(situNo).getSituStatus();
             String after = situation.getSituStatus();
             
             if (before.equals("감지") && after.equals("조치")) {
             	situationService.setStart(situNo);
+            } else if (before.equals("감지") && (after.equals("조치완료") || after.equals("미해결"))) {
+            	situationService.setStart(situNo);
+            	situationService.setEnd(situation);
             } else if (before.equals("조치") && (after.equals("조치완료") || after.equals("미해결"))) {
             	situationService.setEnd(situation);
             }
             
             // 4. DB 저장 Service 호출
+            situation.setEndDate(situationService.getSituationBySituNo(situNo).getEndDate());
             boolean isSuccess = situationService.modifySituation(situation);
 
             if (isSuccess) {
@@ -330,7 +338,6 @@ public class SituationController {
         } else if ("조치".equals(situStatus)) {
         	SituationDTO situation = situationService.getSituationBySituNo(situNo);
         	situation.setSituStatus("취소");
-            situationService.setStart(situNo);
             situationService.setEnd(situation);
             
             // 💡 메모리 캐시 초기화 추가

@@ -61,7 +61,7 @@
 				</div>
 			</div>
 
-			<div class="timeline-step ${situation.situStatus eq '조치' ? 'active' : (situation.situStatus eq '조치완료' ? 'completed' : '')}">
+			<div class="timeline-step ${situation.situStatus eq '조치' ? 'active' : (situation.situStatus eq '조치완료' or situation.situStatus eq '미해결' ? 'completed' : 'canceled')}">
 				<div class="step-icon">
 					<i class="fa-solid fa-wrench"></i>
 				</div>
@@ -79,7 +79,7 @@
 			<!-- 마지막 단계: 완료 / 미해결 / 취소 동적 분기 처리 -->
 			<c:choose>
 				<c:when test="${situation.situStatus eq '조치완료'}">
-					<div class="timeline-step completed active">
+					<div class="timeline-step completed">
 						<div class="step-icon">
 							<i class="fa-solid fa-check"></i>
 						</div>
@@ -96,7 +96,7 @@
 				</c:when>
 
 				<c:when test="${situation.situStatus eq '미해결'}">
-					<div class="timeline-step active failed">
+					<div class="timeline-step failed">
 						<div class="step-icon">
 							<i class="fa-solid fa-xmark"></i>
 						</div>
@@ -113,7 +113,7 @@
 				</c:when>
 
 				<c:when test="${situation.situStatus eq '취소'}">
-					<div class="timeline-step active canceled">
+					<div class="timeline-step canceled">
 						<div class="step-icon">
 							<i class="fa-solid fa-ban"></i>
 						</div>
@@ -236,52 +236,55 @@
 		<div class="info-box full-width">
 			<div class="info-label">감지 사진</div>
 			<div class="img-container">
-				<c:if test="${empty situation.situImage}">
-					<span id="noImgText" class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
-				</c:if>
-				<c:if test="${not empty situation.situImage}">
-						<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
-						<img id="viewImg" src="${pageContext.request.contextPath}/upload/${situation.situImage}" alt="${situation.droneId} 감지 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleImageError(this)">
-					</div>
-					<div class="img-action-bar">
-						<a href="${pageContext.request.contextPath}/upload/${situation.situImage}" download="${situation.situNo}" class="btn-download">
-							<i class="fa-solid fa-floppy-disk"></i> 이미지 다운로드
-						</a>
-					</div>
-				</c:if>
+				<c:choose>
+		            <c:when test="${not empty situation.situImage}">
+		                <span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
+		                <img id="viewImg" src="${pageContext.request.contextPath}/upload/${situation.situImage}" alt="${situation.droneId} 감지 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleImageError(this)">
+		            </c:when>
+		            <c:otherwise>
+		                <span class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
+		            </c:otherwise>
+		        </c:choose>
+		    </div>
+		    <c:if test="${not empty situation.situImage}">
+		        <div class="img-action-bar">
+		            <a href="${pageContext.request.contextPath}/upload/${situation.situImage}" download="situ_${situation.situNo}" class="btn-download">
+		                <i class="fa-solid fa-floppy-disk"></i> 이미지 다운로드
+		            </a>
+		        </div>
+		    </c:if>
 		</div>
 
 		<!-- 조치 내용 -->
-		<c:if test="${not empty situation.workContent}">
+		<c:if test="${not empty situation.startDate}">
 			<div class="info-box full-width">
 				<div class="info-label">조치 내용 및 처리 결과</div>
 				<div class="content-box">${situation.workContent != null ? situation.workContent : '등록된 내용이 없습니다.'}</div>
 			</div>
-			
-			<!-- 조치 첨부 사진 영역 -->
-			<c:if test="${empty situation.workImage}">
-				<div class="info-box full-width">
-					<div class="info-label">조치완료 사진</div>
-					<div class="img-container">
-						<span id="noWorkImgText" class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
-					</div>
-				</div>
-			</c:if>
 		</c:if>
 		
-		<!-- 조치 첨부 사진 영역 -->
-		<c:if test="${not empty situation.workImage}">
+		<c:if test="${not empty situation.startDate}">
+			<!-- 조치 첨부 사진 영역 -->
 			<div class="info-box full-width">
 				<div class="info-label">조치완료 사진</div>
 				<div class="img-container">
-					<span id="noWorkImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
-					<img id="viewWorkImg" src="${pageContext.request.contextPath}/upload/${situation.workImage}" alt="조치완료 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleWorkImageError(this)">
+					<c:choose>
+						<c:when test="${not empty situation.workImage}">
+							<span id="noWorkImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
+							<img id="viewWorkImg" src="${pageContext.request.contextPath}/upload/${situation.workImage}" alt="조치 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleWorkImageError(this)">
+						</c:when>
+						<c:otherwise>
+							<span id="noWorkImgText" class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
+						</c:otherwise>
+					</c:choose>
 				</div>
-				<div class="img-action-bar">
-					<a href="${pageContext.request.contextPath}/upload/${situation.workImage}" download="work_${situation.situNo}" class="btn-download">
-						<i class="fa-solid fa-floppy-disk"></i> 조치 이미지 다운로드
-					</a>
-				</div>
+				<c:if test="${not empty situation.workImage}">
+					<div class="img-action-bar">
+						<a href="${pageContext.request.contextPath}/upload/${situation.workImage}" download="Resolution_${situation.situNo}" class="btn-download">
+							<i class="fa-solid fa-floppy-disk"></i> 이미지 다운로드
+						</a>
+					</div>
+				</c:if>
 			</div>
 		</c:if>
 		

@@ -69,65 +69,12 @@
 						</c:when>
 						<c:otherwise>
 							<span id="worker"><sec:authentication property="principal.username" /></span>
-							<input type="hidden" name="worker" value="<sec:authentication property='principal.username' />">
+							<%-- <input type="hidden" name="worker" value="<sec:authentication property='principal.username' />"> --%>
 						</c:otherwise>
 					</c:choose>
 				</div>
 			</div>
 			
-			<!-- 발생 일시 (읽기 전용) -->
-			<div class="info-box">
-				<div class="info-label">발생 일시</div>
-				<div class="info-value">
-					<fmt:formatDate value="${situation.situDate}" pattern="yyyy-MM-dd HH:mm:ss" />
-				</div>
-			</div>
-			
-			<!-- 조치 상태 선택 -->
-			<div class="info-box">
-				<div class="info-label">조치 상태</div>
-				<div class="info-value form-inline">
-					<select name="situStatus" class="form-control" required>
-						<option value="감지" ${situation.situStatus eq '감지' ? 'selected' : ''}>감지</option>
-						<option value="조치" ${situation.situStatus eq '조치' ? 'selected' : ''}>조치</option>
-						<option value="조치완료" ${situation.situStatus eq '조치완료' ? 'selected' : ''}>조치완료</option>
-						<option value="미해결" ${situation.situStatus eq '미해결' ? 'selected' : ''}>미해결</option>
-					</select>
-				</div>
-			</div>
-			
-			<c:if test="${not empty situation.startDate}">
-				<!-- 조치 시작 일시 -->
-				<div class="info-box">
-				    <div class="info-label">조치 시작 일시</div>
-				    <div class="info-value">
-				        <c:choose>
-				            <c:when test="${not empty situation.startDate}">
-				                <fmt:formatDate value="${situation.startDate}" pattern="yyyy-MM-dd HH:mm:ss" />
-				            </c:when>
-				            <c:otherwise>
-				                <span class="text-muted">-</span>
-				            </c:otherwise>
-				        </c:choose>
-				    </div>
-				</div>
-				
-				<!-- 조치 종료 일시 -->
-				<div class="info-box">
-				    <div class="info-label">조치 종료 일시</div>
-				    <div class="info-value">
-				        <c:choose>
-				            <c:when test="${not empty situation.endDate}">
-				                <fmt:formatDate value="${situation.endDate}" pattern="yyyy-MM-dd HH:mm:ss" />
-				            </c:when>
-				            <c:otherwise>
-				                <span class="text-muted">진행 중 (미종료)</span>
-				            </c:otherwise>
-				        </c:choose>
-				    </div>
-				</div>
-			</c:if>
-
 			<!-- 위험 유형 선택 -->
 			<div class="info-box">
 				<div class="info-label">위험 유형</div>
@@ -155,6 +102,64 @@
 						<option value="심각" ${situation.dngrLevel eq '심각' ? 'selected' : ''}>심각</option>
 						<option value="판단불가" ${situation.dngrLevel eq '판단불가' ? 'selected' : ''}>판단불가</option>
 					</select>
+				</div>
+			</div>
+			
+			<!-- 조치 상태 선택 -->
+			<div class="info-box">
+				<div class="info-label">조치 상태</div>
+				<div class="info-value form-inline">
+					<select name="situStatus" class="form-control" required>
+						<option value="감지" ${situation.situStatus eq '감지' ? 'selected' : ''}>감지</option>
+						<option value="조치" ${situation.situStatus eq '조치' ? 'selected' : ''}>조치</option>
+						<option value="조치완료" ${situation.situStatus eq '조치완료' ? 'selected' : ''}>조치완료</option>
+						<option value="미해결" ${situation.situStatus eq '미해결' ? 'selected' : ''}>미해결</option>
+					</select>
+				</div>
+			</div>
+			
+			<!-- 발생 일시 (읽기 전용) -->
+			<div class="info-box">
+				<div class="info-label">발생 일시</div>
+				<div class="info-value">
+					<fmt:formatDate value="${situation.situDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+				</div>
+			</div>
+			
+			<!-- 조치 시작 일시 -->
+			<div class="info-box">
+				<div class="info-label">조치 시작 일시</div>
+				<div class="info-value">
+					<c:choose>
+						<c:when test="${not empty situation.startDate}">
+							<fmt:formatDate value="${situation.startDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+				        </c:when>
+				        <c:otherwise>
+				            <span class="text-muted">-</span>
+				        </c:otherwise>
+					</c:choose>
+				</div>
+			</div>
+			
+			<!-- 조치 종료 일시 -->
+			<div class="info-box">
+				<div class="info-label">조치 종료 일시</div>
+				<div class="info-value">
+					<c:choose>
+						<c:when test="${not empty situation.endDate}">
+							<fmt:formatDate value="${situation.endDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+					    </c:when>
+					    <c:otherwise>
+					    	<c:choose>
+					        	<c:when test="${not empty situation.startDate}">
+					        		<span class="text-muted">진행 중 (미종료)</span>
+					        	</c:when>
+					        	<c:otherwise>
+					        		<span class="text-muted">-</span>
+					        	</c:otherwise>
+					        </c:choose>
+					    </c:otherwise>
+					</c:choose>
 				</div>
 			</div>
 
@@ -196,11 +201,12 @@
 				<div class="img-container">
 					<c:choose>
 						<c:when test="${not empty situation.workImage}">
-							<img id="workImgPreview" src="${pageContext.request.contextPath}/upload/${situation.workImage}" alt="조치완료 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기">
+							<span id="noWorkImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
+							<img id="workImgPreview" src="${pageContext.request.contextPath}/upload/${situation.workImage}" alt="조치완료 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleWorkImageError(this)">
 						</c:when>
 						<c:otherwise>
+							<span id="noWorkImgText"  class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
 							<img id="workImgPreview" src="" style="display:none;" onclick="openImageModal(this.src)" title="클릭하여 크게 보기">
-							<span id="noWorkImgText" class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
 						</c:otherwise>
 					</c:choose>
 				</div>
