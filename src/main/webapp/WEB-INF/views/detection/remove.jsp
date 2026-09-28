@@ -27,7 +27,7 @@
 		</div>
 		<div class="summary-row">
 	        <span class="label">구역명 | 발견인</span>
-	        <span class="value">${situation.zoneName} | ${situation.finder}</span>
+	        <span class="value">${not empty situation.zoneName ? situation.zoneName : '인식불가'} | ${situation.finder}</span>
 	    </div>
 	    <div class="summary-row">
 	        <span class="label">위험 유형</span>

@@ -175,7 +175,7 @@
     <update id="endSituation" parameterType="com.spring.dto.SituationDTO">
     	UPDATE SITUATIONS
     	SET
-    		SITU_STATUS = '#{situStatus}',
+    		SITU_STATUS = #{situStatus},
     		END_DATE = SYSDATE
     	WHERE SITU_NO = #{situNo}
     </update>
@@ -186,11 +186,10 @@
         SET 
             DNGR_TYPE		= #{dngrType},
             DNGR_LEVEL		= #{dngrLevel},
+            SITU_STATUS		= #{situStatus},
             SITU_CONTENT	= #{situContent},
-            SITU_IMAGE		= #{situImage, jdbcType=VARCHAR},
             WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
             WORK_IMAGE		= #{workImage, jdbcType=VARCHAR},
-            ZONE_NAME		= #{zoneName, jdbcType=VARCHAR},
             WORKER			= #{worker, jdbcType=VARCHAR}
         WHERE SITU_NO = #{situNo}
 	</update>

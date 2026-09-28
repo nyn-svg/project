@@ -211,7 +211,7 @@
 	        <div class="legend-items">
 	            <span class="legend-item"><span class="badge status-pending">감지</span> 신규 감지 이벤트</span>
 	            <span class="legend-item"><span class="badge status-in-progress">조치</span> 조치 중</span>
-	            <span class="legend-item"><span class="badge status-completed">완료</span> 조치 완료</span>
+	            <span class="legend-item"><span class="badge status-completed">조치완료</span> 조치 완료</span>
 	            <span class="legend-item"><span class="badge status-failed">미해결</span> 조치 실패</span>
 	            <span class="legend-item"><span class="badge status-canceled">취소</span> 오감지 이벤트 또는 조치 완료 전 조치 종료시킨 이벤트</span>
 	        </div>
@@ -431,7 +431,7 @@ function getSituationList() {
 			var statusClassMap = {
 				'감지': 'status-pending',
 				'조치': 'status-in-progress',
-				'완료': 'status-completed',
+				'조치완료': 'status-completed',
 				'미해결': 'status-failed',
 				'취소': 'status-canceled'
 			};

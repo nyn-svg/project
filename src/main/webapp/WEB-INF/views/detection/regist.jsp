@@ -47,7 +47,7 @@
 					    
 					<!-- 화면 출력용 텍스트 -->
 					<span id="displayZoneName"></span>
-					<span>|</span> 
+					<span class="slash">|</span>
 					<span id="finder"><sec:authentication property="principal.username" /></span>
 				</div>
 			</div>

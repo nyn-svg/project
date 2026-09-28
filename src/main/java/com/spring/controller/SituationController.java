@@ -127,13 +127,14 @@ public class SituationController {
             }
             
             situation.setSituType("수동감지");
+            situation.setSituStatus("감지");
             // 3. DB 저장 Service 호출
             boolean isSuccess = situationService.registerSituation(situation);
 
             if (isSuccess) {
             	// 성공 처리
             	clearSituationCache();
-                return "redirect:/regist_success";
+                return "redirect:/success";
             } else {
             	// 실패 처리 (비즈니스 로직 실패)
             	return "status/fail";
@@ -240,15 +241,64 @@ public class SituationController {
         
         return "detection/modify"; 
     }
-    /*
-     * // 감지 이력 수정 또는 조치 이력 입력
-     * 
-     * @PostMapping("/detect/modify")
-     * 
-     * @ResponseBody public Map<String, Object> modifySituation() {
-     * 
-     * }
-     */
+    @PostMapping("/detection/modify")
+    public String postDetectionModify(SituationDTO situation, @RequestParam(value = "workPhoto", required = false) MultipartFile workPhoto, HttpServletRequest request, Principal principal) {
+    	try {
+    		// 1. 로그인 사용자 아이디 설정 (조치인 : WORKER)
+            if (principal != null) {
+                situation.setWorker(principal.getName());
+            } else {
+                // 세션이 만료되었거나 로그인 정보가 없는 경우에도 실패 화면으로 처리
+                return "status/fail"; 
+            }
+    		
+            // 2. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
+            if (workPhoto != null && !workPhoto.isEmpty()) {
+            	// uploadPath = c:/static/upload/
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs(); // 폴더가 없으면 생성
+                }
+
+                // 파일명 중복 방지를 위한 UUID 파일명 생성
+                String originalFilename = workPhoto.getOriginalFilename();
+                String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+                // 서버 디렉토리에 파일 저장
+                File destFile = new File(uploadPath, savedFilename);
+                workPhoto.transferTo(destFile);
+
+                // DTO에 저장된 파일명 세팅
+                situation.setWorkImage(savedFilename);
+            }
+            // 3. 상태 변경 확인
+            String situNo = situation.getSituNo();
+            String before = situationService.getSituationBySituNo(situNo).getSituStatus();
+            String after = situation.getSituStatus();
+            
+            if (before.equals("감지") && after.equals("조치")) {
+            	situationService.setStart(situNo);
+            } else if (before.equals("조치") && (after.equals("조치완료") || after.equals("미해결"))) {
+            	situationService.setEnd(situation);
+            }
+            
+            // 4. DB 저장 Service 호출
+            boolean isSuccess = situationService.modifySituation(situation);
+
+            if (isSuccess) {
+            	// 성공 처리
+            	clearSituationCache();
+                return "redirect:/success";
+            } else {
+            	// 실패 처리 (비즈니스 로직 실패)
+            	return "status/fail";
+            }
+        } catch (Exception e) {
+        	// 에러 처리 (파일 업로드 중 오류, DB 접속 오류 등)
+            e.printStackTrace();
+            return "status/fail";
+        }
+    }
     
 	// 삭제 또는 취소
     @GetMapping("/detection/remove")

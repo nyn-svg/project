@@ -153,12 +153,20 @@
 			</div>
 		</div>
 
+		<!-- 구역명 | 발견인 | 조치인 -->
 		<div class="info-box">
-			<div class="info-label">구역명 | 발견인</div>
+			<div class="info-label">
+				구역명 | 발견인
+				<c:if test="${not empty situation.worker}"> | 조치인</c:if>
+			</div>
 			<div class="info-value justify-start">
 				<span>${situation.zoneName != null ? situation.zoneName : '인식불가'}</span>
-				<span>|</span> 
+				<span class="slash">|</span>
 				<span>${not empty situation.finder ? situation.finder : situation.droneId}</span>
+				<c:if test="${not empty situation.worker}">
+					<span class="slash">|</span>
+					<span>${situation.worker}</span>
+				</c:if>
 			</div>
 		</div>
 
@@ -193,42 +201,95 @@
 				<fmt:formatDate value="${situation.situDate}" pattern="yyyy-MM-dd HH:mm:ss" />
 			</div>
 		</div>
+		
+		<!-- 조치 시작 및 종료 일시 -->
+		<c:if test="${not empty situation.startDate}">
+			<div class="info-box">
+				<div class="info-label">조치 시작 일시</div>
+				<div class="info-value">
+					<fmt:formatDate value="${situation.startDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+				</div>
+			</div>
+
+			<div class="info-box">
+				<div class="info-label">조치 종료 일시</div>
+				<div class="info-value">
+					<c:choose>
+						<c:when test="${not empty situation.endDate}">
+							<fmt:formatDate value="${situation.endDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+						</c:when>
+						<c:otherwise>
+							<span class="text-muted">진행 중 (미종료)</span>
+						</c:otherwise>
+					</c:choose>
+				</div>
+			</div>
+		</c:if>
 
 		<!-- 발생 내용 -->
 		<div class="info-box full-width">
 			<div class="info-label">발생 내용</div>
 			<div class="content-box">${situation.situContent != null ? situation.situContent : '등록된 내용이 없습니다.'}</div>
 		</div>
-
-		<!-- 첨부 사진 영역 -->
-		<c:if test="${not empty situation.situImage}">
-			<div class="info-box full-width">
-				<div class="info-label">감지 사진</div>
-				<div class="img-container">
-					<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
-					<img id="viewImg" src="${pageContext.request.contextPath}/upload/${situation.situImage}" alt="${situation.droneId} 감지 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleImageError(this)">
-				</div>
-				<div class="img-action-bar">
-					<a href="${pageContext.request.contextPath}/upload/${situation.situImage}" download="${situation.situNo}" class="btn-download">
-						<i class="fa-solid fa-floppy-disk"></i> 이미지 다운로드
-					</a>
-				</div>
-			</div>
-		</c:if>
-
-		<!-- 전체화면 이미지 모달 레이어 -->
-		<div id="imageModal" class="img-modal" onclick="closeImageModal()">
-			<span class="modal-close">&times;</span>
-			<img class="modal-content" id="modalTargetImg">
+		
+		<!-- 감지 첨부 사진 영역 -->
+		<div class="info-box full-width">
+			<div class="info-label">감지 사진</div>
+			<div class="img-container">
+				<c:if test="${empty situation.situImage}">
+					<span id="noImgText" class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
+				</c:if>
+				<c:if test="${not empty situation.situImage}">
+						<span id="noImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
+						<img id="viewImg" src="${pageContext.request.contextPath}/upload/${situation.situImage}" alt="${situation.droneId} 감지 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleImageError(this)">
+					</div>
+					<div class="img-action-bar">
+						<a href="${pageContext.request.contextPath}/upload/${situation.situImage}" download="${situation.situNo}" class="btn-download">
+							<i class="fa-solid fa-floppy-disk"></i> 이미지 다운로드
+						</a>
+					</div>
+				</c:if>
 		</div>
 
 		<!-- 조치 내용 -->
 		<c:if test="${not empty situation.workContent}">
 			<div class="info-box full-width">
 				<div class="info-label">조치 내용 및 처리 결과</div>
-				<div class="content-box">${situation.workContent}</div>
+				<div class="content-box">${situation.workContent != null ? situation.workContent : '등록된 내용이 없습니다.'}</div>
+			</div>
+			
+			<!-- 조치 첨부 사진 영역 -->
+			<c:if test="${empty situation.workImage}">
+				<div class="info-box full-width">
+					<div class="info-label">조치완료 사진</div>
+					<div class="img-container">
+						<span id="noWorkImgText" class="no-img"><i class="fa-solid fa-image"></i> 등록된 이미지가 없습니다.</span>
+					</div>
+				</div>
+			</c:if>
+		</c:if>
+		
+		<!-- 조치 첨부 사진 영역 -->
+		<c:if test="${not empty situation.workImage}">
+			<div class="info-box full-width">
+				<div class="info-label">조치완료 사진</div>
+				<div class="img-container">
+					<span id="noWorkImgText" class="text-orange" style="display:none;"><i class="fa-solid fa-triangle-exclamation"></i> 이미지를 불러올 수 없습니다.</span>
+					<img id="viewWorkImg" src="${pageContext.request.contextPath}/upload/${situation.workImage}" alt="조치완료 사진" onclick="openImageModal(this.src)" title="클릭하여 크게 보기" onerror="handleWorkImageError(this)">
+				</div>
+				<div class="img-action-bar">
+					<a href="${pageContext.request.contextPath}/upload/${situation.workImage}" download="work_${situation.situNo}" class="btn-download">
+						<i class="fa-solid fa-floppy-disk"></i> 조치 이미지 다운로드
+					</a>
+				</div>
 			</div>
 		</c:if>
+		
+		<!-- 전체화면 이미지 모달 레이어 -->
+		<div id="imageModal" class="img-modal" onclick="closeImageModal()">
+			<span class="modal-close">&times;</span>
+			<img class="modal-content" id="modalTargetImg">
+		</div>
 	</div>
 
 	<!-- 4. 하단 버튼 -->
@@ -254,6 +315,13 @@
 		    $box.find('#viewImg').hide();
 		    $box.find('.img-action-bar').hide();
 		    $box.find('#noImgText').show();
+		}
+		
+		function handleWorkImageError(img) {
+		    const $box = $(img).closest('.info-box');
+		    $box.find('#viewWorkImg').hide();
+		    $box.find('.img-action-bar').hide();
+		    $box.find('#noWorkImgText').show();
 		}
 
 		function updateTransform() {

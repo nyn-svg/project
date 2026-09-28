@@ -251,7 +251,7 @@ body {
 	min-height: 24px;
 	line-height: 1;
 }
-.info-value.justify-start span:nth-of-type(2) {
+.info-value.justify-start span.slash {
 	color: #94a3b8;
 }
 
@@ -277,6 +277,9 @@ body {
 }
 
 /* 텍스트 색상 클래스 유틸리티 */
+.text-muted {
+	color: #94a3b8;
+}
 .text-skyblue {
 	color: #38bdf8;
 }
