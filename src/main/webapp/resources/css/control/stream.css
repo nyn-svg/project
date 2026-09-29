@@ -357,7 +357,7 @@ input:checked + .slider:before {
     line-height: 1;
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 8px;
 }
 
 .toggle-box {
@@ -734,6 +734,12 @@ input:checked + .slider:before {
   color: #9ca3af;
   border: 1px solid rgba(156, 163, 175, 0.4);
 }
+
+/* 위험 단계별 글자 색상 */
+.text-interest  { color: #38bdf8; } /* 관심: 하늘색 */
+.text-attention { color: #facc15; } /* 주의: 노란색 */
+.text-caution   { color: #fb923c; } /* 경계: 주황색 */
+.text-severe    { color: #f87171; } /* 심각: 빨간색 */
 
 /* 조치 상태 */
 .status-pending {

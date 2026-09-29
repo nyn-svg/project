@@ -63,7 +63,7 @@
                 </div>
                 <div class="card-body">
                     <div class="card-info">
-                        <div>배터리 : <span class="card-info-value" id="drone-battery">70%</span></div>
+                        <div>배터리 : <span class="card-info-value" id="drone-battery">-</span></div>
                         <div>구역명 : <span class="card-info-value" id="drone-zone">${zoneName}</span></div>
                     </div>
                 </div>
@@ -74,8 +74,9 @@
                 <div class="card-header">
                     <span class="card-title">밀집도</span>
                     <div class="card-action density-value">
-                        <span id="density-rate">00%</span>
-                    </div> <!-- density-rate-display → density-rate -->
+                        <span id="density-rate">--%</span>
+                    	<span class="danger-level-badge danger-interest" id="density-level">관심</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="toggle-box">
@@ -110,7 +111,7 @@
                 <div class="card-header">
                     <span class="card-title">야생동물</span>
                     <div class="card-action">
-                        <span class="danger-level-badge" id="danger-level">관심</span>
+                        <span class="danger-level-badge danger-interest" id="danger-level">관심</span>
                     </div>
                 </div>
                 <div class="card-body">
@@ -125,8 +126,8 @@
                     </div>
                     <div class="animal-action">
                         <div class="card-info">
-                            <div>객체명 : <span class="card-info-value" id="object-name">고라니</span></div>
-                            <div>신뢰도 : <span class="card-info-value" id="object-conf">72%</span></div>
+                            <div>객체명 : <span class="card-info-value" id="object-name">-</span></div>
+                            <div>신뢰도 : <span class="card-info-value" id="object-conf">-</span></div>
                         </div>
                         <button type="button" class="card-btn misdetect-btn" id="misdetect">오감지</button>
                     </div>
@@ -260,7 +261,8 @@ window.initStreamPage = function() {
 	}).on('error', function() {
 		handleStreamError(this, currentDroneId);
 	});
-
+	
+	resetMetadataUI(); // 메타데이터 잔상 제거
 	handleAutoSwitch(isAutoOn); // 저장된 설정값에 따라 자동전환
 	getSituationList(); // 실시간 감지/조치 이력 목록 조회
 	initSSE(); // SSE 연결
@@ -397,6 +399,9 @@ function moveToNextDrone() {
          
 			// 화면 전환 알림 토스트 띄우기
 			showToast('🔄 [ ' + nextDrone.droneId + ' ] 화면으로 자동 전환되었습니다.', 'info');
+			
+			// 다음 드론으로 바뀌는 순간 메타데이터 UI 즉시 초기화
+		    resetMetadataUI();
 		}, error: function(xhr, status, error) {
 			console.error('드론 목록 조회 실패 (자동전환 중):', error);
 		}
@@ -502,7 +507,8 @@ function initSSE() {
 	
 	const animalNameMap = {
 		'wild_deer': '고라니 (wild_deer)',
-		'wild_boar': '멧돼지 (wild_boar)'
+		'wild_boar': '멧돼지 (wild_boar)',
+		'agent': '안전요원'
 	};
 	
 	// 'stream-data(실시간 메타데이터 수신)' 이벤트를 수신하면 메타데이터 영역 갱신
@@ -511,9 +517,14 @@ function initSSE() {
 	    
 	    // 💡 핵심: 서버에서 넘어온 데이터의 droneId가 현재 내가 보고 있는 화면의 droneId와 일치할 때만 화면 갱신
 	    if (data.droneId === currentDroneId) {
+	    	
+	    	// 0. 드론의 배터리 수치 반영
+	        if (data.battery !== null) {
+	            $('#drone-battery').text(data.battery + '%');
+	        }
 	        
 	        // 1. 밀집도 화면 갱신
-	        $('#density-rate').text(data.density + '%');
+	        updateDensityUI(data.density);
 	        
 	     	// 2. animals 배열에서 'agent'가 아닌 첫 번째 야생동물 찾기
 	        const realAnimal = data.animals ? data.animals.find(item => item.name !== 'agent') : null;
@@ -523,7 +534,7 @@ function initSSE() {
 	            
 				// 객체명 및 신뢰도 표시
 	            $('#object-name').text(displayName);
-	            $('#object-conf').text(firstAnimal.conf + '%');
+	            $('#object-conf').text(realAnimal.conf + '%');
 	            
 	         	// 위험 단계 판단 후 표시
 	            if (data.is_animal) {
@@ -605,7 +616,70 @@ function showToast(message, type = 'info') {
 	}, 3000);
 }
 
-//위험 단계 배지 UI 갱신 함수
+// 메타데이터 영역 초기화 함수
+function resetMetadataUI() {
+    $('#drone-battery').text('-');	// 배터리 초기화
+    $('#object-name').text('-');	// 감지 객체명 초기화
+    $('#object-conf').text('-');	// 신뢰도 초기화
+    
+    // 밀집도 수치 색상 초기화
+    $('#density-rate').text('--%')
+					  .removeClass('text-interest text-attention text-caution text-severe')
+					  .addClass('text-interest');
+    
+    // 밀집도 위험 단계 뱃지 기본값('관심')으로 초기화
+    $('#density-level').text('관심')
+					   .removeClass('danger-interest danger-attention danger-caution danger-severe danger-unknown')
+					   .addClass('danger-interest');
+    
+    // 야생동물 위험 단계 뱃지 기본값('관심')으로 초기화
+    if (typeof updateDangerBadge === 'function') {
+        updateDangerBadge('관심', 'danger-interest');
+    }
+}
+
+// 밀집도 위험 단계 판단 및 UI(수치 + 뱃지) 갱신 함수
+function updateDensityUI(density) {
+    if (density === undefined || density === null) return;
+
+    // 1. 밀집도 수치 텍스트 변경
+    $('#density-rate').text(density + '%');
+
+    // 2. 위험 단계 산출 (0~20 미만: 관심, 20~50 미만: 주의, 50~80 미만: 경계, 80 이상: 심각)
+    let levelText = '관심';
+    let badgeClass = 'danger-interest';
+    let textClass = 'text-interest';
+
+    if (density >= 80) {
+        levelText = '심각';
+        badgeClass = 'danger-severe';
+        textClass = 'text-severe';
+    } else if (density >= 50) {
+        levelText = '경계';
+        badgeClass = 'danger-caution';
+        textClass = 'text-caution';
+    } else if (density >= 20) {
+        levelText = '주의';
+        badgeClass = 'danger-attention';
+        textClass = 'text-attention';
+    } else {
+        levelText = '관심';
+        badgeClass = 'danger-interest';
+        textClass = 'text-interest';
+    }
+
+    // 3. 밀집도 수치 색상 및 뱃지 변경
+    $('#density-rate')
+        .removeClass('text-interest text-attention text-caution text-severe')
+        .addClass(textClass);
+    
+    $('#density-level')
+        .text(levelText)
+        .removeClass('danger-interest danger-attention danger-caution danger-severe danger-unknown')
+        .addClass(badgeClass);
+}
+
+// 위험 단계 배지 UI 갱신 함수
 function updateDangerBadge(levelText, className) {
     $('#danger-level')
         .text(levelText)

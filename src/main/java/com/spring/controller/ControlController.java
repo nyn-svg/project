@@ -1,10 +1,15 @@
 package com.spring.controller;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,13 +18,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 
 import com.spring.dto.ChecklistItemDTO;
 import com.spring.dto.DetectRequestDTO;
 import com.spring.dto.DroneDTO;
 import com.spring.dto.SafetyCheckMasterDTO;
+import com.spring.dto.SituationDTO;
+import com.spring.service.AnimalStateService;
 import com.spring.service.ChecklistService;
+import com.spring.service.DensityStateService;
 import com.spring.service.DroneService;
+import com.spring.service.SituationService;
 import com.spring.service.SseService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +45,19 @@ public class ControlController {
 	private ChecklistService checklistService;
 	
 	@Autowired
+	private DensityStateService densityStateService;
+	
+	@Autowired
+	private AnimalStateService animalStateService;
+
+	@Autowired
+	private SituationService situationService;
+	
+	@Autowired
     private SseService sseService; // 2. SseService 자동 주입
+	
+	@Value("${savedPath.upload.files}")
+    private String uploadPath;
 
     // 1. (구)메인 진입
     @GetMapping("/control/main")
@@ -79,14 +101,148 @@ public class ControlController {
     @PostMapping("/api/sse/stream")
     @ResponseBody // 화면(JSP) 이동이 아닌 데이터 응답
     public ResponseEntity<String> receiveStreamData(@RequestBody DetectRequestDTO requestData) {
+    	String droneId = requestData.getDroneId();
+        double density = requestData.getDensity();
         
-        // 1. 데이터 확인
-        String currentDroneId = requestData.getDroneId();
-        
-        // 2. 화면(stream.jsp)으로 실시간 데이터 브로드캐스팅
+        // 1. 화면(stream.jsp)으로 실시간 데이터 브로드캐스팅
         sseService.sendEvent("stream-data", requestData);
+        
+        // 2. 밀집도 위험 단계와 5초 지속 판별 및 자동 등록
+        String densityDngrLevel = densityStateService.checkDensityAutoRegist(droneId, density);
+        if (densityDngrLevel != null) {
+            SituationDTO situation = new SituationDTO();
+            situation.setDroneId(droneId);
+            
+            // 드론 정보에서 zoneName 조회 후 세팅
+            DroneDTO drone = droneService.getDroneById(droneId);
+            if (drone != null) {
+            	situation.setZoneName(drone.getZoneName());
+            } else {
+            	situation.setZoneName("인식불가");
+            }
 
-        return ResponseEntity.ok("Data received successfully from " + currentDroneId);
+            situation.setSituType("자동감지");
+            situation.setDngrType("인파위험");
+            situation.setDngrLevel(densityDngrLevel);
+            situation.setSituStatus("감지");
+            
+            String content = String.format(
+            		"해당 구역에서 밀집도 약 %.1f%% [%s]가 지속 감지되었습니다.%n" +
+            	    "현장을 확인하시고 사전 가이드라인에 준수하여 조치해 주시기 바랍니다.%n" +
+            	    "(본 이력은 자동 생성되어 사실과 다를 수 있습니다.)", 
+            	    density, densityDngrLevel);
+            situation.setSituContent(content);
+            
+            // 💡 스냅샷 이미지 파일로 저장 후 DTO 세팅
+            String savedImageName = requestSnapshot(droneId);
+            situation.setSituImage(savedImageName);
+
+            // DB 등록 및 SSE 자동 발송
+            if (situationService.registerSituation(situation)) {
+                SituationController.clearSituationCache();
+            }
+        }
+        
+        // 3. 야생동물 위험 단계 판별 및 자동 등록
+        boolean hasValidAnimal = requestData.isAnimal() // requestData.isAnimal()의 유효성 검증
+        					  && requestData.getAnimals() != null 
+        					  && !requestData.getAnimals().isEmpty(); // requestData.getAnimals()의 유효성 검증
+        
+        if (animalStateService.checkAnimalAutoRegist(droneId, hasValidAnimal)) {
+            String animalDngrLevel = animalStateService.checkAnimalDngrLevel(droneId, true);
+            String animalName = animalStateService.getAnimalName(requestData.getAnimals());
+            
+            SituationDTO situation = new SituationDTO();
+            situation.setDroneId(droneId);
+            
+            DroneDTO drone = droneService.getDroneById(droneId);
+            if (drone != null) {
+            	situation.setZoneName(drone.getZoneName());
+            } else {
+            	situation.setZoneName("인식불가");
+            }
+
+            situation.setSituType("자동감지");
+            situation.setDngrType("야생동물");
+            situation.setDngrLevel(animalDngrLevel);
+            situation.setSituStatus("감지");
+            
+            // 💡 스냅샷 이미지 파일로 저장 후 DTO 세팅
+            String savedImageName = requestSnapshot(droneId);
+            situation.setSituImage(savedImageName);
+            
+            String content = String.format(
+            		"해당 구역에서 야생동물 [%s]가 감지되었습니다.%n" +
+            	    "현장을 확인하시고 사전 가이드라인에 준수하여 조치해 주시기 바랍니다.%n" +
+            	    "(본 이력은 자동 생성되어 사실과 다를 수 있습니다.)", 
+            	    animalName);
+            situation.setSituContent(content);
+
+            if (situationService.registerSituation(situation)) {
+                SituationController.clearSituationCache();
+            }
+        }
+        
+        return ResponseEntity.ok("Data received successfully from " + droneId);
+    }
+    
+    // 💡 Spring에서 Flask로 스냅샷 이미지를 요청하는 헬퍼 메소드
+    private String requestSnapshot(String droneId) {
+        try {
+        	// 1. DB에서 드론 정보 조회
+            DroneDTO drone = droneService.getDroneById(droneId);
+            if (drone == null || drone.getUrl() == null || drone.getUrl().trim().isEmpty()) {
+                System.err.println("[" + droneId + "] 드론의 스트리밍 URL 정보가 없습니다.");
+                return null;
+            }
+            
+            // 2. drone.getUrl() (예: http://localhost:5001/stream/video_feed) 뒤에 /api/snapshot 붙여서 요청 주소 생성
+            String flaskUrl = drone.getUrl().trim() + "/api/snapshot";
+            
+            // 3. RestTemplate 호출로 Flask 서버로부터 Base64 이미지 문자열 응답 받기
+            RestTemplate restTemplate = new RestTemplate();
+            String base64Image = restTemplate.getForObject(flaskUrl, String.class);
+            
+            // 받아온 Base64를 저장소에 저장 후 저장된 파일명 반환
+            return saveBase64Image(base64Image);
+            
+        } catch (Exception e) {
+            System.err.println("[" + droneId + "] Flask 스냅샷 요청 실패: " + e.getMessage());
+            return null; // 실패 시 이미지 없이 등록 처리
+        }
+    }
+    
+    // 💡 Base64 문자열을 파일로 디코딩하여 저장하는 헬퍼 메서드
+    private String saveBase64Image(String base64Str) {
+        if (base64Str == null || base64Str.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            // "data:image/jpeg;base64," 헤더 제거
+            if (base64Str.contains(",")) {
+                base64Str = base64Str.split(",")[1];
+            }
+
+            byte[] imageBytes = Base64.getDecoder().decode(base64Str);
+
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            String savedFilename = UUID.randomUUID().toString() + "_auto_snapshot.jpg";
+            File destFile = new File(uploadPath, savedFilename);
+
+            try (FileOutputStream fos = new FileOutputStream(destFile)) {
+                fos.write(imageBytes);
+            }
+
+            return savedFilename;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
     
     // 위험 감지 관리 페이지 이동

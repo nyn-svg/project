@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class DetectRequestDTO {
     private String droneId;
+    private int battery;
     private int peopleCount;
     private double density;
     
@@ -15,5 +16,4 @@ public class DetectRequestDTO {
     private boolean isAnimal;
     
     private List<AnimalDTO> animals; // AnimalDTO 리스트 포함
-
 }

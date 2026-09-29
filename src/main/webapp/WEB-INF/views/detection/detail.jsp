@@ -41,105 +41,87 @@
 			</c:otherwise>
 		</c:choose>
 	</div>
+	
+	<!-- 타임라인 상태값 변수화 (최적화 및 감지 조건 보완) -->
+	<c:choose>
+	    <c:when test="${situation.situStatus eq '조치'}">
+	        <c:set var="step2Class" value="active" />
+	        <c:set var="step3Class" value="" />
+	        <c:set var="step3Icon" value="fa-check" />
+        	<c:set var="step3Label" value="완료" />
+	    </c:when>
+	    <c:when test="${situation.situStatus eq '조치완료'}">
+	        <c:set var="step2Class" value="completed" />
+	        <c:set var="step3Class" value="completed" />
+	        <c:set var="step3Icon" value="fa-check" />
+	        <c:set var="step3Label" value="완료" />
+	    </c:when>
+	    <c:when test="${situation.situStatus eq '미해결'}">
+	        <c:set var="step2Class" value="completed" />
+	        <c:set var="step3Class" value="failed" />
+	        <c:set var="step3Icon" value="fa-xmark" />
+	        <c:set var="step3Label" value="미해결" />
+	    </c:when>
+	    <c:when test="${situation.situStatus eq '취소'}">
+	        <c:set var="step2Class" value="canceled" />
+	        <c:set var="step3Class" value="canceled" />
+	        <c:set var="step3Icon" value="fa-ban" />
+	        <c:set var="step3Label" value="취소" />
+	    </c:when>
+	    <c:otherwise>
+	        <c:set var="step2Class" value="" />
+	        <c:set var="step3Class" value="" />
+	        <c:set var="step3Icon" value="fa-check" />
+	        <c:set var="step3Label" value="완료" />
+	    </c:otherwise>
+	</c:choose>
 
 	<!-- 2. 최상단 배치: 조치 진행 타임라인 -->
 	<div class="timeline-section">
-		<div class="timeline-title">
-			<i class="fa-solid fa-clock-rotate-left"></i>
-			<span>조치 진행 타임라인</span>
-		</div>
-		<div class="timeline-wrapper">
-			<div class="timeline-line"></div>
-
-			<div class="timeline-step completed">
-				<div class="step-icon">
-					<i class="fa-solid fa-bell"></i>
-				</div>
-				<div class="step-label">감지</div>
-				<div class="step-time">
-					<fmt:formatDate value="${situation.situDate}" pattern="HH:mm:ss" />
-				</div>
-			</div>
-
-			<div class="timeline-step ${situation.situStatus eq '조치' ? 'active' : (situation.situStatus eq '조치완료' or situation.situStatus eq '미해결' ? 'completed' : 'canceled')}">
-				<div class="step-icon">
-					<i class="fa-solid fa-wrench"></i>
-				</div>
-				<div class="step-label">조치</div>
-				<div class="step-time">
-					<c:choose>
-						<c:when test="${not empty situation.startDate}">
-							<fmt:formatDate value="${situation.startDate}" pattern="HH:mm:ss" />
-						</c:when>
-						<c:otherwise>-</c:otherwise>
-					</c:choose>
-				</div>
-			</div>
-
-			<!-- 마지막 단계: 완료 / 미해결 / 취소 동적 분기 처리 -->
-			<c:choose>
-				<c:when test="${situation.situStatus eq '조치완료'}">
-					<div class="timeline-step completed">
-						<div class="step-icon">
-							<i class="fa-solid fa-check"></i>
-						</div>
-						<div class="step-label">완료</div>
-						<div class="step-time">
-							<c:choose>
-								<c:when test="${not empty situation.endDate}">
-									<fmt:formatDate value="${situation.endDate}" pattern="HH:mm:ss" />
-								</c:when>
-								<c:otherwise>-</c:otherwise>
-							</c:choose>
-						</div>
-					</div>
-				</c:when>
-
-				<c:when test="${situation.situStatus eq '미해결'}">
-					<div class="timeline-step failed">
-						<div class="step-icon">
-							<i class="fa-solid fa-xmark"></i>
-						</div>
-						<div class="step-label">미해결</div>
-						<div class="step-time">
-							<c:choose>
-								<c:when test="${not empty situation.endDate}">
-									<fmt:formatDate value="${situation.endDate}" pattern="HH:mm:ss" />
-								</c:when>
-								<c:otherwise>-</c:otherwise>
-							</c:choose>
-						</div>
-					</div>
-				</c:when>
-
-				<c:when test="${situation.situStatus eq '취소'}">
-					<div class="timeline-step canceled">
-						<div class="step-icon">
-							<i class="fa-solid fa-ban"></i>
-						</div>
-						<div class="step-label">취소</div>
-						<div class="step-time">
-							<c:choose>
-								<c:when test="${not empty situation.endDate}">
-									<fmt:formatDate value="${situation.endDate}" pattern="HH:mm:ss" />
-								</c:when>
-								<c:otherwise>-</c:otherwise>
-							</c:choose>
-						</div>
-					</div>
-				</c:when>
-
-				<c:otherwise>
-					<div class="timeline-step">
-						<div class="step-icon">
-							<i class="fa-solid fa-check"></i>
-						</div>
-						<div class="step-label">완료</div>
-						<div class="step-time">-</div>
-					</div>
-				</c:otherwise>
-			</c:choose>
-		</div>
+	    <div class="timeline-title">
+	        <i class="fa-solid fa-clock-rotate-left"></i>
+	        <span>조치 진행 타임라인</span>
+	    </div>
+	    <div class="timeline-wrapper">
+	        <div class="timeline-line"></div>
+	
+	        <!-- 1단계: 감지 (고정) -->
+	        <div class="timeline-step completed">
+	            <div class="step-icon"><i class="fa-solid fa-bell"></i></div>
+	            <div class="step-label">감지</div>
+	            <div class="step-time">
+	                <fmt:formatDate value="${situation.situDate}" pattern="HH:mm:ss" />
+	            </div>
+	        </div>
+	
+	        <!-- 2단계: 조치 -->
+	        <div class="timeline-step ${step2Class}">
+	            <div class="step-icon"><i class="fa-solid fa-wrench"></i></div>
+	            <div class="step-label">조치</div>
+	            <div class="step-time">
+	                <c:choose>
+	                    <c:when test="${not empty situation.startDate}">
+	                        <fmt:formatDate value="${situation.startDate}" pattern="HH:mm:ss" />
+	                    </c:when>
+	                    <c:otherwise>-</c:otherwise>
+	                </c:choose>
+	            </div>
+	        </div>
+	
+	        <!-- 3단계: 최종 상태 -->
+	        <div class="timeline-step ${step3Class}">
+	            <div class="step-icon"><i class="fa-solid ${step3Icon}"></i></div>
+	            <div class="step-label">${step3Label}</div>
+	            <div class="step-time">
+	                <c:choose>
+	                    <c:when test="${not empty situation.endDate}">
+	                        <fmt:formatDate value="${situation.endDate}" pattern="HH:mm:ss" />
+	                    </c:when>
+	                    <c:otherwise>-</c:otherwise>
+	                </c:choose>
+	            </div>
+	        </div>
+	    </div>
 	</div>
 
 	<!-- 3. 본문 그리드 영역 -->

@@ -1,0 +1,388 @@
+package com.spring.controller;
+
+import java.io.File;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.spring.dto.SituationDTO;
+import com.spring.service.SituationService;
+import com.spring.service.SseService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+@Controller
+public class SituationController_copy {
+	
+	@Autowired
+	private SseService sseService;
+
+    @Autowired
+    private SituationService situationService;
+    
+    @Value("${savedPath.upload.files}")
+    private String uploadPath;
+    
+    // 전체 공유용 감지조치이력 목록
+    private static final List<SituationDTO> situationList = Collections.synchronizedList(new ArrayList<>());
+    
+    public static void clearSituationCache() {
+        synchronized (situationList) {
+            situationList.clear();
+        }
+    }
+    
+    // 전체 감지조치이력 목록 조회
+    @GetMapping("/total/api/list")
+    @ResponseBody
+    public List<SituationDTO> getTotalSituationList() {
+        // 리스트가 비어있을 때만 (최초 1회만) DB에서 조회해서 채움
+        if (situationList.isEmpty()) {
+            // 여러 요청이 동시에 들어와도 안전하게 딱 한 번만 채우도록 동기화 잠금
+            synchronized (situationList) {
+                // 더블 체크
+                if (situationList.isEmpty()) {
+                    List<SituationDTO> list = situationService.getTotalSituationList();
+                    situationList.addAll(list);
+                }
+            }
+        }
+        
+        return situationList;
+    }
+    
+    // 감지조치이력 목록 조회 (검색조건 포함)
+    // @GetMapping("/detection/list")
+    // @ResponseBody
+    // public List<SituationDTO> getSituationList() {}
+    
+    // 상세 보기 팝업 창 호출
+    @GetMapping("/detection/detail")
+    public String getDetectionDetail(@RequestParam("no") String situNo, Model model) {
+        
+        // DB에서 SITU_NO 값으로 단건 조회
+        SituationDTO situation = situationService.getSituationBySituNo(situNo);
+        
+        // JSP로 객체 전달
+        model.addAttribute("situation", situation);
+        
+        // WEB-INF/views/detection/detail.jsp 로 이동
+        return "detection/detail"; 
+    }
+    
+    // (자동) 위험 감지 이력 등록은 백엔드(ControlController.java)에서 처리
+    // (수동) 위험 감지 이력 등록
+    @GetMapping("/detection/regist")
+    public String getDetectionRegist(Model model, Authentication authentication) {
+    	// 권한(Role) 확인 (ROLE_ADMIN, ROLE_CONTROL)
+        boolean hasPermission = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_CONTROL"));
+        if (!hasPermission) {
+        	model.addAttribute("errorMessage", "잘못된 접근입니다.");
+            model.addAttribute("closeWindow", true);
+            
+            return "status/popup-alert";
+        }
+    	
+    	return "detection/regist";
+    }
+    @PostMapping("/detection/regist")
+    public String postDetectionRegist(SituationDTO situation, @RequestParam(value = "photo", required = false) MultipartFile photo, HttpServletRequest request, Principal principal) {
+    	try {
+    		if (principal != null) {
+                situation.setFinder(principal.getName());
+            } else {
+                // 세션이 만료되었거나 로그인 정보가 없는 경우에도 실패 화면으로 처리
+                return "status/fail"; 
+            }
+    		
+            // 1. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
+            if (photo != null && !photo.isEmpty()) {
+            	// uploadPath = c:/static/upload/
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs(); // 폴더가 없으면 생성
+                }
+
+                // 파일명 중복 방지를 위한 UUID 파일명 생성
+                String originalFilename = photo.getOriginalFilename();
+                String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+                // 서버 디렉토리에 파일 저장
+                File destFile = new File(uploadPath, savedFilename);
+                photo.transferTo(destFile);
+
+                // DTO에 저장된 파일명 세팅
+                situation.setSituImage(savedFilename);
+            }
+            
+            situation.setSituType("수동감지");
+            situation.setSituStatus("감지");
+            // 3. DB 저장 Service 호출
+            boolean isSuccess = situationService.registerSituation(situation);
+
+            if (isSuccess) {
+            	// 성공 처리
+            	clearSituationCache();
+                return "redirect:/success";
+            } else {
+            	// 실패 처리 (비즈니스 로직 실패)
+            	return "status/fail";
+            }
+        } catch (Exception e) {
+        	// 에러 처리 (파일 업로드 중 오류, DB 접속 오류 등)
+            e.printStackTrace();
+            return "status/fail";
+        }
+    }
+    
+    // 💡 SituationController.java 파일 내의 registerReport 메서드를 아래 코드로 완전히 교체하세요.
+    @PostMapping("/agent/api/report")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registerReport(
+            SituationDTO situation,
+            @RequestParam(value = "photo", required = false) MultipartFile photo,
+            HttpServletRequest request,
+            Principal principal) {
+        
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // 1. 로그인 사용자 아이디 설정 (발견인 : FINDER)
+            if (principal != null) {
+                situation.setFinder(principal.getName());
+            } else {
+                // 시큐리티 컨텍스트 세션이 없거나 비로그인 테스트 중일 때 방어용 기본값 설정
+                situation.setFinder("agent01"); 
+            }
+
+            // 2. 비즈니스 약속 고정 항목 데이터 강제 주입
+            situation.setSituType("긴급보고");  // 감지유형 고정
+            situation.setSituStatus("감지");    // 초기 조치상태 고정
+            // ※ 감지일시(SITU_DATE)는 MyBatis XML단에서 SYSDATE로 들어가므로 Java단 설정 불필요 (수정불가)
+
+            // 3. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
+            if (photo != null && !photo.isEmpty()) {
+                String uploadPath = request.getServletContext().getRealPath("/resources/upload/situation");
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+
+                String originalFilename = photo.getOriginalFilename();
+                String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String savedFilename = UUID.randomUUID().toString() + ext; // 중복방지 깔끔한 파일명
+
+                File destFile = new File(uploadPath, savedFilename);
+                photo.transferTo(destFile);
+
+                situation.setSituImage(savedFilename); // DTO에 첨부파일명 매핑
+            }
+
+            // 4. DB 저장 Service 호출
+            // (★ 중요: registerSituation 내부에서 mapper.insertSituation이 실행되면 
+            //  MyBatis의 <selectKey>에 의해 situation 객체의 situNo 필드에 진짜 DB 이력번호가 채워집니다!)
+            boolean isSuccess = situationService.registerSituation(situation);
+
+            if (isSuccess) {
+            	clearSituationCache();
+            	// 💡 [추가] DB 저장이 완료되었으므로 관리자/관제 화면으로 실시간 긴급보고 SSE 전송!
+            	sseService.sendEvent("EMERGENCY_SUBMITTED", situation.getSituNo());
+            	
+                result.put("success", true);
+                result.put("situNo", situation.getSituNo()); // 🚨 생성된 진짜 이력번호를 결과에 담아 전송!
+                return ResponseEntity.ok(result);
+            } else {
+                result.put("success", false);
+                result.put("message", "DB 데이터 삽입 실패");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", "서버 오류: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
+    
+    // 감지 이력 수정 또는 조치 이력 입력
+    @GetMapping("/detection/modify")
+    public String getDetectionModify(@RequestParam("no") String situNo, Model model) {
+    	SituationDTO situation = situationService.getSituationBySituNo(situNo);
+        
+        model.addAttribute("situation", situation);
+        
+        return "detection/modify"; 
+    }
+    @PostMapping("/detection/modify")
+    public String postDetectionModify(SituationDTO situation, @RequestParam(value = "workPhoto", required = false) MultipartFile workPhoto, HttpServletRequest request, Principal principal) {
+    	try {
+            String situNo = situation.getSituNo();
+            
+    		// 1. 로그인 사용자 아이디 설정 (조치인 : WORKER)
+            if (principal != null) {
+                situation.setWorker(principal.getName());
+            } else {
+                // 세션이 만료되었거나 로그인 정보가 없는 경우에도 실패 화면으로 처리
+                return "status/fail";
+            }
+    		
+            // 2. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
+            if (workPhoto != null && !workPhoto.isEmpty()) {
+            	// uploadPath = c:/static/upload/
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs(); // 폴더가 없으면 생성
+                }
+
+                // 파일명 중복 방지를 위한 UUID 파일명 생성
+                String originalFilename = workPhoto.getOriginalFilename();
+                String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+                // 서버 디렉토리에 파일 저장
+                File destFile = new File(uploadPath, savedFilename);
+                workPhoto.transferTo(destFile);
+
+                // DTO에 저장된 파일명 세팅
+                situation.setWorkImage(savedFilename);
+            } else if (situationService.getSituationBySituNo(situNo).getWorkImage() != null) {
+            	situation.setWorkImage(situationService.getSituationBySituNo(situNo).getWorkImage());
+            }
+            
+            // 3. 상태 변경 확인
+            String before = situationService.getSituationBySituNo(situNo).getSituStatus();
+            String after = situation.getSituStatus();
+            
+            if (before.equals("감지") && after.equals("조치")) {
+            	situationService.setStart(situNo);
+            } else if (before.equals("감지") && (after.equals("조치완료") || after.equals("미해결"))) {
+            	situationService.setStart(situNo);
+            	situationService.setEnd(situation);
+            } else if (before.equals("조치") && (after.equals("조치완료") || after.equals("미해결"))) {
+            	situationService.setEnd(situation);
+            }
+            
+            // 4. DB 저장 Service 호출
+            situation.setEndDate(situationService.getSituationBySituNo(situNo).getEndDate());
+            boolean isSuccess = situationService.modifySituation(situation);
+
+            if (isSuccess) {
+            	// 성공 처리
+            	clearSituationCache();
+                return "redirect:/success";
+            } else {
+            	// 실패 처리 (비즈니스 로직 실패)
+            	return "status/fail";
+            }
+        } catch (Exception e) {
+        	// 에러 처리 (파일 업로드 중 오류, DB 접속 오류 등)
+            e.printStackTrace();
+            return "status/fail";
+        }
+    }
+    
+	// 삭제 또는 취소
+    @GetMapping("/detection/remove")
+    public String getDetectionRemove(@RequestParam("no") String situNo, Model model, Authentication authentication) {
+    	// 권한(Role) 확인 (ROLE_ADMIN, ROLE_CONTROL)
+        boolean hasPermission = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_CONTROL"));
+        if (!hasPermission) {
+        	model.addAttribute("errorMessage", "잘못된 접근입니다.");
+            model.addAttribute("closeWindow", true);
+            
+            return "status/popup-alert";
+        }
+        
+    	SituationDTO situation = situationService.getSituationBySituNo(situNo);
+        model.addAttribute("situation", situation);
+        
+        return "detection/remove"; 
+    }
+    @PostMapping("/detection/remove")
+    public String postDetectionRemove(@RequestParam("situNo") String situNo, @RequestParam("situStatus") String situStatus) {
+        if ("감지".equals(situStatus)) {
+            situationService.removeSituation(situNo);
+            
+            // 💡 메모리 캐시 초기화 추가
+            clearSituationCache();
+            
+            return "redirect:/success";
+            
+        } else if ("조치".equals(situStatus)) {
+        	SituationDTO situation = situationService.getSituationBySituNo(situNo);
+        	situation.setSituStatus("취소");
+            situationService.setEnd(situation);
+            
+            // 💡 메모리 캐시 초기화 추가
+            clearSituationCache();
+            
+            return "redirect:/success";
+        }
+        
+        return "status/fail";
+    }
+
+    // =========================================================================
+    // [현장 조치 승인 및 관리 기능 - fieldAction.jsp 연동 API]
+    // =========================================================================
+
+    // 현장 조치 목록 비동기 조회 (statusType: PENDING / HISTORY)
+    @GetMapping("/admin/fieldAction/api/list")
+    @ResponseBody
+    public List<SituationDTO> getFieldActionList(@RequestParam(value = "statusType", defaultValue = "PENDING") String statusType) {
+        return situationService.getFieldActionList(statusType);
+    }
+
+    // 모달용 단건 상세정보 비동기 조회
+    @GetMapping("/admin/fieldAction/api/detail")
+    @ResponseBody
+    public SituationDTO getFieldActionDetail(@RequestParam("actionId") String actionId) {
+        return situationService.getSituationBySituNo(actionId);
+    }
+
+    // 현장 조치 승인 / 반려 처리
+    @PostMapping("/admin/fieldAction/process")
+    @ResponseBody
+    public Map<String, Object> processFieldAction(@RequestParam("actionId") String actionId,
+                                                  @RequestParam("status") String status,
+                                                  @RequestParam(value = "adminComment", required = false) String adminComment,
+                                                  Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // 로그인한 관리자 계정 ID 세팅
+            String adminId = (principal != null) ? principal.getName() : "ADMIN";
+            
+            // 승인/반려 비즈니스 로직 수행
+            boolean isSuccess = situationService.processFieldAction(actionId, status, adminComment, adminId);
+
+            if (isSuccess) {
+            	clearSituationCache();
+                response.put("status", "success");
+                response.put("message", "성공적으로 처리되었습니다.");
+            } else {
+                response.put("status", "fail");
+                response.put("message", "처리에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", "서버 처리 중 오류 발생: " + e.getMessage());
+        }
+        return response;
+    }
+}
