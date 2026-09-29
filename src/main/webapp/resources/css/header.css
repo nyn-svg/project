@@ -145,17 +145,33 @@
     border-radius: 20px;
     font-size: 13px;
     color: #cbd5e1;
+    white-space: nowrap;
 }
 
 .weather-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .weather-item.main-status {
     font-weight: 600;
     color: #f8fafc;
+    min-width: 48px;
+}
+
+/* 아이콘 위치 수직 고정 */
+.weather-item i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+/* 메인 날씨 아이콘 크기 및 정렬 조절 */
+.weather-item.main-status i {
+    font-size: 15px;
+    line-height: 1;
+    display: inline-block;
 }
 
 .weather-divider {
@@ -169,4 +185,5 @@
     font-size: 11px;
     font-weight: 600;
     color: #ffffff;
+    white-space: nowrap;
 }

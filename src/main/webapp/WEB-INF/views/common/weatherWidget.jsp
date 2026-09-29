@@ -14,29 +14,30 @@
     <span class="weather-item"><i class="fa-solid fa-droplet"></i> <span id="wHumidity">- %</span></span>
     
     <!-- 비행 상태 뱃지 -->
-    <span class="weather-badge status-warning" id="wStatus">연결중...</span>
+    <span class="weather-badge status-warning" id="wStatus">연결중</span>
 </div>
 
 <script>
 	// OpenWeatherMap 무료 API
-	const API_KEY = '단톡방 공지 댓글 참조';
+	const API_KEY = '단톡방 공지 댓글 참고'.trim();
 	const LAT = 37.5665; // 현장 위도
 	const LON = 126.9780; // 현장 경도
-
+	const weatherUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + LAT + '&lon=' + LON + '&appid=' + API_KEY + '&units=metric&lang=kr';
+	
 	function fetchWeather() {
 	    $.ajax({
 	        // &lang=kr 추가 (한국어 설명 및 번역 데이터수신)
-	        url: `https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric&lang=kr`,
+	        url: weatherUrl,
 	        type: 'GET',
 	        success: function(data) {
 	            // 1. 데이터 추출
-	            const temp = Math.round(data.main.temp);             // 기온
-	            const wind = parseFloat(data.wind.speed.toFixed(1)); // 평균 풍속
-	            const gust = data.wind.gust ? parseFloat(data.wind.gust.toFixed(1)) : wind; // 순간 풍속 (돌풍)
-	            const humidity = data.main.humidity;                 // 습도
-	            const weatherMain = data.weather[0].main;             // 날씨 분류
-	            const weatherDesc = data.weather[0].description;     // 한국어 날씨 설명
-	            const visibility = data.visibility || 10000;          // 가시거리 (m)
+	            const temp = Math.round(data.main.temp);									// 기온
+	            const wind = parseFloat(data.wind.speed.toFixed(1));						// 평균 풍속
+	            const gust = data.wind.gust ? parseFloat(data.wind.gust.toFixed(1)) : wind;	// 순간 풍속 (돌풍)
+	            const humidity = data.main.humidity;										// 습도
+	            const weatherMain = data.weather[0].main;									// 날씨 분류
+	            const weatherDesc = data.weather[0].description;							// 한국어 날씨 설명
+	            const visibility = data.visibility || 10000;								// 가시거리 (m)
 
 	            // 2. 텍스트 업데이트
 	            $('#wTemp').text(temp + '°C');
@@ -49,25 +50,25 @@
 	            $wIcon.removeClass(); // 기존 클래스 제거
 	            
 	            switch(weatherMain) {
-	                case 'Clear':
-	                    $wIcon.addClass('fa-solid fa-sun').css('color', '#f59e0b');
-	                    break;
-	                case 'Clouds':
-	                    $wIcon.addClass('fa-solid fa-cloud').css('color', '#94a3b8');
-	                    break;
-	                case 'Rain':
-	                case 'Drizzle':
-	                    $wIcon.addClass('fa-solid fa-cloud-showers-heavy').css('color', '#38bdf8');
-	                    break;
-	                case 'Thunderstorm':
-	                    $wIcon.addClass('fa-solid fa-bolt').css('color', '#facc15');
-	                    break;
-	                case 'Snow':
-	                    $wIcon.addClass('fa-regular fa-snowflake').css('color', '#e2e8f0');
-	                    break;
-	                default:
-	                    $wIcon.addClass('fa-solid fa-smog').css('color', '#cbd5e1');
-	            }
+		            case 'Clear':
+		                $wIcon.attr('class', 'fa-solid fa-sun').css('color', '#f59e0b');
+		                break;
+		            case 'Clouds':
+		                $wIcon.attr('class', 'fa-solid fa-cloud').css('color', '#94a3b8');
+		                break;
+		            case 'Rain':
+		            case 'Drizzle':
+		                $wIcon.attr('class', 'fa-solid fa-cloud-showers-heavy').css('color', '#38bdf8');
+		                break;
+		            case 'Thunderstorm':
+		                $wIcon.attr('class', 'fa-solid fa-bolt').css('color', '#facc15');
+		                break;
+		            case 'Snow':
+		                $wIcon.attr('class', 'fa-regular fa-snowflake').css('color', '#e2e8f0');
+		                break;
+		            default:
+		                $wIcon.attr('class', 'fa-solid fa-smog').css('color', '#cbd5e1');
+		        }
 
 	            // 4. 안전 지침 기준 세분화된 비행 가능 여부 판단
 	            const $wStatus =$('#wStatus');
@@ -107,6 +108,8 @@
 	        },
 	        error: function(err) {
 	            console.error('날씨 정보를 불러오지 못했습니다.', err);
+	            $('#wStatus').text('연결 실패')
+                			 .css({'background': '#6b7280', 'color': '#ffffff'});
 	        }
 	    });
 	}
