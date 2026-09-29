@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.spring.dto.SafetyCheckDetailDTO;
 import com.spring.dto.SafetyCheckMasterDTO;
+import com.spring.dto.ChecklistResultDTO;
 
 @Mapper
 public interface SafetyCheckMapper {
@@ -25,4 +26,6 @@ public interface SafetyCheckMapper {
      * 특정 checkId에 해당하는 상세 항목 목록 조회
      */
     List<SafetyCheckDetailDTO> selectDetailsByCheckId(Long checkId);
+    
+    List<ChecklistResultDTO> selectLatestChecklistByTarget(String targetType);
 }

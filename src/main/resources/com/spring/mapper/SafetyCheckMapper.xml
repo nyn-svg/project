@@ -67,5 +67,30 @@
         WHERE CHECK_ID = #{checkId}
         ORDER BY DETAIL_ID ASC
     </select>
+    
+    <!-- 안전요원(AGENT) 또는 관제사(CONTROL)의 최신 점검 결과 목록 조회 -->
+	<select id="selectLatestChecklistByTarget" parameterType="string" resultType="com.spring.dto.ChecklistResultDTO">
+	    SELECT 
+	        r.RESULT_ID    AS resultId,
+	        i.ITEM_ID      AS itemId,
+	        i.TARGET_TYPE  AS targetType,
+	        i.CATEGORY     AS category,
+	        i.ITEM_TITLE   AS itemTitle,
+	        i.QUESTION     AS question,
+	        r.USER_ID      AS userId,
+	        r.CHECK_STATUS AS checkStatus,
+	        r.REMARK       AS remark,
+	        TO_CHAR(r.CHECK_DATE, 'YYYY-MM-DD HH24:MI') AS checkDate
+	    FROM CHECKLIST_ITEM i
+	    JOIN CHECKLIST_RESULT r ON i.ITEM_ID = r.ITEM_ID
+	    WHERE i.TARGET_TYPE = #{targetType}
+	      AND TRUNC(r.CHECK_DATE) = (
+	          SELECT MAX(TRUNC(CHECK_DATE)) 
+	          FROM CHECKLIST_RESULT sub_r
+	          JOIN CHECKLIST_ITEM sub_i ON sub_r.ITEM_ID = sub_i.ITEM_ID
+	          WHERE sub_i.TARGET_TYPE = #{targetType}
+	      )
+	    ORDER BY i.ITEM_ID ASC
+	</select>
 
 </mapper>

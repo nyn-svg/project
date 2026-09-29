@@ -12,5 +12,7 @@ public class SafetyCheckMasterDTO {
     private String regDate;     // 등록일시
     
     // 상세 점검 항목 목록 (1:N 연동)
-    private List<SafetyCheckDetailDTO> detailList;
+    private List<SafetyCheckDetailDTO> detailList;		// 1. 관리자 점검 항목 리스트
+    private List<ChecklistResultDTO> agentCheckList;   // 2. 안전요원(AGENT) 점검 리스트
+    private List<ChecklistResultDTO> controlCheckList; // 3. 관제사(CONTROL) 점검 리스트
 }

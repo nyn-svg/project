@@ -3,29 +3,32 @@
 
 <div class="agent-container">
     <!-- 1. 좌측: 등록된 문항 목록 패널 -->
-    <div class="agent-card list-panel">
-        <div class="panel-header">
-            <h3 class="panel-title"><i class="fa-solid fa-list-check"></i> 체크리스트 문항 목록</h3>
-            <button type="button" class="mini-btn primary" id="btn-reset-form">
-                <i class="fa-solid fa-plus"></i> 문항 추가
-            </button>
-        </div>
-
-        <!-- 상단 탭: 안전요원 / 관제사 구분 -->
-        <div class="tab-group" style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <button type="button" class="mini-btn target-tab active" data-target="AGENT" style="flex: 1; padding: 8px; font-weight: bold;">
-                <i class="fa-solid fa-user-shield"></i> 안전요원용
-            </button>
-            <button type="button" class="mini-btn target-tab" data-target="CONTROL" style="flex: 1; padding: 8px; font-weight: bold;">
-                <i class="fa-solid fa-headset"></i> 관제사용
-            </button>
-        </div>
-
-        <!-- 문항 리스트 스크롤 구역 -->
-        <div class="agent-list" id="item-list-container">
-            <!-- AJAX로 문항 항목들이 동적 생성됩니다 -->
-        </div>
-    </div>
+	<div class="agent-card list-panel">
+	    <div class="panel-header">
+	        <h3 class="panel-title"><i class="fa-solid fa-list-check"></i> 체크리스트 문항 목록</h3>
+	        <button type="button" class="mini-btn primary" id="btn-reset-form">
+	            <i class="fa-solid fa-plus"></i> 문항 추가
+	        </button>
+	    </div>
+	
+	    <!-- 상단 탭: 안전요원 / 관제사 구분 -->
+	    <div class="tab-group" style="display: flex; gap: 8px; margin-bottom: 12px;">
+	        <button type="button" class="mini-btn target-tab active" data-target="AGENT" style="flex: 1; padding: 8px; font-weight: bold;">
+	            <i class="fa-solid fa-user-shield"></i> 안전요원용
+	        </button>
+	        <button type="button" class="mini-btn target-tab" data-target="CONTROL" style="flex: 1; padding: 8px; font-weight: bold;">
+	            <i class="fa-solid fa-headset"></i> 관제사용
+	        </button>
+	    </div>
+	
+	    <!-- 문항 리스트 구역 -->
+	    <div class="agent-list" id="item-list-container">
+	        <!-- AJAX로 문항 항목들이 동적 생성됩니다 -->
+	    </div>
+	
+	    <!-- 🎯 [추가] 페이징 하단 버튼 영역 -->
+	    <div id="item-pagination" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 12px; padding-top: 8px;"></div>
+	</div>
 
     <!-- 2. 우측: 문항 등록 및 수정 패널 -->
     <div class="agent-card detail-panel">
@@ -108,6 +111,11 @@
 <script>
 $(document).ready(function() {
     let currentTarget = 'AGENT'; // 기본값: 안전요원
+    
+    // 🎯 [추가] 페이징 관리 변수
+    let fullItemList = [];      // 서버에서 받아온 전체 문항 리스트
+    let currentPage = 1;         // 현재 페이지
+    const pageSize = 6;          // 한 페이지에 6개씩 표시
 
     // 1. 초기 로드
     loadChecklistItems(currentTarget);
@@ -132,12 +140,23 @@ $(document).ready(function() {
             type: 'GET',
             data: { targetType: target },
             success: function(data) {
-                renderItemList(data);
+                fullItemList = data || []; // 전체 데이터 저장
+                currentPage = 1;           // 1페이지로 초기화
+                renderPagedList();
             },
             error: function() {
                 alert('문항 목록을 불러오는 중 오류가 발생했습니다.');
             }
         });
+    }
+
+    // 🎯 [추가] 현재 페이지에 맞게 6개만 잘라서 렌더링하는 함수
+    function renderPagedList() {
+        const startIndex = (currentPage - 1) * pageSize;
+        const pageData = fullItemList.slice(startIndex, startIndex + pageSize);
+
+        renderItemList(pageData);
+        renderPaginationControls(fullItemList.length);
     }
 
     // 3. 목록 렌더링
@@ -177,6 +196,56 @@ $(document).ready(function() {
             $container.append($item);
         });
     }
+
+    // 🎯 [추가] 하단 페이징 버튼 생성 함수
+    function renderPaginationControls(totalCount) {
+        const $pagination = $('#item-pagination').empty();
+        const totalPages = Math.ceil(totalCount / pageSize);
+
+        if (totalPages <= 1) return; // 항목이 6개 이하이면 페이지 버튼을 숨김
+
+        // 이전 버튼 (<)
+        const $prevBtn = $('<button type="button" class="mini-btn" style="padding: 4px 8px; font-size: 11px; cursor: pointer;">&lt;</button>');
+        if (currentPage === 1) {
+            $prevBtn.prop('disabled', true).css('opacity', '0.4');
+        } else {
+            $prevBtn.on('click', function() {
+                currentPage--;
+                renderPagedList();
+            });
+        }
+        $pagination.append($prevBtn);
+
+        // 페이지 번호 버튼들 (1, 2, 3...)
+        for (let i = 1; i <= totalPages; i++) {
+            const isActive = (i === currentPage);
+            const activeStyle = isActive 
+                ? 'background: #007bff; color: #fff; font-weight: bold; border-color: #007bff;' 
+                : 'background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1);';
+                
+            const $pageBtn = $('<button type="button" class="mini-btn" style="padding: 4px 9px; font-size: 11px; cursor: pointer; ' + activeStyle + '">' + i + '</button>');
+
+            $pageBtn.on('click', function() {
+                currentPage = i;
+                renderPagedList();
+            });
+
+            $pagination.append($pageBtn);
+        }
+
+        // 다음 버튼 (>)
+        const $nextBtn = $('<button type="button" class="mini-btn" style="padding: 4px 8px; font-size: 11px; cursor: pointer;">&gt;</button>');
+        if (currentPage === totalPages) {
+            $nextBtn.prop('disabled', true).css('opacity', '0.4');
+        } else {
+            $nextBtn.on('click', function() {
+                currentPage++;
+                renderPagedList();
+            });
+        }
+        $pagination.append($nextBtn);
+    }
+
 
     // 4. 문항 선택 시 폼에 채우기
     function selectItem(item) {

@@ -340,55 +340,65 @@ function initFieldActionPage() {
         return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
     }
 
-    // 5. 모달 열기
-    window.openFieldActionDetailModal = function (actionId) {
-        console.log("👉 [현장조치 모달 요청 id]:", actionId);
-        
-        if (!actionId) {
-            alert('올바른 요청 ID가 아닙니다.');
-            return;
-        }
+	// 5. 모달 열기 (사진 표시 로직 추가 및 경로 수정)
+	window.openFieldActionDetailModal = function (actionId) {
+	    console.log("👉 [현장조치 모달 요청 id]:", actionId);
+	    
+	    if (!actionId) {
+	        alert('올바른 요청 ID가 아닙니다.');
+	        return;
+	    }
 
-        fetch(basePath + '/admin/fieldAction/api/detail?actionId=' + actionId)
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error('서버 응답 오류 (' + res.status + ')');
-                }
-                return res.text();
-            })
-            .then(text => {
-                if (!text || text.trim() === '') {
-                    throw new Error('DB에 해당 이력 정보가 존재하지 않습니다.');
-                }
-                const data = JSON.parse(text);
+	    fetch(basePath + '/admin/fieldAction/api/detail?actionId=' + actionId)
+	        .then(res => {
+	            if (!res.ok) {
+	                throw new Error('서버 응답 오류 (' + res.status + ')');
+	            }
+	            return res.text();
+	        })
+	        .then(text => {
+	            if (!text || text.trim() === '') {
+	                throw new Error('DB에 해당 이력 정보가 존재하지 않습니다.');
+	            }
+	            const data = JSON.parse(text);
 
-                document.getElementById('mActionId').textContent = data.situNo || actionId;
-                document.getElementById('mWorkerInfo').textContent = `${data.finder || '요원'}`;
-                document.getElementById('mActionContent').textContent = data.situContent || '내용 없음';
-                
-                const adminCommentEl = document.getElementById('adminComment');
-                if (adminCommentEl) {
-                    adminCommentEl.value = data.workContent || data.adminComment || '';
-                }
+	            // 텍스트 데이터 복원
+	            document.getElementById('mActionId').textContent = data.situNo || actionId;
+	            document.getElementById('mWorkerInfo').textContent = `${data.finder || '요원'}`;
+	            document.getElementById('mActionContent').textContent = data.situContent || '내용 없음';
+	            
+	            const adminCommentEl = document.getElementById('adminComment');
+	            if (adminCommentEl) {
+	                adminCommentEl.value = data.workContent || data.adminComment || '';
+	            }
 
-                const photoBox = document.getElementById('mPhotoBox');
-                if (photoBox) {
-                    if (data.situImage) {
-                        photoBox.innerHTML = `<img src="${basePath}/resources/upload/situation/${data.situImage}" style="max-width:100%; max-height:200px; border-radius:6px;">`;
-                    } else {
-                        photoBox.innerHTML = '<span style="color:#64748b; font-size:12px;">첨부 사진 없음</span>';
-                    }
-                }
+	            // 🎯 [수정] 현장 첨부 사진(SITU_IMAGE) 바인딩 및 /upload/ 경로 매핑
+	            const imgEl = document.getElementById('mActionImage');
+	            const noImgTextEl = document.getElementById('noImageText');
 
-                if (actionDetailModal) {
-                    actionDetailModal.style.display = 'flex';
-                }
-            })
-            .catch(err => {
-                console.error('상세 정보 로드 실패:', err);
-                alert('상세 정보 로드 실패: ' + err.message);
-            });
-    };
+	            if (imgEl && noImgTextEl) {
+	                if (data.situImage && data.situImage.trim() !== '') {
+	                    // servlet-context.xml의 /upload/** 매핑 경로로 설정
+	                    imgEl.src = basePath + '/upload/' + data.situImage;
+	                    imgEl.style.display = 'block';
+	                    noImgTextEl.style.display = 'none';
+	                } else {
+	                    // 사진이 없는 경우
+	                    imgEl.src = '';
+	                    imgEl.style.display = 'none';
+	                    noImgTextEl.style.display = 'inline';
+	                }
+	            }
+
+	            if (actionDetailModal) {
+	                actionDetailModal.style.display = 'flex';
+	            }
+	        })
+	        .catch(err => {
+	            console.error('상세 정보 로드 실패:', err);
+	            alert('상세 정보 로드 실패: ' + err.message);
+	        });
+	};
 
     // 6. 모달 닫기
     window.closeModal = function () {
@@ -447,6 +457,125 @@ function initFieldActionPage() {
         });
     };
 }
+
+// 🎯 AI 사후 종합 보고서 생성 요청
+window.generateAiSituationReport = function () {
+	if (!confirm('축제 기간 동안 발생한 전체 이력 데이터를 바탕으로\nAI 사후 종합 보고서를 생성하시겠습니까?')) {
+	        return;
+	    }
+	
+    // 💡 [수정] basePath 안전하게 정의
+    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+
+    const modal = document.getElementById('aiReportModal');
+    const loading = document.getElementById('aiReportLoading');
+    const content = document.getElementById('aiReportContent');
+
+    // 1. 모달 열기 및 로딩 상태 표시
+    if (modal) modal.style.display = 'flex';
+    if (loading) loading.style.display = 'block';
+    if (content) {
+        content.style.display = 'none';
+        content.textContent = '';
+    }
+
+    // 2. 컨트롤러 API 비동기 호출
+    fetch(basePath + '/admin/fieldAction/api/aiReport')
+        .then(res => {
+            if (!res.ok) throw new Error('서버 응답 오류 (' + res.status + ')');
+            return res.json();
+        })
+        .then(res => {
+            if (loading) loading.style.display = 'none';
+
+            if (res && res.status === 'success') {
+                if (content) {
+                    content.textContent = res.report;
+                    content.style.display = 'block';
+                }
+            } else {
+                alert('보고서 생성 실패: ' + (res.message || '오류가 발생했습니다.'));
+                if (modal) modal.style.display = 'none';
+            }
+        })
+        .catch(err => {
+            console.error('AI 보고서 요청 에러:', err);
+            alert('AI 보고서 생성 처리 중 오류가 발생했습니다.');
+            if (loading) loading.style.display = 'none';
+            if (modal) modal.style.display = 'none';
+        });
+};
+
+// 🎯 1. 메일 입력 폼 열기/닫기 토글
+window.toggleEmailArea = function() {
+    const formArea = document.getElementById('emailFormArea');
+    if (formArea) {
+        const isHidden = formArea.style.display === 'none' || formArea.style.display === '';
+        formArea.style.display = isHidden ? 'flex' : 'none';
+    }
+};
+
+// 🎯 2. 유관기관 선택 시 이메일 주소 자동 채우기
+window.onSelectAgency = function(val) {
+    const input = document.getElementById('targetEmailInput');
+    if (!input) return;
+    if (val === 'direct') {
+        input.value = '';
+        input.focus();
+    } else {
+        input.value = val;
+    }
+};
+
+// 🎯 3. AI 사후 보고서 이메일 전송 요청
+window.sendReportEmail = function() {
+    const input = document.getElementById('targetEmailInput');
+    const contentEl = document.getElementById('aiReportContent');
+    const email = input ? input.value.trim() : '';
+    const reportText = contentEl ? contentEl.textContent : '';
+
+    if (!email) {
+        alert('수신할 이메일 주소를 입력해 주세요.');
+        if (input) input.focus();
+        return;
+    }
+
+    if (!confirm(email + ' 주소로 사후 종합 보고서를 발송하시겠습니까?')) {
+        return;
+    }
+
+    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+
+    fetch(basePath + '/admin/safetyCheck/sendEmail', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            content: reportText
+        })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
+        return response.text();
+    })
+    .then(res => {
+        alert('이메일이 성공적으로 전송되었습니다.');
+        window.toggleEmailArea();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('메일 전송 실패: 서버 연결 상태를 확인해 주세요.');
+    });
+};
+
+
+// 🎯 AI 보고서 모달 닫기
+window.closeAiReportModal = function () {
+    const modal = document.getElementById('aiReportModal');
+    if (modal) modal.style.display = 'none';
+};
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initFieldActionPage);

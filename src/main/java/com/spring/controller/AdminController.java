@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.spring.dto.UserDTO; // 프로젝트 DTO 경로에 맞게 수정
 import com.spring.service.AdminService; // 관리자 전용 Service (또는 AgentTaskService)
+import com.spring.service.SituationService;
 import com.spring.service.SseService;
 import com.spring.service.UserService;
 
@@ -39,6 +40,9 @@ public class AdminController {
 	
 	@Autowired
 	private SseService sseService;
+	
+	@Autowired
+    private SituationService situationService;
 
 	/**
 	 * 관리자 메인 대시보드 페이지 이동 RequestMapping: GET /admin/main
@@ -140,6 +144,21 @@ public class AdminController {
 	    model.addAttribute("contentPage", "/WEB-INF/views/admin/fieldAction.jsp");
 	    
 	    return "layout/mainLayout";
+	}
+	
+	@GetMapping("/fieldAction/api/aiReport")
+	@ResponseBody
+	public Map<String, Object> getPostFestivalAiReport() {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String reportText = situationService.generatePostFestivalReport();
+	        result.put("status", "success");
+	        result.put("report", reportText);
+	    } catch (Exception e) {
+	        result.put("status", "error");
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
 	}
 	
 	

@@ -749,45 +749,38 @@ window.chartIdleTimer = setInterval(function() {
     
     
     /**
-     * 실시간 관제 터미널 콘솔 스크립트 (점멸/깜빡임 완벽 해결 버전)
+     * 실시간 관제 터미널 UI 렌더링 스크립트 (메인 홈 JSP 하단 전용)
      */
-    (function initTerminalLog() {
+    (function initTerminalUI() {
         const logList = document.getElementById('terminalLogList');
         const logContainer = document.getElementById('terminalLogContainer');
         const typeSelect = document.getElementById('terminalTypeSelect');
         const searchInput = document.getElementById('terminalSearchInput');
         const topIndicator = document.getElementById('terminalScrollTopIndicator');
         const bottomIndicator = document.getElementById('terminalScrollBottomIndicator');
-        
+
         if (!logList || !logContainer) return;
 
         const MAX_LOG_COUNT = 100;
-        const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
         const STORAGE_KEY = 'admin_terminal_logs';
-        
-        let activeEventSource = null;
-        let allLogs = []; // 전체 로그 객체 배열 { type, message, timeStr }
 
-        // 🎯 [1] 스크롤 위치 감지 (위/아래 알림 배지 토글)
         function updateScrollIndicators() {
             const scrollTop = logContainer.scrollTop;
             const scrollHeight = logContainer.scrollHeight;
             const clientHeight = logContainer.clientHeight;
 
-            topIndicator.style.display = (scrollTop > 10) ? 'block' : 'none';
-            bottomIndicator.style.display = (scrollTop + clientHeight < scrollHeight - 10) ? 'block' : 'none';
+            if (topIndicator) topIndicator.style.display = (scrollTop > 10) ? 'block' : 'none';
+            if (bottomIndicator) bottomIndicator.style.display = (scrollTop + clientHeight < scrollHeight - 10) ? 'block' : 'none';
         }
 
         logContainer.addEventListener('scroll', updateScrollIndicators);
 
-        // 🎯 [2] 필터 조건 충족 여부 검사
         function isMatchFilter(item, selectedType, keyword) {
             const matchType = (selectedType === 'ALL') || (item.type === selectedType);
             const matchKey = (keyword === '') || (item.message.toLowerCase().includes(keyword));
             return matchType && matchKey;
         }
 
-        // 🎯 [3] 단일 로그 DOM 생성 및 append 전용 함수 (깜빡임 방지 핵심!)
         function appendSingleLogDOM(item) {
             let tagClass = 'info';
             let tagText = 'SYSTEM';
@@ -807,20 +800,23 @@ window.chartIdleTimer = setInterval(function() {
 
             logList.appendChild(li);
 
-            // 표시 노드 수가 초과되면 맨 위 노드 1개만 깔끔하게 제거
             if (logList.children.length > MAX_LOG_COUNT) {
                 logList.removeChild(logList.firstElementChild);
             }
         }
 
-        // 🎯 [4] 화면 전체 재렌더링 (검색어/유형 변경시에만 호출됨)
         function renderFilteredLogs() {
-            logList.innerHTML = ''; // 필터링 시에만 화면 비움
+            logList.innerHTML = '';
             
             const selectedType = typeSelect ? typeSelect.value : 'ALL';
             const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-            allLogs.forEach(function(item) {
+            let logs = [];
+            try {
+                logs = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
+            } catch(e) {}
+
+            logs.forEach(function(item) {
                 if (isMatchFilter(item, selectedType, keyword)) {
                     appendSingleLogDOM(item);
                 }
@@ -829,127 +825,25 @@ window.chartIdleTimer = setInterval(function() {
             updateScrollIndicators();
         }
 
-        // 필터/검색 변경 이벤트 연결
         if (typeSelect) typeSelect.addEventListener('change', renderFilteredLogs);
         if (searchInput) searchInput.addEventListener('input', renderFilteredLogs);
 
-        // 🎯 [5] 실시간 새 로그 추가 (전체 재렌더링 없이 1개만 살짝 추가 -> 점멸 해제)
-        function addNewLog(type, message, timeStr) {
-            const logObj = { type: type, message: message, timeStr: timeStr };
-            allLogs.push(logObj);
-
-            if (allLogs.length > MAX_LOG_COUNT) {
-                allLogs.shift();
-            }
-
-            // sessionStorage 업데이트
-            try {
-                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(allLogs));
-            } catch (e) {}
-
-            // 현재 선택된 필터/검색어에 맞는 경우에만 단일 DOM 추가
+        // 헤더의 SSE 백그라운드 수신기로부터 새 로그가 올 때 UI 업데이트 콜백
+        window.onNewTerminalLog = function(logObj) {
             const selectedType = typeSelect ? typeSelect.value : 'ALL';
             const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
             if (isMatchFilter(logObj, selectedType, keyword)) {
                 appendSingleLogDOM(logObj);
                 updateScrollIndicators();
-                // 새 로그 추가 시 하단 스크롤 이동
                 logContainer.scrollTop = logContainer.scrollHeight;
             }
-        }
-
-        // 🎯 [6] 이전 저장된 로그 복원
-        function loadSavedLogs() {
-            try {
-                const saved = sessionStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    allLogs = JSON.parse(saved);
-                    renderFilteredLogs();
-                    logContainer.scrollTop = logContainer.scrollHeight;
-                } else {
-                    window.addTerminalLog('INFO', '관제 터미널 스트리밍 엔진 시작...');
-                }
-            } catch (e) {
-                window.addTerminalLog('INFO', '관제 터미널 스트리밍 엔진 시작...');
-            }
-        }
-
-        // 외부 전역 함수 등록
-        window.addTerminalLog = function(type, message) {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const timeStr = '[' + hh + ':' + mm + ':' + ss + ']';
-
-            addNewLog(type, message, timeStr);
         };
 
-        // SSE 데이터 스트림 연결
-        function connectSseStream() {
-            if (activeEventSource) {
-                activeEventSource.close();
-                activeEventSource = null;
-            }
-
-            const sseUrl = basePath + '/api/sse/subscribe';
-            const eventSource = new EventSource(sseUrl);
-            activeEventSource = eventSource;
-
-            eventSource.addEventListener('terminal-log', function(e) {
-                try {
-                    const data = JSON.parse(e.data);
-                    window.addTerminalLog(data.type || 'INFO', data.message || '');
-                } catch (err) {}
-            });
-
-            eventSource.addEventListener('situation-report', function(e) {
-                try {
-                    const data = JSON.parse(e.data);
-                    const msg = '[긴급보고] ' + (data.situContent || '현장 긴급 상황이 접수되었습니다.');
-                    window.addTerminalLog('DANGER', msg);
-                } catch (err) {}
-            });
-
-            eventSource.addEventListener('situation-alert', function(e) {
-                try {
-                    const data = JSON.parse(e.data);
-                    const dngrType = data.dngrType || '위험';
-                    const msg = '[' + dngrType + '] ' + (data.situContent || '새로운 위험 요소가 감지되었습니다.');
-                    window.addTerminalLog('WARN', msg);
-                } catch (err) {}
-            });
-
-            eventSource.addEventListener('situation-update', function(e) {
-                try {
-                    const data = JSON.parse(e.data);
-                    const msg = '상황 정보 업데이트 (요청No.' + (data.situNo || '-') + ')';
-                    window.addTerminalLog('INFO', msg);
-                } catch (err) {}
-            });
-
-            eventSource.onerror = function() {
-                eventSource.close();
-                activeEventSource = null;
-                setTimeout(connectSseStream, 5000);
-            };
-        }
-
-        window.closeTerminalSse = function() {
-            if (activeEventSource) {
-                activeEventSource.close();
-                activeEventSource = null;
-            }
-        };
-
-        window.addEventListener('beforeunload', window.closeTerminalSse);
-        window.addEventListener('pagehide', window.closeTerminalSse);
-
-        loadSavedLogs();
-        connectSseStream();
+        // 홈 화면 진입 시 그동안 누적된 로그 복원
+        renderFilteredLogs();
+        logContainer.scrollTop = logContainer.scrollHeight;
     })();
-    
 </script>
 
 

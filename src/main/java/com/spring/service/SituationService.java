@@ -63,4 +63,6 @@ public interface SituationService {
 	// [안전요원 모바일 조치보고 리스트 - 무한 스크롤 페이징 기능 추가]
 	List<SituationDTO> getTaskListPaged(Map<String, Object> paramMap);
 	int getTaskListCount(Map<String, Object> paramMap);
+	
+	String generatePostFestivalReport();
 }

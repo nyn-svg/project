@@ -2199,31 +2199,43 @@ window.renderSituationList = renderSituationList;
 
 //4. 카드 클릭 시 모달 열기 및 읽음 처리
 $(document).off('click', '.situ-card-item').on('click', '.situ-card-item', function() {
- var situNo = $(this).attr('data-no');
+    var situNo = $(this).attr('data-no');
 
- if (situNo) {
-     markEmergencyAsRead(situNo);
-     $(this).css({ 'border': '1px solid rgba(255, 255, 255, 0.08)', 'background': 'rgba(15, 23, 42, 0.6)' });
-     $(this).find('.new-badge').remove();
-     updateEmergencyBlink();
- }
+    if (situNo) {
+        markEmergencyAsRead(situNo);
+        $(this).css({ 'border': '1px solid rgba(255, 255, 255, 0.08)', 'background': 'rgba(15, 23, 42, 0.6)' });
+        $(this).find('.new-badge').remove();
+        updateEmergencyBlink();
+    }
 
- if (!situNo || !window.currentUrgentData) return;
- var item = window.currentUrgentData.find(function(d) { return String(d.situNo) === String(situNo); });
- if (!item) return;
+    if (!situNo || !window.currentUrgentData) return;
+    var item = window.currentUrgentData.find(function(d) { return String(d.situNo) === String(situNo); });
+    if (!item) return;
 
- $('#situ-modal-no').text(item.situNo || '-');
- $('#situ-modal-dngr-type').text(item.dngrType || '위험 상황');
- $('#situ-modal-zone').text(item.zoneName || '구역 미지정');
- $('#situ-modal-user').text(item.finder || '알 수 없음');
- $('#situ-modal-content').text(item.situContent || '등록된 상세 내용이 없습니다.');
+    $('#situ-modal-no').text(item.situNo || '-');
+    $('#situ-modal-dngr-type').text(item.dngrType || '위험 상황');
+    $('#situ-modal-zone').text(item.zoneName || '구역 미지정');
+    $('#situ-modal-user').text(item.finder || '알 수 없음');
+    $('#situ-modal-content').text(item.situContent || '등록된 상세 내용이 없습니다.');
 
- $('#situ-admin-comment').val('');
- 
- if (typeof resetModalPosition === 'function') {
-     resetModalPosition();
- }
- $('#situation-modal').css('display', 'flex').hide().fadeIn(150).addClass('active');
+    $('#situ-admin-comment').val('');
+
+    // 🎯 [추가] 첨부 사진(SITU_IMAGE / WORK_IMAGE) /upload/ 경로 매핑 및 노출 처리
+    var basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+    var imageName = item.situImage || item.workImage;
+
+    if (imageName && imageName.trim() !== '') {
+        $('#situ-modal-img').attr('src', basePath + '/upload/' + imageName);
+        $('#situ-modal-img-wrapper').show();
+    } else {
+        $('#situ-modal-img').attr('src', '');
+        $('#situ-modal-img-wrapper').hide();
+    }
+    
+    if (typeof resetModalPosition === 'function') {
+        resetModalPosition();
+    }
+    $('#situation-modal').css('display', 'flex').hide().fadeIn(150).addClass('active');
 });
 
 //5. 모달 닫기
