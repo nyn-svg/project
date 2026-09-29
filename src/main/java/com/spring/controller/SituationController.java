@@ -68,6 +68,11 @@ public class SituationController {
         return situationList;
     }
     
+    // 감지조치이력 목록 조회 (검색조건 포함)
+    // @GetMapping("/detection/list")
+    // @ResponseBody
+    // public List<SituationDTO> getSituationList() {}
+    
     // 상세 보기 팝업 창 호출
     @GetMapping("/detection/detail")
     public String getDetectionDetail(@RequestParam("no") String situNo, Model model) {
@@ -82,6 +87,7 @@ public class SituationController {
         return "detection/detail"; 
     }
     
+    // (자동) 위험 감지 이력 등록은 백엔드(ControlController.java)에서 처리
     // (수동) 위험 감지 이력 등록
     @GetMapping("/detection/regist")
     public String getDetectionRegist(Model model, Authentication authentication) {
@@ -145,24 +151,6 @@ public class SituationController {
             return "status/fail";
         }
     }
-    
-    /*
-     * // 감지조치이력 목록 조회 (검색조건 포함)
-     * 
-     * @GetMapping("/detect/list")
-     * 
-     * @ResponseBody public List<SituationDTO> getSituationList() {
-     * 
-     * }
-     * 
-     * // (자동) 위험 감지 이력 AJAX 비동기 등록 API (파일 업로드 지원)
-     * 
-     * @PostMapping("/detect/api/insert")
-     * 
-     * @ResponseBody public Map<String, Object> insertSituation() {
-     * 
-     * }
-     */
     
     // 💡 SituationController.java 파일 내의 registerReport 메서드를 아래 코드로 완전히 교체하세요.
     @PostMapping("/agent/api/report")
