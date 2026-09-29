@@ -61,6 +61,11 @@
 				<!-- form 바로 첫줄에 situNo 히든 필드를 배치하여 유실을 원천 방지합니다. -->
 				<input type="hidden" id="situNo" name="situNo"
 					value="${task.situNo}">
+					
+				<!-- 💡 ORA-01407 에러 방지를 위한 필수 데이터 전달용 hidden 태그 -->
+				<input type="hidden" name="dngrType" value="${task.dngrType}">
+				<input type="hidden" name="dngrLevel" value="${task.dngrLevel}">
+				<input type="hidden" name="situContent" value="${task.situContent}">
 
 				<div class="form-row text-view-row">
 					<label class="form-label">위험 유형</label>

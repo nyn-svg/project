@@ -280,11 +280,19 @@
                 <i class="fa-solid fa-bullhorn title-icon"></i>
                 행사장 안전관리 가이드 매뉴얼
             </h1>
-            <sec:authorize access="isAnonymous()">
-                <button type="button" class="btn-login" onclick="location.href='${pageContext.request.contextPath}/login'">
-                    <i class="fa-solid fa-right-to-bracket"></i> 로그인
-                </button>
-            </sec:authorize>
+            <!-- 1. 비로그인 상태일 때 (로그인 버튼 표시) -->
+			<sec:authorize access="isAnonymous()">
+			    <button type="button" class="btn-login" onclick="location.href='${pageContext.request.contextPath}/login'">
+			        <i class="fa-solid fa-right-to-bracket"></i> 로그인
+			    </button>
+			</sec:authorize>
+			
+			<!-- 2. 로그인 상태일 때 (로그아웃 버튼 표시) -->
+			<sec:authorize access="isAuthenticated()">
+			    <button type="button" class="btn-login" onclick="location.href='${pageContext.request.contextPath}/logout'">
+			        <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
+			    </button>
+			</sec:authorize>
         </header>
 
         <!-- 메인 콘텐츠 영역 -->
@@ -292,9 +300,9 @@
 
             <!-- 2. 행사장 필수 안전수칙 -->
             <section class="guide-section">
-                <h2 class="section-title title-blue">
-                    <i class="fa-solid fa-shield-virus"></i> 1. 행사장 필수 안전수칙
-                </h2>
+                <h2 class="section-title title-blue" style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); margin-bottom: 20px;">
+				    <i class="fa-solid fa-shield-virus"></i> 1. 행사장 필수 안전수칙
+				</h2>
                 <div class="card-grid grid-3">
                     <!-- 수칙 카드 1 -->
                     <div class="guide-card">
@@ -340,10 +348,12 @@
             <!-- 3. 위험사건 발생 시 대처요령 -->
             <section class="guide-section">
                 <div class="section-header-wrap">
-                    <h2 class="section-title title-orange">
-                        <i class="fa-solid fa-triangle-exclamation"></i> 2. 위험사건 발생 시 대처요령
-                    </h2>
-                    <span class="section-subtext">※ 주요 위험 유형: 압사(인파 밀집) 위험, 화재, 지역 특성 위험</span>
+                    <!-- 2. 위험사건 발생 시 대처요령 -->
+					<h2 class="section-title title-orange" style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); margin-bottom: 20px;">
+					    <i class="fa-solid fa-triangle-exclamation"></i> 2. 위험사건 발생 시 대처요령
+					    <span class="section-subtext">※ 주요 위험 유형: 압사(인파 밀집) 위험, 화재, 지역 특성 위험</span>
+					</h2>
+                    
                 </div>
                 <div class="card-grid grid-3">
                     <!-- Step 1 -->
@@ -377,9 +387,10 @@
 
             <!-- 4. 비상연락망 매트릭스 -->
             <section class="guide-section">
-                <h2 class="section-title title-red">
-                    <i class="fa-solid fa-phone-volume"></i> 3. 비상연락망 매트릭스
-                </h2>
+                <!-- 3. 비상연락망 매트릭스 -->
+				<h2 class="section-title title-red" style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); margin-bottom: 20px;">
+				    <i class="fa-solid fa-phone-volume"></i> 3. 비상연락망 매트릭스
+				</h2>
                 <div class="card-grid grid-3">
                     <!-- 연락망 1: 행사 주최측 -->
                     <div class="guide-card table-card">

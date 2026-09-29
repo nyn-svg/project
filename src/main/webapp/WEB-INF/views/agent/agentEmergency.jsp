@@ -126,13 +126,22 @@
 
 				<!-- 첨부사진 -->
 				<div class="form-group">
-					<label class="form-label">첨부 사진 (선택)</label>
-					<div class="photo-upload-area">
-						<input type="file" id="photoInput" name="photo" accept="image/*">
-						<button type="button" class="btn-photo-add" onclick="document.getElementById('photoInput').click()">
-							<i class="fa-solid fa-camera camera-icon"></i> <span>사진 추가</span>
-						</button>
-					</div>
+				    <label class="form-label">첨부 사진 (선택)</label>
+				    <div class="photo-upload-area">
+				        <input type="file" id="photoInput" name="photo" accept="image/*" style="display: none;">
+				        <button type="button" class="btn-photo-add" onclick="document.getElementById('photoInput').click()">
+				            <i class="fa-solid fa-camera camera-icon"></i> <span>사진 추가</span>
+				        </button>
+				    </div>
+				
+				    <!-- 🎯 서버에 저장된 최종 이미지 경로를 담아둘 hidden input -->
+				    <input type="hidden" id="savedPhotoUrl" name="savedPhotoUrl" value="">
+				
+				    <!-- 미리보기 영역 -->
+				    <div id="photoPreview" style="display: none; margin-top: 10px; position: relative;">
+				        <img id="previewImg" src="" alt="미리보기" style="max-width: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+				        <button type="button" id="btnRemovePhoto" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-left: 8px;">삭제</button>
+				    </div>
 				</div>
 
 

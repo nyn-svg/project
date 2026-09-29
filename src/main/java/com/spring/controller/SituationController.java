@@ -186,38 +186,38 @@ public class SituationController {
             // 2. 비즈니스 약속 고정 항목 데이터 강제 주입
             situation.setSituType("긴급보고");  // 감지유형 고정
             situation.setSituStatus("감지");    // 초기 조치상태 고정
-            // ※ 감지일시(SITU_DATE)는 MyBatis XML단에서 SYSDATE로 들어가므로 Java단 설정 불필요 (수정불가)
 
-            // 3. 파일 업로드 처리 (사진이 첨부된 경우만 진행)
+            // 3. 파일 업로드 처리 (c:/static/upload/ 경로 사용)
             if (photo != null && !photo.isEmpty()) {
-                String uploadPath = request.getServletContext().getRealPath("/resources/upload/situation");
+                // 🎯 [핵심 수정] getRealPath 대신 클래스 상단의 uploadPath(c:/static/upload/) 사용
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
+                    uploadDir.mkdirs(); // C:/static/upload 폴더 없으면 자동 생성
                 }
 
                 String originalFilename = photo.getOriginalFilename();
-                String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-                String savedFilename = UUID.randomUUID().toString() + ext; // 중복방지 깔끔한 파일명
+                String ext = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String savedFilename = UUID.randomUUID().toString() + ext; // 중복방지 파일명 생성
 
-                File destFile = new File(uploadPath, savedFilename);
-                photo.transferTo(destFile);
+                File destFile = new File(uploadDir, savedFilename);
+                photo.transferTo(destFile); // c:/static/upload/ 폴더로 파일 물리 저장
 
                 situation.setSituImage(savedFilename); // DTO에 첨부파일명 매핑
             }
 
             // 4. DB 저장 Service 호출
-            // (★ 중요: registerSituation 내부에서 mapper.insertSituation이 실행되면 
-            //  MyBatis의 <selectKey>에 의해 situation 객체의 situNo 필드에 진짜 DB 이력번호가 채워집니다!)
             boolean isSuccess = situationService.registerSituation(situation);
 
             if (isSuccess) {
-            	clearSituationCache();
-            	// 💡 [추가] DB 저장이 완료되었으므로 관리자/관제 화면으로 실시간 긴급보고 SSE 전송!
-            	sseService.sendEvent("EMERGENCY_SUBMITTED", situation.getSituNo());
-            	
+                clearSituationCache();
+                // DB 저장이 완료되었으므로 관리자/관제 화면으로 실시간 긴급보고 SSE 전송
+                sseService.sendEvent("EMERGENCY_SUBMITTED", situation.getSituNo());
+                
                 result.put("success", true);
-                result.put("situNo", situation.getSituNo()); // 🚨 생성된 진짜 이력번호를 결과에 담아 전송!
+                result.put("situNo", situation.getSituNo());
                 return ResponseEntity.ok(result);
             } else {
                 result.put("success", false);

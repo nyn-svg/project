@@ -146,6 +146,8 @@
 }
 </style>
 
+<meta name="_csrf" content="${_csrf.token}"/>
+<meta name="_csrf_header" content="${_csrf.headerName}"/>
 
 <!-- 2. 알림창 UI 뼈대 -->
 <div id="realtime-toast" class="toast-popup-top" style="display: none;">
@@ -193,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 2. 페이지 로드 시점 보관함 데이터 기반 배지 카운트 복원 초기화
     updateBellCount();
 
-    // 3. [확인] 및 [닫기] 버튼 이벤트 핸들러를 최초 1회만 고정 등록
+ // 3. [확인] 버튼 이벤트 핸들러
     document.getElementById("btn-toast-confirm").onclick = function () {
         if (!currentSituation) return;
         if (toastAutoCloseTimer) clearTimeout(toastAutoCloseTimer); 
@@ -201,25 +203,43 @@ document.addEventListener("DOMContentLoaded", function () {
         const toastWindow = document.getElementById("realtime-toast");
         const situNo = toastWindow.getAttribute("data-situ-no");
 
-        fetch("${pageContext.request.contextPath}/agent/situation/accept?situNo=" + situNo, { method: 'POST' })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    toastWindow.classList.add("hide");
-                    setTimeout(() => {
-                        toastWindow.style.display = "none";
-                        location.href = "${pageContext.request.contextPath}/agent/history";
-                    }, 400); 
-                } else {
-                    alert(result.message);
-                }
-            })
-            .catch(err => console.error("상태 업데이트 실패:", err));
-    };
+        // 💡 CSRF 토큰 및 헤더명 추출
+        const token = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+        const headerName = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
 
-    document.getElementById("btn-toast-close").onclick = function () {
-        executeToastClose(); // 공통 닫기 및 보관함 저장 로직 실행
+        const headers = { 'Content-Type': 'application/json' };
+        if (token && headerName) {
+            headers[headerName] = token; // CSRF 헤더 추가
+        }
+
+        fetch("${pageContext.request.contextPath}/agent/situation/accept?situNo=" + situNo, { 
+            method: 'POST',
+            headers: headers
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("HTTP 오류 상태: " + response.status);
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (result.success) {
+                toastWindow.classList.add("hide");
+                setTimeout(() => {
+                    toastWindow.style.display = "none";
+                    location.href = "${pageContext.request.contextPath}/agent/history";
+                }, 400); 
+            } else {
+                alert(result.message);
+            }
+        })
+        .catch(err => console.error("상태 업데이트 실패 (403/500 에러 가능성):", err));
     };
+ // 💡 [추가] 4. [닫기] 버튼 이벤트 핸들러 누락분 연결
+    document.getElementById("btn-toast-close").onclick = function () {
+        executeToastClose();
+    };
+    
 });
 
 // 💡 팝업 활성화 함수

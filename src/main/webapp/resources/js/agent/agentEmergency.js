@@ -77,35 +77,69 @@ document.addEventListener('DOMContentLoaded', function() {
     renderTemplateChips(currentType);
 
 
-    // ==================================================
-    // 사진 업로드 핸들러
-    // ==================================================
-    var photoInput = document.getElementById('photoInput');
-    var photoPreview = document.getElementById('photoPreview');
-    var previewImg = document.getElementById('previewImg');
-    var btnRemovePhoto = document.getElementById('btnRemovePhoto');
+	$(document).ready(function() {
 
-    if (photoInput) {
-        photoInput.addEventListener('change', function(e) {
-            var file = e.target.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    if(previewImg) previewImg.src = e.target.result;
-                    if(photoPreview) photoPreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
+	    // ==================================================
+	    // 1. 사진 선택 시 미리보기 처리 (FileReader)
+	    // ==================================================
+	    $('#photoInput').on('change', function(e) {
+	        const file = e.target.files[0];
+	        
+	        if (file) {
+	            // 용량 제한 (예: 10MB)
+	            if (file.size > 10 * 1024 * 1024) {
+	                alert('사진 용량은 최대 10MB까지 가능합니다.');
+	                $(this).val('');
+	                return;
+	            }
 
-    if (btnRemovePhoto) {
-        btnRemovePhoto.addEventListener('click', function() {
-            photoInput.value = '';
-            if(previewImg) previewImg.src = '';
-            if(photoPreview) photoPreview.style.display = 'none';
-        });
-    }
+	            const reader = new FileReader();
+	            reader.onload = function(evt) {
+	                $('#previewImg').attr('src', evt.target.result);
+	                $('#photoPreview').show();
+	            };
+	            reader.readAsDataURL(file);
+	        }
+	    });
+
+	    // ==================================================
+	    // 2. 첨부 사진 삭제 버튼 처리
+	    // ==================================================
+	    $('#btnRemovePhoto').on('click', function() {
+	        $('#photoInput').val('');          // input file 초기화
+	        $('#previewImg').attr('src', ''); // 이미지 경로 제거
+	        $('#photoPreview').hide();         // 미리보기 숨김
+	    });
+
+	    // ==================================================
+	    // 3. 긴급상황 폼 전송 (AJAX + FormData)
+	    // ==================================================
+		$('#emergencyForm').on('submit', function(e) {
+		    e.preventDefault();
+
+		    // 🎯 FormData 객체를 사용해야 photo(파일)가 함께 담깁니다.
+		    const formElement = document.getElementById('emergencyForm');
+		    const formData = new FormData(formElement);
+
+		    const basePath = (typeof contextPath !== 'undefined') ? contextPath : '';
+
+		    $.ajax({
+		        url: basePath + '/detection/regist',
+		        type: 'POST',
+		        data: formData,
+		        processData: false, // 💡 필수: 데이터를 일반 쿼리스트링으로 변환 방지
+		        contentType: false, // 💡 필수: multipart/form-data 헤더 자동 설정
+		        success: function(response) {
+		            alert('긴급 상황 보고가 등록되었습니다.');
+		            history.back();
+		        },
+		        error: function(xhr) {
+		            alert('등록 실패했습니다.');
+		        }
+		    });
+		});
+
+	});
 
     // ==================================================
     // 🚨 긴급 등록 비동기 통신 전송 및 칩 유효성 검사

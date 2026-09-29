@@ -183,16 +183,16 @@
 	<!-- 감지 이력 수정 또는 조치 내용 입력 -->
 	<update id="updateSituation" parameterType="com.spring.dto.SituationDTO">
 		UPDATE SITUATIONS
-        SET 
-            DNGR_TYPE		= #{dngrType},
-            DNGR_LEVEL		= #{dngrLevel},
-            SITU_STATUS		= #{situStatus},
-            SITU_CONTENT	= #{situContent},
-            WORK_CONTENT	= #{workContent, jdbcType=VARCHAR},
-            WORK_IMAGE		= #{workImage, jdbcType=VARCHAR},
-            WORKER			= #{worker, jdbcType=VARCHAR},
-			END_DATE 		= #{endDate, jdbcType=TIMESTAMP}
-        WHERE SITU_NO = #{situNo}
+		SET
+		    DNGR_TYPE    = #{dngrType, jdbcType=VARCHAR},
+		    DNGR_LEVEL   = #{dngrLevel, jdbcType=VARCHAR},
+		    SITU_STATUS  = #{situStatus, jdbcType=VARCHAR},
+		    SITU_CONTENT = #{situContent, jdbcType=VARCHAR},
+		    WORK_CONTENT = #{workContent, jdbcType=VARCHAR},
+		    WORK_IMAGE   = #{workImage, jdbcType=VARCHAR},
+		    WORKER       = #{worker, jdbcType=VARCHAR},
+		    END_DATE     = #{endDate, jdbcType=TIMESTAMP}
+		WHERE SITU_NO    = #{situNo}
 	</update>
 	
 	<!-- 감지조치이력 삭제 -->

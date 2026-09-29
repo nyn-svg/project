@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.spring.dto.AgentDTO;
@@ -323,52 +324,79 @@ public class AgentController {
    }
 
    @PostMapping("/taskEdit")
-   public String modifyTask(HttpServletRequest request, HttpSession session) {
-      try {
-         // 1. 파라미터 수동 제어 추출 (400 예러 원천 봉쇄)
-         String situNo = request.getParameter("situNo");
-         String situStatus = request.getParameter("situStatus");
-         String workContent = request.getParameter("workContent");
-         String rawEndDate = request.getParameter("endDate");
+   public String modifyTask(@RequestParam(value = "photo", required = false) MultipartFile photo,
+                            HttpServletRequest request, 
+                            HttpSession session) {
+       try {
+           // 1. 파라미터 추출
+           String situNo = request.getParameter("situNo");
+           String situStatus = request.getParameter("situStatus");
+           String workContent = request.getParameter("workContent");
+           String rawEndDate = request.getParameter("endDate");
+           
+           String dngrType = request.getParameter("dngrType");
+           String dngrLevel = request.getParameter("dngrLevel");
+           String situContent = request.getParameter("situContent");
 
-         String loginUserId = (String) session.getAttribute("userId");
-         if (loginUserId == null)
-            loginUserId = "agent01";
+           String loginUserId = (String) session.getAttribute("userId");
+           if (loginUserId == null) loginUserId = "agent01";
 
-         // 2. 다른 팀원분들의 기존 설계 DTO에 바인딩
-         SituationDTO dto = new SituationDTO();
-         dto.setSituNo(situNo);
-         dto.setWorker(loginUserId);
-         dto.setWorkContent(workContent);
+           // 2. DTO 바인딩
+           SituationDTO dto = new SituationDTO();
+           dto.setSituNo(situNo);
+           dto.setWorker(loginUserId);
+           dto.setWorkContent(workContent);
+           
+           dto.setDngrType(dngrType);
+           dto.setDngrLevel(dngrLevel);
+           dto.setSituContent(situContent);
 
-         // 3. [탭 연동 정렬] 무한 스크롤 카운트 조건절 규칙인 '조치완료' 문자열 기호로 완벽 일치화
-         if ("COMPLETED".equals(situStatus) || "조치완료".equals(situStatus) || "완료".equals(situStatus)) {
-            dto.setSituStatus("조치완료");
-            situationService.setEnd(dto); // 마감 완료 날짜 자동 연동 호출
-         } else {
-            dto.setSituStatus("조치");
-         }
+           // 3. 상태 처리
+           if ("COMPLETED".equals(situStatus) || "조치완료".equals(situStatus) || "완료".equals(situStatus)) {
+               dto.setSituStatus("조치완료");
+               situationService.setEnd(dto);
+           } else {
+               dto.setSituStatus("조치");
+           }
 
-         // 4. 완료 시간 문자열 -> Date 객체 파싱 매핑
-         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-         if (rawEndDate != null && !rawEndDate.trim().isEmpty()) {
-            dto.setEndDate(sdf.parse(rawEndDate));
-         }
+           // 4. 완료 시간 파싱
+           java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+           if (rawEndDate != null && !rawEndDate.trim().isEmpty()) {
+               dto.setEndDate(sdf.parse(rawEndDate));
+           }
 
-         dto.setWorkImage("");
+        // ✨ 5. 파일 업로드 처리 (외부 경로 C:/static/upload/ 적용)
+           if (photo != null && !photo.isEmpty()) {
+               // 외부 지정 실제 저장 경로
+               String uploadPath = "C:/static/upload/";
+               java.io.File uploadDir = new java.io.File(uploadPath);
+               if (!uploadDir.exists()) uploadDir.mkdirs();
 
-         // 5. 공통 서비스 호출 인터페이스 위임 실행
-         try {
-            situationService.modifySituation(dto);
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
+               // 파일명 중복 방지 (UUID 적용)
+               String originalName = photo.getOriginalFilename();
+               String savedFileName = java.util.UUID.randomUUID().toString() + "_" + originalName;
 
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
+               // C:/static/upload/ 디렉토리에 파일 저장
+               photo.transferTo(new java.io.File(uploadDir, savedFileName));
 
-      return "redirect:/agent/history";
+               // DTO에 DB 저장용 파일명 전달
+               dto.setWorkImage(savedFileName);
+           } else {
+               dto.setWorkImage(""); // 첨부 파일 없으면 빈값 유지
+           }
+
+           // 6. DB 저장
+           try {
+               situationService.modifySituation(dto);
+           } catch (Exception e) {
+               e.printStackTrace();
+           }
+
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
+
+       return "redirect:/agent/history";
    }
    
 

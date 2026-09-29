@@ -58,7 +58,8 @@ public class SecurityConfig {
                 .requestMatchers("/agent/sse/**", "/api/sse/**").permitAll()
                 .requestMatchers("/control/**").hasRole("CONTROL")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/agent/**").hasRole("AGENT")
+                // 💡 AGENT 및 CONTROL(관제사) 모두 접근 가능하도록 수정 (필요 시 ADMIN 추가)
+                .requestMatchers("/agent/**").hasAnyRole("AGENT", "CONTROL", "ADMIN")
                 .anyRequest().authenticated()
             )
             
@@ -77,6 +78,11 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
+            )
+
+            // 💡 권한 없는 페이지 접근 시 403으로 인해 로그인 창으로 튕겨 로그아웃되는 현상 방지
+            .exceptionHandling(exception -> exception
+                .accessDeniedPage("/access-denied") // 권한 부족 시 이동할 페이지 (또는 /)
             );
 
         return http.build();

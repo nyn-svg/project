@@ -44,7 +44,6 @@ function initFieldActionPage() {
             .then(res => res.json())
             .then(data => {
                 pendingCache = data || [];
-                currentPendingPage = 1; // 로드 시 1페이지로 초기화
 
                 const countBadge = document.getElementById('pendingCount');
                 if (countBadge) countBadge.textContent = pendingCache.length;
@@ -122,7 +121,6 @@ function initFieldActionPage() {
             .then(res => res.json())
             .then(data => {
                 historyCache = data || [];
-                currentHistoryPage = 1; // 로드 시 1페이지로 초기화
 
                 renderHistoryTable();
             })
@@ -231,6 +229,19 @@ function initFieldActionPage() {
 
         renderPaginationControls('historyPagination', tbody, currentHistoryPage, totalPages, changeHistoryPage);
     }
+	
+	// 🎯 현장 조치 관리 화면에 있을 때만 3초마다 자동 갱신 (폴링)
+	setInterval(() => {
+	    // 화면에 미결/완료 테이블 요소가 존재하는지 먼저 검사
+	    const hasPendingTable = document.getElementById('pendingTbody');
+	    const hasHistoryTable = document.getElementById('historyTbody');
+
+	    // 현장 조치 페이지일 때만 API 호출 실행
+	    if (hasPendingTable || hasHistoryTable) {
+	        loadPendingList();
+	        loadHistoryList();
+	    }
+	}, 3000);
 
     function changeHistoryPage(page) {
         currentHistoryPage = page;
