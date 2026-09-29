@@ -166,7 +166,7 @@ window.initRealtimePage = function() {
 
     // 서버 API 호출
     $.ajax({
-        url: ctx + '/drone/api/list',
+        url: ctx + '/drone/api/activeList',
         type: 'GET',
         dataType: 'json',
         success: function(drones) {

@@ -133,7 +133,14 @@
                 sessionStorage.setItem('isDrawerOpen', 'false');
                 sessionStorage.removeItem('activeNavTarget');
             } else {
+            	$('.quick-nav-item').removeClass('active');
+                $('.drawer-content').removeClass('active');
+                
+                $('.quick-nav-item[data-target="panel-admin-dashboard"], .quick-nav-item[data-target="panel-drones"]').addClass('active');
+                $('#panel-admin-dashboard, #panel-drones').addClass('active');
+                
                 sessionStorage.setItem('isDrawerOpen', 'true');
+                sessionStorage.setItem('activeNavTarget', 'panel-admin-dashboard,panel-drones');
             }
         });
     });

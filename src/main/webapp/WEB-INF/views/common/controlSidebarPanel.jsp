@@ -581,5 +581,5 @@ $(document).ready(function() {
 
 </style>
 
-<script src="${pageContext.request.contextPath}/resources/js/drone-sidebar.js"></script>
+<script src="${pageContext.request.contextPath}/resources/js/control/activeDrone-sidebar.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/situation-sidebar.js"></script>
