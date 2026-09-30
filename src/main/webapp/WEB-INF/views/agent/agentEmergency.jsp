@@ -100,16 +100,21 @@
 				</div>
 
 
-				<!-- [우선순위 하향] 발생 구역 -->
+				<!-- 발생 구역 (DB 초깃값 표시 및 직접 수정 가능) -->
 				<div class="form-group">
-					<label class="form-label">발생 구역</label>
-					<div class="location-toggle-row bg-disabled-light">
-						<div class="location-text">
-							<i class="fa-solid fa-map-marker-alt icon-disabled-lead"></i>
-							<span class="text-disabled-title">${user.workArea}</span>
-						</div>
-						<span class="badge-status badge-gray">구역</span>
-					</div>
+				    <label class="form-label" for="zoneName">발생 구역</label>
+				    <div class="location-toggle-row" style="display: flex; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; gap: 8px;">
+				        <i class="fa-solid fa-map-marker-alt" style="color: #2563eb;"></i>
+				        
+				        <!-- 💡 value에 DB 값을 넣어 초기값 세팅 + name="zoneName"으로 수정 값 제출 가능 -->
+				        <input type="text" 
+				               id="zoneName" 
+				               name="zoneName" 
+				               value="${not empty task.zoneName ? task.zoneName : user.workArea}" 
+				               placeholder="발생 구역을 입력하세요"
+				               style="border: none; background: transparent; outline: none; flex: 1; font-size: 14px; color: #1e293b; font-weight: 500;">
+				        	        
+				    </div>
 				</div>
 
 				<!-- [우선순위 하향] 발견인 -->

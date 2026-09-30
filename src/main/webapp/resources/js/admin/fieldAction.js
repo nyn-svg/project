@@ -40,13 +40,10 @@ function initFieldActionPage() {
 
     // 3. 미결 조치 목록 AJAX 조회
     function loadPendingList() {
-        fetch(basePath + '/admin/fieldAction/api/list?statusType=PENDING')
+        fetch(basePath + '/admin/fieldAction/api/list?statusType=ALL')
             .then(res => res.json())
             .then(data => {
                 pendingCache = data || [];
-
-                const countBadge = document.getElementById('pendingCount');
-                if (countBadge) countBadge.textContent = pendingCache.length;
 
                 renderPendingTable();
             })
@@ -54,61 +51,94 @@ function initFieldActionPage() {
     }
 
     // 3. 미결 조치 목록 렌더링
-    function renderPendingTable() {
-        const tbody = document.getElementById('pendingTbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+	function renderPendingTable() {
+	    const tbody = document.getElementById('pendingTbody');
+	    if (!tbody) return;
+	    tbody.innerHTML = '';
 
-        if (!pendingCache || pendingCache.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px 0; color: #a0aec0;">검토 대기 중인 조치 건이 없습니다.</td></tr>';
-            renderPaginationControls('pendingPagination', tbody, 1, 1, changePendingPage);
-            return;
-        }
+	    // 1. WORKER가 'admin'으로 시작하는 항목을 목록에서 필터링
+	    const filteredCache = (pendingCache || []).filter(item => {
+	        const worker = item.worker ? String(item.worker).trim().toLowerCase() : '';
+	        return !worker.startsWith('admin');
+	    });
 
-        const totalPages = Math.ceil(pendingCache.length / PAGE_SIZE) || 1;
-        if (currentPendingPage > totalPages) currentPendingPage = totalPages;
-        if (currentPendingPage < 1) currentPendingPage = 1;
+	    // ✨ [수정] admin 제외 후 실제 표시되는 개수로 탭 카운트 뱃지 업데이트
+	    const countBadge = document.getElementById('pendingCount');
+	    if (countBadge) {
+	        countBadge.textContent = filteredCache.length;
+	    }
 
-        const startIndex = (currentPendingPage - 1) * PAGE_SIZE;
-        const pageList = pendingCache.slice(startIndex, startIndex + PAGE_SIZE);
+	    // 필터링된 데이터가 없는 경우
+	    if (filteredCache.length === 0) {
+	        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px 0; color: #a0aec0;">검토 대상 조치 건이 없습니다.</td></tr>';
+	        renderPaginationControls('pendingPagination', tbody, 1, 1, changePendingPage);
+	        return;
+	    }
 
-        pageList.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.situNo || ''}</td>
-                <td>${item.dngrType || ''}</td>
-                <td>${item.situType || ''}</td>
-                <td>${item.finder || '안전요원'}</td>
-                <td>${item.situContent || ''}</td>
-                <td>${formatDate(item.situDate)}</td>
-                <td><span class="status-badge status-pending">검토 대기</span></td>
-                <td>
-                    <button type="button" class="btn btn-primary" onclick="openFieldActionDetailModal('${item.situNo}')">상세 검토</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+	    // 💡 2. admin 제외 후 개수 기준으로 페이징 계산
+	    const totalPages = Math.ceil(filteredCache.length / PAGE_SIZE) || 1;
+	    if (currentPendingPage > totalPages) currentPendingPage = totalPages;
+	    if (currentPendingPage < 1) currentPendingPage = 1;
 
-        // 더미 행 추가 (높이 고정 유지)
-        for (let i = pageList.length; i < PAGE_SIZE; i++) {
-            const dummyTr = document.createElement('tr');
-            dummyTr.style.visibility = 'hidden';
-            dummyTr.style.pointerEvents = 'none';
-            dummyTr.innerHTML = `
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>${pendingCache[0] ? pendingCache[0].situContent || '&nbsp;' : '&nbsp;'}</td>
-                <td>&nbsp;</td>
-                <td><span class="status-badge status-pending">&nbsp;</span></td>
-                <td><button type="button" class="btn btn-primary">&nbsp;</button></td>
-            `;
-            tbody.appendChild(dummyTr);
-        }
+	    const startIndex = (currentPendingPage - 1) * PAGE_SIZE;
+	    const pageList = filteredCache.slice(startIndex, startIndex + PAGE_SIZE);
 
-        renderPaginationControls('pendingPagination', tbody, currentPendingPage, totalPages, changePendingPage);
-    }
+	    // 💡 3. 행 렌더링
+	    pageList.forEach(item => {
+	        const worker = item.worker ? String(item.worker).trim().toLowerCase() : '';
+	        const finder = item.finder ? String(item.finder).trim().toLowerCase() : '';
+
+	        let statusHtml = '';
+
+	        // WORKER(또는 finder)가 'agent'로 시작하는 경우 -> '검토 대기'
+	        if (worker.startsWith('agent') || finder.startsWith('agent')) {
+	            statusHtml = `<span class="status-badge status-pending">검토 대기</span>`;
+	        } 
+	        // WORKER가 null이거나 빈 값인 경우 -> '조치중'
+	        else if (!worker || worker === 'null') {
+	            statusHtml = `<span class="status-badge" style="background-color: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">조치중</span>`;
+	        } 
+	        // 그 외 일반 작업자인 경우 -> '검토 대기'
+	        else {
+	            statusHtml = `<span class="status-badge status-pending">검토 대기</span>`;
+	        }
+
+	        const tr = document.createElement('tr');
+	        tr.innerHTML = `
+	            <td>${item.situNo || ''}</td>
+	            <td>${item.dngrType || ''}</td>
+	            <td>${item.situType || ''}</td>
+	            <td>${item.finder || '안전요원'}</td>
+	            <td>${item.situContent || ''}</td>
+	            <td>${formatDate(item.situDate)}</td>
+	            <td>${statusHtml}</td>
+	            <td>
+	                <button type="button" class="btn btn-primary" onclick="openFieldActionDetailModal('${item.situNo}')">상세 검토</button>
+	            </td>
+	        `;
+	        tbody.appendChild(tr);
+	    });
+
+	    // 💡 4. 더미 행 추가 (테이블 높이 고정용)
+	    for (let i = pageList.length; i < PAGE_SIZE; i++) {
+	        const dummyTr = document.createElement('tr');
+	        dummyTr.style.visibility = 'hidden';
+	        dummyTr.style.pointerEvents = 'none';
+	        dummyTr.innerHTML = `
+	            <td>&nbsp;</td>
+	            <td>&nbsp;</td>
+	            <td>&nbsp;</td>
+	            <td>&nbsp;</td>
+	            <td>${filteredCache[0] ? filteredCache[0].situContent || '&nbsp;' : '&nbsp;'}</td>
+	            <td>&nbsp;</td>
+	            <td><span class="status-badge status-pending">&nbsp;</span></td>
+	            <td><button type="button" class="btn btn-primary">&nbsp;</button></td>
+	        `;
+	        tbody.appendChild(dummyTr);
+	    }
+
+	    renderPaginationControls('pendingPagination', tbody, currentPendingPage, totalPages, changePendingPage);
+	}
 
     function changePendingPage(page) {
         currentPendingPage = page;
@@ -127,42 +157,42 @@ function initFieldActionPage() {
             .catch(err => console.error('이력 목록 로드 실패:', err));
     }
 
-    // 🎯 4-1. 완료 이력 필터링 및 검색 함수
-    function getFilteredHistoryList() {
-        const statusVal = document.getElementById('historyStatusFilter') ? document.getElementById('historyStatusFilter').value.trim() : '';
-        const dngrVal = document.getElementById('historyDngrFilter') ? document.getElementById('historyDngrFilter').value.trim() : '';
-        const situVal = document.getElementById('historySituFilter') ? document.getElementById('historySituFilter').value.trim() : '';
-        const keywordVal = document.getElementById('historyKeywordInput') ? document.getElementById('historyKeywordInput').value.trim().toLowerCase() : '';
+	// 🎯 4-1. 완료 이력 필터링 및 검색 함수
+	function getFilteredHistoryList() {
+	    const statusVal = document.getElementById('historyStatusFilter') ? document.getElementById('historyStatusFilter').value.trim() : '';
+	    const dngrVal = document.getElementById('historyDngrFilter') ? document.getElementById('historyDngrFilter').value.trim() : '';
+	    const situVal = document.getElementById('historySituFilter') ? document.getElementById('historySituFilter').value.trim() : '';
+	    const keywordVal = document.getElementById('historyKeywordInput') ? document.getElementById('historyKeywordInput').value.trim().toLowerCase() : '';
 
-        return historyCache.filter(item => {
-            const status = item.situStatus || '';
-            const isApproved = (status === 'APPROVE' || status === '조치' || status === '종료');
+	    return historyCache.filter(item => {
+	        const status = item.situStatus || '';
+	        const isApproved = (status === 'APPROVE' || status === '조치' || status === '종료' || status === '조치완료');
 
-            // 1) 상태 필터 (APPROVED / REJECTED)
-            if (statusVal === 'APPROVED' && !isApproved) return false;
-            if (statusVal === 'REJECTED' && isApproved) return false;
+	        // 1) 상태 필터 (APPROVED / REJECTED)
+	        if (statusVal === 'APPROVED' && !isApproved) return false;
+	        if (statusVal === 'REJECTED' && isApproved) return false;
 
-            // 2) 위험유형 필터
-            if (dngrVal !== '' && !(item.dngrType || '').includes(dngrVal)) return false;
+	        // 2) 위험유형 필터 (인파위험, 야생동물, 인명사고, 시설고장/파손, 연계필요, 기타)
+	        if (dngrVal !== '' && !(item.dngrType || '').includes(dngrVal)) return false;
 
-            // 3) 감지유형 필터
-            if (situVal !== '' && !(item.situType || '').includes(situVal)) return false;
+	        // 3) 감지유형 필터 (자동감지, 수동감지, 긴급보고)
+	        if (situVal !== '' && !(item.situType || '').includes(situVal)) return false;
 
-            // 4) 키워드 검색 (요청ID, 제출자, 관리자, 조치내용)
-            if (keywordVal !== '') {
-                const idMatch = (item.situNo || '').toString().toLowerCase().includes(keywordVal);
-                const finderMatch = (item.finder || '').toLowerCase().includes(keywordVal);
-                const workerMatch = (item.worker || '').toLowerCase().includes(keywordVal);
-                const contentMatch = (item.situContent || '').toLowerCase().includes(keywordVal);
+	        // 4) 키워드 검색 (요청ID, 제출자, 관리자, 조치내용)
+	        if (keywordVal !== '') {
+	            const idMatch = (item.situNo || '').toString().toLowerCase().includes(keywordVal);
+	            const finderMatch = (item.finder || '').toLowerCase().includes(keywordVal);
+	            const workerMatch = (item.worker || '').toLowerCase().includes(keywordVal);
+	            const contentMatch = (item.situContent || '').toLowerCase().includes(keywordVal);
 
-                if (!idMatch && !finderMatch && !workerMatch && !contentMatch) {
-                    return false;
-                }
-            }
+	            if (!idMatch && !finderMatch && !workerMatch && !contentMatch) {
+	                return false;
+	            }
+	        }
 
-            return true;
-        });
-    }
+	        return true;
+	    });
+	}
 
     // 4-2. 완료 이력 목록 렌더링
     function renderHistoryTable() {
@@ -351,7 +381,7 @@ function initFieldActionPage() {
         return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
     }
 
-	// 5. 모달 열기 (사진 표시 로직 추가 및 경로 수정)
+	// 5. 모달 열기 (SITU_IMAGE 및 WORK_IMAGE 모두 표시)
 	window.openFieldActionDetailModal = function (actionId) {
 	    console.log("👉 [현장조치 모달 요청 id]:", actionId);
 	    
@@ -375,29 +405,43 @@ function initFieldActionPage() {
 
 	            // 텍스트 데이터 복원
 	            document.getElementById('mActionId').textContent = data.situNo || actionId;
-	            document.getElementById('mWorkerInfo').textContent = `${data.finder || '요원'}`;
-	            document.getElementById('mActionContent').textContent = data.situContent || '내용 없음';
+	            document.getElementById('mWorkerInfo').textContent = data.worker || '조치중 (미지정)';
+	            document.getElementById('mActionContent').textContent = data.workContent || data.situContent || '내용 없음';
 	            
 	            const adminCommentEl = document.getElementById('adminComment');
 	            if (adminCommentEl) {
-	                adminCommentEl.value = data.workContent || data.adminComment || '';
+	                adminCommentEl.value = data.adminComment || '';
 	            }
 
-	            // 🎯 [수정] 현장 첨부 사진(SITU_IMAGE) 바인딩 및 /upload/ 경로 매핑
+	            // 1. 현장 감지 사진 (SITU_IMAGE) 바인딩
 	            const imgEl = document.getElementById('mActionImage');
 	            const noImgTextEl = document.getElementById('noImageText');
 
 	            if (imgEl && noImgTextEl) {
 	                if (data.situImage && data.situImage.trim() !== '') {
-	                    // servlet-context.xml의 /upload/** 매핑 경로로 설정
 	                    imgEl.src = basePath + '/upload/' + data.situImage;
 	                    imgEl.style.display = 'block';
 	                    noImgTextEl.style.display = 'none';
 	                } else {
-	                    // 사진이 없는 경우
 	                    imgEl.src = '';
 	                    imgEl.style.display = 'none';
 	                    noImgTextEl.style.display = 'inline';
+	                }
+	            }
+
+	            // ✨ 2. [추가] 조치 완료 사진 (WORK_IMAGE) 바인딩
+	            const workImgEl = document.getElementById('mWorkImage');
+	            const noWorkImgTextEl = document.getElementById('noWorkImageText');
+
+	            if (workImgEl && noWorkImgTextEl) {
+	                if (data.workImage && data.workImage.trim() !== '') {
+	                    workImgEl.src = basePath + '/upload/' + data.workImage;
+	                    workImgEl.style.display = 'block';
+	                    noWorkImgTextEl.style.display = 'none';
+	                } else {
+	                    workImgEl.src = '';
+	                    workImgEl.style.display = 'none';
+	                    noWorkImgTextEl.style.display = 'inline';
 	                }
 	            }
 
@@ -411,10 +455,20 @@ function initFieldActionPage() {
 	        });
 	};
 
-    // 6. 모달 닫기
-    window.closeModal = function () {
-        if (actionDetailModal) actionDetailModal.style.display = 'none';
-    };
+	// 6. 모달 닫기
+	window.closeModal = function () {
+	    if (actionDetailModal) actionDetailModal.style.display = 'none';
+	};
+
+	// ✨ [추가] ESC 키 입력 시 모달 닫기
+	document.addEventListener('keydown', function (e) {
+	    if (e.key === 'Escape' || e.key === 'Esc') {
+	        // 모달이 열려있는 상태(display가 'none'이 아닌 경우)에만 닫기 실행
+	        if (actionDetailModal && actionDetailModal.style.display === 'flex') {
+	            closeModal();
+	        }
+	    }
+	});
 
     // 7. 모달 배경 클릭 시 닫기
     if (actionDetailModal) {

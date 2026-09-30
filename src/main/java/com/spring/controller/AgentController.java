@@ -67,7 +67,6 @@ public class AgentController {
          SituationDTO situation = situationService.getSituationBySituNo(situNo);
          if (situation != null) {
             situation.setSituStatus("조치");
-            situation.setWorker(loginUserId);
 
             situationService.modifySituation(situation);
             situationService.setStart(situNo);
@@ -328,7 +327,6 @@ public class AgentController {
                             HttpServletRequest request, 
                             HttpSession session) {
        try {
-           // 1. 파라미터 추출
            String situNo = request.getParameter("situNo");
            String situStatus = request.getParameter("situStatus");
            String workContent = request.getParameter("workContent");
@@ -337,21 +335,21 @@ public class AgentController {
            String dngrType = request.getParameter("dngrType");
            String dngrLevel = request.getParameter("dngrLevel");
            String situContent = request.getParameter("situContent");
+           // ✨ [추가] 기존 사진명 파라미터 수신
+           String existingWorkImage = request.getParameter("workImage");
 
            String loginUserId = (String) session.getAttribute("userId");
            if (loginUserId == null) loginUserId = "agent01";
 
-           // 2. DTO 바인딩
            SituationDTO dto = new SituationDTO();
            dto.setSituNo(situNo);
-           dto.setWorker(loginUserId);
+           dto.setWorker(loginUserId); // WORKER 업데이트
            dto.setWorkContent(workContent);
            
            dto.setDngrType(dngrType);
            dto.setDngrLevel(dngrLevel);
            dto.setSituContent(situContent);
 
-           // 3. 상태 처리
            if ("COMPLETED".equals(situStatus) || "조치완료".equals(situStatus) || "완료".equals(situStatus)) {
                dto.setSituStatus("조치완료");
                situationService.setEnd(dto);
@@ -359,38 +357,29 @@ public class AgentController {
                dto.setSituStatus("조치");
            }
 
-           // 4. 완료 시간 파싱
            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
            if (rawEndDate != null && !rawEndDate.trim().isEmpty()) {
                dto.setEndDate(sdf.parse(rawEndDate));
            }
 
-        // ✨ 5. 파일 업로드 처리 (외부 경로 C:/static/upload/ 적용)
+           // ✨ [수정] 5. 파일 업로드 처리 (새 사진 없으면 기존 사진명 유지)
            if (photo != null && !photo.isEmpty()) {
-               // 외부 지정 실제 저장 경로
                String uploadPath = "C:/static/upload/";
                java.io.File uploadDir = new java.io.File(uploadPath);
                if (!uploadDir.exists()) uploadDir.mkdirs();
 
-               // 파일명 중복 방지 (UUID 적용)
                String originalName = photo.getOriginalFilename();
                String savedFileName = java.util.UUID.randomUUID().toString() + "_" + originalName;
 
-               // C:/static/upload/ 디렉토리에 파일 저장
                photo.transferTo(new java.io.File(uploadDir, savedFileName));
-
-               // DTO에 DB 저장용 파일명 전달
                dto.setWorkImage(savedFileName);
            } else {
-               dto.setWorkImage(""); // 첨부 파일 없으면 빈값 유지
+               // 새 파일이 없으면 기존 파일명을 유지 (NULL 처리 방지)
+               dto.setWorkImage(existingWorkImage != null ? existingWorkImage : "");
            }
 
            // 6. DB 저장
-           try {
-               situationService.modifySituation(dto);
-           } catch (Exception e) {
-               e.printStackTrace();
-           }
+           situationService.modifySituation(dto);
 
        } catch (Exception e) {
            e.printStackTrace();
