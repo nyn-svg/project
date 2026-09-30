@@ -62,23 +62,23 @@
                 </select>
 
                 <!-- 2) 위험유형 필터 -->
-                <select id="historyDngrFilter" class="filter-select" style="padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; outline: none;">
-                    <option value="">전체 위험유형</option>
-                    <option value="인파위험">인파위험</option>
-                    <option value="시설물위험">시설물위험</option>
-                    <option value="화재위험">화재위험</option>
-                    <option value="응급환자">응급환자</option>
-                    <option value="기타">기타</option>
-                </select>
-
-                <!-- 3) 감지유형 필터 -->
-                <select id="historySituFilter" class="filter-select" style="padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; outline: none;">
-                    <option value="">전체 감지유형</option>
-                    <option value="AI_CCTV">AI CCTV</option>
-                    <option value="DRONE">드론 감지</option>
-                    <option value="PATROL">요원 순찰</option>
-                    <option value="REPORT">시민 신고</option>
-                </select>
+				<select id="historyDngrFilter" class="filter-select" style="padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; outline: none;">
+				    <option value="">전체 위험유형</option>
+				    <option value="인파위험">인파위험</option>
+				    <option value="야생동물">야생동물</option>
+				    <option value="인명사고">인명사고</option>
+				    <option value="시설고장/파손">시설고장/파손</option>
+				    <option value="연계필요">연계필요</option>
+				    <option value="기타">기타</option>
+				</select>
+				
+				<!-- 3) 감지유형 필터 -->
+				<select id="historySituFilter" class="filter-select" style="padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; outline: none;">
+				    <option value="">전체 감지유형</option>
+				    <option value="자동감지">자동감지</option>
+				    <option value="수동감지">수동감지</option>
+				    <option value="긴급보고">긴급보고</option>
+				</select>
 
                 <!-- 4) 키워드 검색어 입력창 -->
                 <input type="text" id="historyKeywordInput" placeholder="검색어 (제출자, 관리자, 조치내용)" style="padding: 8px 14px; border: 1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; border-radius: 8px; font-size: 13px; min-width: 220px; outline: none;">
@@ -128,14 +128,21 @@
             <p><strong>조치 요원:</strong> <span id="mWorkerInfo">-</span></p>
             <p><strong>조치 내용:</strong> <span id="mActionContent">-</span></p>
 
-            <!-- 🎯 [추가] 현장 첨부 사진 표시 영역 -->
+            <!-- 1. 현장 감지 사진 (SITU_IMAGE) -->
             <div style="margin-top: 15px;">
-                <p style="margin-bottom: 5px; color:#ffffff;"><strong>현장 첨부 사진:</strong></p>
+                <p style="margin-bottom: 5px; color:#ffffff;"><strong>현장 감지 사진:</strong></p>
                 <div style="text-align: center; background: #1e293b; padding: 10px; border-radius: 6px; min-height: 100px; display: flex; align-items: center; justify-content: center; border: 1px solid #334155;">
-                    <!-- 사진이 있을 때 노출되는 img 태그 -->
                     <img id="mActionImage" src="" alt="현장 사진" style="max-width: 100%; max-height: 250px; border-radius: 4px; display: none;" />
-                    <!-- 사진이 없을 때 노출되는 안내 텍스트 -->
-                    <span id="noImageText" style="color: #94a3b8; font-size: 13px;">첨부된 사진이 없습니다.</span>
+                    <span id="noImageText" style="color: #94a3b8; font-size: 13px;">첨부된 현장 사진이 없습니다.</span>
+                </div>
+            </div>
+
+            <!-- ✨ 2. [추가] 조치 완료 사진 (WORK_IMAGE) -->
+            <div style="margin-top: 15px;">
+                <p style="margin-bottom: 5px; color:#ffffff;"><strong>조치 완료 사진:</strong></p>
+                <div style="text-align: center; background: #1e293b; padding: 10px; border-radius: 6px; min-height: 100px; display: flex; align-items: center; justify-content: center; border: 1px solid #334155;">
+                    <img id="mWorkImage" src="" alt="조치 사진" style="max-width: 100%; max-height: 250px; border-radius: 4px; display: none;" />
+                    <span id="noWorkImageText" style="color: #94a3b8; font-size: 13px;">첨부된 조치 사진이 없습니다.</span>
                 </div>
             </div>
 

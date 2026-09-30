@@ -288,7 +288,7 @@
                 FROM SITUATIONS
                 <where>
                     <!-- 💡 중요: 토스트 알림창에서 수락하여 내 ID가 WORKER로 배정된 위험 이력만 노출 -->
-                    AND WORKER = #{userId}
+                    AND (WORKER = #{userId} OR SITU_STATUS = '조치')
                     <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
                         <choose>
                             <!-- 1. 조치대기 탭: 현재 열심히 처리 중인 '조치' 상태 데이터 -->
@@ -313,7 +313,7 @@
         SELECT COUNT(*)
         FROM SITUATIONS
         <where>
-            AND WORKER = #{userId}
+            AND (WORKER = #{userId} OR SITU_STATUS = '조치')
             <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
                 <choose>
                     <when test="actionStatus == 'PENDING'">

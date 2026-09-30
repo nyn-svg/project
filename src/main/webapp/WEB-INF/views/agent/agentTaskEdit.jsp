@@ -66,6 +66,7 @@
 				<input type="hidden" name="dngrType" value="${task.dngrType}">
 				<input type="hidden" name="dngrLevel" value="${task.dngrLevel}">
 				<input type="hidden" name="situContent" value="${task.situContent}">
+				<input type="hidden" name="workImage" value="${task.workImage}">
 
 				<div class="form-row text-view-row">
 					<label class="form-label">위험 유형</label>
@@ -155,11 +156,10 @@
 				</div>
 
 				<div class="form-row">
-					<label class="form-label" for="endDate">조치 완료 시간</label>
-					<div class="date-input-wrapper">
-						<input type="datetime-local" id="endDate" class="form-input"
-							data-raw-date="${task.endDate}">
-					</div>
+				    <label class="form-label" for="endDate">조치 완료 시간</label>
+				    <div class="date-input-wrapper">
+				        <input type="datetime-local" id="endDate" name="endDate" class="form-input" data-raw-date="${task.endDate}">
+				    </div>
 				</div>
 
 				<div class="form-btn-group">
