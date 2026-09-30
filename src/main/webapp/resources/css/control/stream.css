@@ -218,6 +218,7 @@
     transform: translateY(-12px);
     transition: opacity 0.3s ease, transform 0.3s ease;
     pointer-events: auto; /* 💡 메시지 본체만 클릭 수신 가능 */
+    gap: 5px;
 }
 
 .toast-message.show {
@@ -238,6 +239,44 @@
 .toast-message.info {
     background-color: rgba(14, 165, 233, 0.9);
     border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* 토스트 전용 위험 단계 배지 */
+.toast-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 4px;
+    vertical-align: middle;
+    background-color: #ffffff;
+}
+
+/* 관심 단계 (파랑 계열) */
+.toast-badge-interest {
+    color: #0284c7;
+}
+
+/* 주의 단계 (노랑 계열) */
+.toast-badge-attention {
+    color: #eab308;
+}
+
+/* 경계 단계 (주황 계열) */
+.toast-badge-caution {
+   color: #ea580c;
+}
+
+/* 심각 단계 (빨강 계열) */
+.toast-badge-severe {
+    color: #dc2626;
+}
+
+/* 판단불가 (회색 계열) */
+.toast-badge-unknown {
+    color: #9ca3af;
 }
 
 /* ==========================================
@@ -631,6 +670,27 @@ input:checked + .slider:before {
     font-weight: 600;
     padding: 2px 6px;
     border-radius: 10px;
+}
+
+/* totalCount 요소 blink 애니메이션 */
+.blink-effect {
+    animation: pulse-glow 0.8s ease-in-out 3; /* 0.8초 주기, 3회 반복 */
+}
+
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 0px rgba(56, 189, 248, 0);
+        background-color: rgba(56, 189, 248, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+        background-color: rgba(56, 189, 248, 0.5);
+        color: #ffffff;
+    }
+    100% {
+        box-shadow: 0 0 0px rgba(56, 189, 248, 0);
+        background-color: rgba(56, 189, 248, 0.15);
+    }
 }
 
 .regist-btn {

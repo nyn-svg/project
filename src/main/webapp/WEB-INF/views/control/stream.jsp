@@ -409,18 +409,30 @@ function moveToNextDrone() {
 }
 
 // 실시간 감지/조치 이력 목록 조회
-function getSituationList() {
+function getSituationList(blinkFlag) {
 	$.ajax({
 		url: ctx + '/total/api/list',
 		type: 'GET',
 		dataType: 'json',
 		success: function(situations) {
+			var $totalCount = $('#totalCount');
 			var $tbody = $('#detectionHistoryBody');
 			$tbody.empty();
          
 			// 총 건수 배지 업데이트
 			$('#totalCount').text('총 ' + (situations ? situations.length : 0) + '건');
-         
+         	
+			// 💡 등록 이벤트 발생 시 #totalCount 애니메이션 실행
+            if (blinkFlag) {
+            	$totalCount.removeClass('blink-effect'); // 기존 애니메이션 리셋
+				void $totalCount[0].offsetWidth; // 리플로우(Reflow) 강제 발생
+				$totalCount.addClass('blink-effect'); // 클래스 재적용
+				
+				$totalCount.one('animationend', function() {
+			        $(this).removeClass('blink-effect');
+			    });
+            }
+			
 			if (!situations || situations.length === 0) {
 				$tbody.append('<tr><td colspan="8" style="text-align:center;">생성된 감지/조치 이력이 없습니다.</td></tr>');
 				return;
@@ -482,12 +494,56 @@ function initSSE() {
  	// 'situation-alert(자동감지, 수동감지 등록)' 이벤트를 수신하면 목록 자동 갱신
  	eventSource.addEventListener('situation-alert', function(e) {
  		console.log("새로운 감지 이벤트 도착!", e.data);
-		getSituationList();
+ 		getSituationList(true);
+ 		
+ 		try {
+            var situation = JSON.parse(e.data);
+
+            var zoneStr = situation.zoneName;
+            var levelStr = situation.dngrLevel;
+            var typeStr = situation.dngrType;
+
+         	// 위험 단계에 따라 CSS 클래스 및 토스트 타입 매핑
+            var badgeClass = 'toast-badge-unknown';
+            var toastType = 'info';
+
+            switch (levelStr) {
+                case '관심':
+                    badgeClass = 'toast-badge-interest';
+                    toastType = 'info';
+                    break;
+                case '주의':
+                    badgeClass = 'toast-badge-attention';
+                    toastType = 'warning';
+                    break;
+                case '경계':
+                    badgeClass = 'toast-badge-caution';
+                    toastType = 'warning';
+                    break;
+                case '심각':
+                    badgeClass = 'toast-badge-severe';
+                    toastType = 'error';
+                    break;
+                default:
+                    badgeClass = 'toast-badge-unknown';
+                    toastType = 'info';
+                    break;
+            }
+
+            // 토스트 메시지 생성 후 띄우기
+            var levelBadgeHtml = ' <span class="toast-badge ' + badgeClass + '">' + levelStr + '</span>';
+            var toastMsg = '🚨 ' + zoneStr + '에서 ' + typeStr + ' ' + levelBadgeHtml + ' 단계가 감지되었습니다.';
+			showToast(toastMsg, toastType);
+
+        } catch(err) {
+            // JSON 파싱 에러 방어
+            showToast('🚨 새로운 위험 상황이 감지되었습니다.', 'warning');
+        }
 	});
  	// 'situation-report(긴급보고 등록)' 이벤트를 수신하면 목록 자동 갱신
 	eventSource.addEventListener('situation-report', function(e) {
 		console.log("긴급보고 등록!", e.data);
-		getSituationList();
+		getSituationList(true);
 	});
 	// 'situation-update(이력 수정/갱신)' 이벤트를 수신하면 목록 자동 갱신
 	eventSource.addEventListener('situation-update', function(e) {
@@ -613,7 +669,7 @@ function showToast(message, type = 'info') {
 				toast.parentNode.removeChild(toast);
 			}
 		}, 400);
-	}, 3000);
+	}, 5000);
 }
 
 // 메타데이터 영역 초기화 함수

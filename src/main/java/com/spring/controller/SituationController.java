@@ -27,6 +27,7 @@ import com.spring.service.SituationService;
 import com.spring.service.SseService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class SituationController {
@@ -90,13 +91,31 @@ public class SituationController {
     // (자동) 위험 감지 이력 등록은 백엔드(ControlController.java)에서 처리
     // (수동) 위험 감지 이력 등록
     @GetMapping("/detection/regist")
-    public String getDetectionRegist(Model model, Authentication authentication) {
+    public String getDetectionRegist(HttpServletRequest request, Model model, Authentication authentication) {
     	// 권한(Role) 확인 (ROLE_ADMIN, ROLE_CONTROL)
         boolean hasPermission = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_CONTROL"));
         if (!hasPermission) {
         	model.addAttribute("errorMessage", "잘못된 접근입니다.");
             model.addAttribute("closeWindow", true);
             
+            return "status/popup-alert";
+        }
+        
+        // 1. 세션에서 드론아이디 및 구역명 가져오기
+        HttpSession session = request.getSession(false); // 기존 세션이 없으면 null 반환
+        
+        String droneId = null;
+        String zoneName = null;
+
+        if (session != null) {
+            droneId = (String) session.getAttribute("droneId");
+            zoneName = (String) session.getAttribute("zoneName");
+        }
+        
+        // 2. 세션 값 존재 여부 검증 (둘 중 하나라도 없거나 빈 값이면 알림 페이지로 이동)
+        if (droneId == null || droneId.trim().isEmpty() || zoneName == null || zoneName.trim().isEmpty()) {
+            model.addAttribute("errorMessage", "드론 및 구역 정보를 불러올 수 없습니다. 다시 시도해 주세요.");
+            model.addAttribute("closeWindow", true);
             return "status/popup-alert";
         }
     	
