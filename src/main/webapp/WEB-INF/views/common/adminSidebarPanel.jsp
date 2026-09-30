@@ -368,10 +368,6 @@
                 <span><strong>보고자:</strong> <span id="situ-modal-user" style="color: #38bdf8;"></span></span>
             </div>
 
-            <!-- 발생 시각 -->
-            <div>
-                <strong>보고 시각:</strong> <span id="situ-modal-time" style="color: #94a3b8;"></span>
-            </div>
             
             <!-- Situ Content -->
             <div style="margin-top: 4px;">

@@ -405,7 +405,14 @@ function initFieldActionPage() {
 
 	            // 텍스트 데이터 복원
 	            document.getElementById('mActionId').textContent = data.situNo || actionId;
-	            document.getElementById('mWorkerInfo').textContent = data.worker || '조치중 (미지정)';
+	            
+	            // ✨ [수정] 감지유형(situType)이 '긴급보고'인 경우 조치 요원을 '김이슬(agent01)'로 표시
+	            if (data.situType === '긴급보고') {
+	                document.getElementById('mWorkerInfo').textContent = 'agent01';
+	            } else {
+	                document.getElementById('mWorkerInfo').textContent = data.worker || '조치중';
+	            }
+	            
 	            document.getElementById('mActionContent').textContent = data.workContent || data.situContent || '내용 없음';
 	            
 	            const adminCommentEl = document.getElementById('adminComment');
@@ -429,7 +436,7 @@ function initFieldActionPage() {
 	                }
 	            }
 
-	            // ✨ 2. [추가] 조치 완료 사진 (WORK_IMAGE) 바인딩
+	            // 2. 조치 완료 사진 (WORK_IMAGE) 바인딩
 	            const workImgEl = document.getElementById('mWorkImage');
 	            const noWorkImgTextEl = document.getElementById('noWorkImageText');
 

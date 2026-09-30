@@ -87,38 +87,43 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // 모달 오픈 함수
-    function openSituationModal(data) {
-        console.log("Opening Modal for data:", data); // 브라우저 콘솔 확인용
+	// 모달 오픈 함수
+	function openSituationModal(data) {
+	    console.log("Opening Modal for data:", data); // 브라우저 콘솔 확인용
 
-        document.getElementById('situ-modal-dngr-type').textContent = data.dngrType || '위험 상황';
-        document.getElementById('situ-modal-zone').textContent = data.zoneName || '-';
-        document.getElementById('situ-modal-user').textContent = data.finder || '-';
-        document.getElementById('situ-modal-time').textContent = data.situDate || '방금 전';
-        document.getElementById('situ-modal-content').textContent = data.situContent || '내용 없음';
+	    document.getElementById('situ-modal-dngr-type').textContent = data.dngrType || '위험 상황';
+	    document.getElementById('situ-modal-zone').textContent = data.zoneName || '-';
+	    document.getElementById('situ-modal-user').textContent = data.finder || '-';
+	    document.getElementById('situ-modal-time').textContent = data.situDate || '방금 전';
+	    document.getElementById('situ-modal-content').textContent = data.situContent || '내용 없음';
 
-        const imgWrapper = document.getElementById('situ-modal-img-wrapper');
-        const imgTag = document.getElementById('situ-modal-img');
+	    const imgWrapper = document.getElementById('situ-modal-img-wrapper');
+	    const imgTag = document.getElementById('situ-modal-img');
 
-        // 사진이 있을 경우 서버 리소스 경로 지정
-        if (data.situImage) {
-            imgTag.src = window.contextPath + '/resources/upload/situation/' + data.situImage;
-            imgWrapper.style.display = 'block';
-        } else {
-            imgWrapper.style.display = 'none';
-            imgTag.src = '';
-        }
+	    // ✨ [수정] 경로(`/upload/`) 매핑 및 situImage / workImage 유연 처리
+	    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+	    const imageName = data.situImage || data.workImage;
 
-        // 모달 표시 (flex로 중앙 정렬)
-        if (situModal) {
-            situModal.style.display = 'flex';
-        }
+	    if (imgWrapper && imgTag) {
+	        if (imageName && imageName.trim() !== '') {
+	            imgTag.src = basePath + '/upload/' + imageName;
+	            imgWrapper.style.display = 'block';
+	        } else {
+	            imgTag.src = '';
+	            imgWrapper.style.display = 'none';
+	        }
+	    }
 
-        // 지도의 해당 구역/핀으로 이동/하이라이트 함수 연동 (존재할 경우)
-        if (typeof window.highlightMapZone === 'function') {
-            window.highlightMapZone(data.zoneName);
-        }
-    }
+	    // 모달 표시 (flex로 중앙 정렬)
+	    if (situModal) {
+	        situModal.style.display = 'flex';
+	    }
+
+	    // 지도의 해당 구역/핀으로 이동/하이라이트 함수 연동 (존재할 경우)
+	    if (typeof window.highlightMapZone === 'function') {
+	        window.highlightMapZone(data.zoneName);
+	    }
+	}
 
     // 모달 닫기 이벤트 핸들러
     function closeModal() {
