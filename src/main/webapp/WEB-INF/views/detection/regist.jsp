@@ -145,15 +145,20 @@
 			const zoneName = sessionStorage.getItem('regZoneName');
 		    const droneId = sessionStorage.getItem('regDroneId'); 
 		    const base64Img = sessionStorage.getItem('captureStreamImg');
+			
+			// 구역명이나 드론 아이디가 없거나 빈 값이면 즉시 경고창을 띄우고 팝업 닫기
+		    if (!zoneName || !droneId || zoneName.trim() === '' || droneId.trim() === '') {
+		        alert("드론 및 구역 정보를 불러올 수 없습니다. 다시 시도해 주세요.");
+		        window.close();
+		        return;
+		    }
 
-		    if (zoneName) {
-		    	document.getElementById('zoneName').value = zoneName; // 폼 전송용 값 세팅
-		        document.getElementById('displayZoneName').innerText = zoneName; // 화면 출력용 텍스트 세팅
-		    }
-		    if (droneId) {
-		        document.querySelector('input[name="droneId"]').value = droneId;
-		        document.getElementById('displayDroneId').innerText = droneId;
-		    }
+		    // 정상 데이터 세팅
+		    document.getElementById('zoneName').value = zoneName;
+		    document.getElementById('displayZoneName').innerText = zoneName;
+
+		    document.querySelector('input[name="droneId"]').value = droneId;
+		    document.getElementById('displayDroneId').innerText = droneId;
 
 			if (base64Img) {
 				const imgEl = document.getElementById('previewImg');
@@ -172,7 +177,8 @@
 			} else {
 				document.getElementById('noImgText').style.display = 'block';
 			}
-
+			
+			// 사용 후 사용한 세션스토리지 비우기
 			sessionStorage.removeItem('regZoneName');
 			sessionStorage.removeItem('regDroneId');
 			sessionStorage.removeItem('captureStreamImg');

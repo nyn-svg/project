@@ -100,24 +100,6 @@ public class SituationController {
             
             return "status/popup-alert";
         }
-        
-        // 1. 세션에서 드론아이디 및 구역명 가져오기
-        HttpSession session = request.getSession(false); // 기존 세션이 없으면 null 반환
-        
-        String droneId = null;
-        String zoneName = null;
-
-        if (session != null) {
-            droneId = (String) session.getAttribute("droneId");
-            zoneName = (String) session.getAttribute("zoneName");
-        }
-        
-        // 2. 세션 값 존재 여부 검증 (둘 중 하나라도 없거나 빈 값이면 알림 페이지로 이동)
-        if (droneId == null || droneId.trim().isEmpty() || zoneName == null || zoneName.trim().isEmpty()) {
-            model.addAttribute("errorMessage", "드론 및 구역 정보를 불러올 수 없습니다. 다시 시도해 주세요.");
-            model.addAttribute("closeWindow", true);
-            return "status/popup-alert";
-        }
     	
     	return "detection/regist";
     }
