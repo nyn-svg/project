@@ -201,6 +201,21 @@
 		WHERE SITU_NO = #{situNo}
 	</delete>
 	
+	<!-- 오감지 처리: 최근 자동감지 이력 1건 조회 -->
+	<select id="findLatestAutoDetectionNo" parameterType="string" resultType="string">
+	    SELECT SITU_NO
+	    FROM (
+	        SELECT SITU_NO
+	        FROM SITUATIONS
+	        WHERE SITU_TYPE = '자동감지'
+	        <if test="droneId != null and droneId != ''">
+	            AND DRONE_ID = #{droneId}
+	        </if>
+	        ORDER BY SITU_DATE DESC
+	    )
+	    WHERE ROWNUM = 1
+	</select>
+	
 	<!-- 전체 감지조치이력 수 -->
     <select id="getTotalSituationCount" resultType="int">
         SELECT COUNT(*) 

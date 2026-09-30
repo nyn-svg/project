@@ -268,6 +268,23 @@ public class ControlController {
  	    autoReportList.removeIf(item -> id.equals(item.get("id")));
  	    return ResponseEntity.ok("SUCCESS");
  	}
+ 	
+ 	// 오감지 처리
+ 	@PostMapping("/api/misdetect")
+ 	@ResponseBody
+ 	public ResponseEntity<Map<String, Object>> misdetect(@RequestParam(value="droneId", required=false) String droneId) {
+ 	    Map<String, Object> result = new HashMap<>();
+ 	    boolean success = situationService.handleMisdetection(droneId);
+ 	    
+ 	    if(success) {
+ 	    	SituationController.clearSituationCache();
+ 	    }
+ 	    
+ 	    result.put("success", success);
+ 	    result.put("message", success ? "오감지 처리가 완료되었습니다." : "처리할 자동감지 이력이 없습니다.");
+ 	    
+ 	    return ResponseEntity.ok(result);
+ 	}
     
     // 위험 감지 관리 페이지 이동
     @GetMapping("/detection")

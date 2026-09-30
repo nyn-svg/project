@@ -40,6 +40,10 @@ public interface SituationService {
 	// 감지조치이력 삭제
 	@AdminLog(value = "상황 삭제", type = "WARN")
 	boolean removeSituation(String situNo);
+	
+	// 오감지 처리 (가장 최근 자동감지 1건 삭제)
+	@AdminLog(value = "상황 삭제", type = "WARN")
+	boolean handleMisdetection(String droneId);
 
 	// 전체 감지조치이력 수
 	int getTotalSituationCount();

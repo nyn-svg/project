@@ -563,7 +563,16 @@ function initSSE() {
 	// 'situation-delete(이력 삭제)' 이벤트를 수신하면 목록 자동 갱신
 	eventSource.addEventListener('situation-delete', function(e) {
 		console.log("이력 삭제!", e.data);
-		getSituationList();
+
+		// 'situation-delete(이력 삭제)' 이벤트를 수신하면 목록 자동 갱신
+		eventSource.addEventListener('situation-delete', function(e) {
+		    console.log("이력 삭제!", e.data);
+		    
+		    // 💡 DB 트랜잭션 완료 시점과 SELECT 조회 시점 간의 비동기 타이밍 이슈 해결 (3000ms 지연)
+		    setTimeout(function() {
+		        getSituationList();
+		    }, 3000);
+		});
 	});
 	
 	const animalNameMap = {
@@ -955,12 +964,29 @@ $(document).off('click', '#misdetect').on('click', '#misdetect', function() {
 	if ($btn.prop('disabled')) {
 		return;
 	}
+	
+	// AJAX로 오감지 삭제 요청 보내기
+    $.ajax({
+        url: ctx + '/api/misdetect',
+        type: 'POST',
+        data: { droneId: currentDroneId },
+        success: function(res) {
+            if (res.success) {
+                showToast('⚠️ 직전 자동감지 이력이 오감지 삭제되었습니다.', 'warning');
+            } else {
+                showToast('ℹ️ ' + res.message, 'info');
+            }
+        },
+        error: function(err) {
+            console.error('오감지 처리 실패:', err);
+            showToast('❌ 오감지 처리 중 오류가 발생했습니다.', 'error');
+        }
+    });
  
-	$btn.prop('disabled', true);
-	showToast('⚠️ 오감지 처리를 수행합니다.', 'warning');
-
-	var remaining = 10;
-	$btn.text('처리중 (' + remaining + '초)');
+	// 버튼 5초 쿨타임 처리
+    $btn.prop('disabled', true);
+    var remaining = 5;
+    $btn.text('처리중 (' + remaining + '초)');
 
 	var countdown = setInterval(function() {
 		remaining--;

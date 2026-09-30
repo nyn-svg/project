@@ -37,6 +37,9 @@ public interface SituationMapper {
     // 감지조치이력 삭제
     int deleteSituation(String situNo);
     
+    // 오감지 처리 (가장 최근 자동감지 1건 조회)
+    String findLatestAutoDetectionNo(String droneId);
+    
     // 전체 감지조치이력 수
     int getTotalSituationCount();
     

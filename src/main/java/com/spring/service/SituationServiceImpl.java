@@ -149,16 +149,57 @@ public class SituationServiceImpl implements SituationService {
     }
     
     @AdminLog(value = "상황 삭제", type = "WARN")
-    @Override
+    @Transactional
 	public boolean removeSituation(String situNo) {
 		int result = situationMapper.deleteSituation(situNo);
 		
 		if (result > 0) {
-			sseService.sendEvent("situation-delete", "DEL_DATA");
-		}
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        // 💡 DB 커밋이 완전히 끝난 후 브라우저로 SSE 발송!
+                        sseService.sendEvent("situation-delete", "DEL_" + situNo);
+                    }
+                });
+            } else {
+                sseService.sendEvent("situation-delete", "DEL_" + situNo);
+            }
+        }
 				
 		return result > 0;
 	}
+    
+    @AdminLog(value = "상황 삭제", type = "WARN")
+    @Transactional
+    public boolean handleMisdetection(String droneId) {
+        // 1. 해당 드론(또는 전체)에서 가장 최근에 등록된 '자동감지' 1건의 PK 조회
+        String situNo = situationMapper.findLatestAutoDetectionNo(droneId);
+        
+        if (situNo == null) {
+            return false; // 지울 자동감지 이력이 없음
+        }
+
+        // 2. 기존 삭제 DAO 메서드 재활용
+        int result = situationMapper.deleteSituation(situNo);
+
+        // 3. 삭제 성공 시 SSE 알림으로 실시간 목록 갱신
+        if (result > 0) {
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        // 💡 DB 커밋이 완전히 끝난 후 브라우저로 SSE 발송!
+                    	sseService.sendEvent("situation-delete", "DEL_" + situNo);
+                    }
+                });
+            } else {
+            	sseService.sendEvent("situation-delete", "DEL_" + situNo);
+            }
+        }
+
+        return result > 0;
+    }
 
     @Override
     public int getTotalSituationCount() {
