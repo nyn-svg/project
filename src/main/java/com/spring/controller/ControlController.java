@@ -2,7 +2,9 @@ package com.spring.controller;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -244,6 +246,28 @@ public class ControlController {
             return null;
         }
     }
+    
+	// 메모리 전용 자동신고 로그 리스트
+ 	private static final List<Map<String, Object>> autoReportList = Collections.synchronizedList(new ArrayList<>());
+
+ 	public static List<Map<String, Object>> getAutoReportList() {
+ 	    return autoReportList;
+ 	}
+ 	
+ 	// 자동신고 메모리 리스트 조회 API
+ 	@GetMapping("/api/auto-report/list")
+ 	@ResponseBody
+ 	public List<Map<String, Object>> getAutoReportApiList() {
+ 	    return autoReportList;
+ 	}
+
+ 	// 자동신고 메모리 로그 삭제 API
+ 	@PostMapping("/api/auto-report/delete")
+ 	@ResponseBody
+ 	public ResponseEntity<String> deleteAutoReportLog(@RequestParam("id") String id) {
+ 	    autoReportList.removeIf(item -> id.equals(item.get("id")));
+ 	    return ResponseEntity.ok("SUCCESS");
+ 	}
     
     // 위험 감지 관리 페이지 이동
     @GetMapping("/detection")

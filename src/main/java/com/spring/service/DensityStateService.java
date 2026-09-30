@@ -58,8 +58,8 @@ public class DensityStateService {
 	            return null;
 	        }
 	
-	        // 4. 동일한 위험 단계가 계속 유지되고 있는 경우 → 5초(5000ms) 지속 여부 검사
-	        if (state.levelStartTime > 0 && (now - state.levelStartTime >= 5000)) {
+	        // 4. 동일한 위험 단계가 계속 유지되고 있는 경우 → 10초(10000ms) 지속 여부 검사
+	        if (state.levelStartTime > 0 && (now - state.levelStartTime >= 10000)) {
 	            // 3초 지속 조건 충족! → 등록 성공 처리 및 가중치 업데이트
 	            state.lastReportedWeight = newWeight;
 	            state.levelStartTime = 0; // 중복 등록 방지용 초기화

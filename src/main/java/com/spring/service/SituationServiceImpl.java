@@ -1,3 +1,5 @@
+
+
 package com.spring.service;
 
 import java.io.BufferedReader;
@@ -31,6 +33,9 @@ public class SituationServiceImpl implements SituationService {
 
     @Autowired
     private SseService sseService;
+    
+    @Autowired
+    private AutoReportService autoReportService;
 
     @Override
     public SituationDTO getSituationBySituNo(String situNo) {
@@ -60,14 +65,15 @@ public class SituationServiceImpl implements SituationService {
     @Override
     @Transactional
     public boolean registerSituation(SituationDTO situation) {
-        // 1. DB에 상황 보고 저장
+        // 1. DB에 저장
         int result = situationMapper.insertSituation(situation);
         
         // 2. DB 저장 성공 시
         if (result > 0) {
             final String type = situation.getSituType();
+            final String level = situation.getDngrLevel();
 
-            // 💡 [핵심 해결] DB 트랜잭션 커밋이 '완전히 끝난 직후'에만 SSE 발송 실행
+            // 💡 [핵심 해결] DB 트랜잭션 커밋이 '완전히 끝난 직후'에만 실행
             if (TransactionSynchronizationManager.isSynchronizationActive()) {
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override
@@ -78,6 +84,11 @@ public class SituationServiceImpl implements SituationService {
                         } else { 
                             // 자동감지, 수동감지 → 이벤트명: "situation-alert"
                             sseService.sendEvent("situation-alert", situation);
+                            
+                            // 위험단계가 '심각'인 경우 10초 타이머 예약
+                            if ("심각".equals(level)) {
+                                autoReportService.scheduleAutoReport(situation);
+                            }
                         }
                     }
                 });
@@ -87,6 +98,11 @@ public class SituationServiceImpl implements SituationService {
                     sseService.sendEvent("situation-report", situation);
                 } else {
                     sseService.sendEvent("situation-alert", situation);
+                    
+                    // 위험단계가 '심각'인 경우 10초 타이머 예약
+                    if ("심각".equals(level)) {
+                        autoReportService.scheduleAutoReport(situation);
+                    }
                 }
             }
         }
@@ -197,7 +213,7 @@ public class SituationServiceImpl implements SituationService {
      */
     public String generatePostFestivalReport() {
         // 🔑 Gemini API 키 입력
-        String apiKey = "";
+        String apiKey = "-";
 
         if (apiKey == null || apiKey.trim().isEmpty() || apiKey.equals("YOUR_GEMINI_API_KEY")) {
             return "[API 키 미설정]\nSituationService.java 파일에 Gemini API Key를 입력해 주세요.";

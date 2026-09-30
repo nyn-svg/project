@@ -2139,7 +2139,7 @@ function renderSituationList() {
         	    var dngrType = item.dngrType || '위험상황';
         	    var dngrLevel = item.dngrLevel || '미지정';
         	    var zoneName = item.zoneName || '구역 미지정';
-        	    var finder = item.finder || '요원';
+        	    var finder = item.finder ? '👤' + item.finder : '🤖 SYSTEM';
 
         	    var dateStr = '-';
         	    if (item.situDate) {
@@ -2175,7 +2175,7 @@ function renderSituationList() {
         	         + '<div style="font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">'
         	         + '<span>📍 ' + zoneName + '</span>'
         	         + '<div style="display: flex; gap: 10px; align-items: center; font-size: 11px; color: #64748b;">'
-        	         + '<span>👤 ' + finder + '</span>'
+        	         + '<span>' + finder + '</span>'
         	         + '<span><i class="fa-regular fa-clock"></i> ' + dateStr + '</span>'
         	         + '</div>'
         	         + '</div>'
@@ -2211,7 +2211,7 @@ $(document).off('click', '.situ-card-item').on('click', '.situ-card-item', funct
     $('#situ-modal-no').text(item.situNo || '-');
     $('#situ-modal-dngr-type').text(item.dngrType || '위험 상황');
     $('#situ-modal-zone').text(item.zoneName || '구역 미지정');
-    $('#situ-modal-user').text(item.finder || '알 수 없음');
+    $('#situ-modal-user').text(item.finder || 'SYSTME');
     $('#situ-modal-content').text(item.situContent || '등록된 상세 내용이 없습니다.');
 
     $('#situ-admin-comment').val('');

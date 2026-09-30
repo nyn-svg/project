@@ -134,39 +134,13 @@
                 </div>
             </div>
 
-            <!-- 4. 자동 신고 카드 -->
+            <!-- 4. 자동신고 카드 -->
             <div class="control-card auto-report-card">
                 <div class="card-header">
                     <span class="card-title">자동 신고</span>
                 </div>
                 <div class="card-body" id="report-list">
-                    <!-- 이력 아이템 1 -->
-			        <div class="report">
-			            <div class="report-header">
-			                <span class="report-title">소방서 신고 완료</span>
-			                <span class="report-date">2026-08-27 09:58</span>
-			                <button class="close-btn" title="삭제">&times;</button>
-			            </div>
-			            <div class="report-msg">유선으로 신고유무 확인 바랍니다.</div>
-			        </div>
-			        <!-- 이력 아이템 2 -->
-			        <div class="report">
-			            <div class="report-header">
-			                <span class="report-title">경찰서 신고 완료</span>
-			                <span class="report-date">2026-08-27 10:15</span>
-			                <button class="close-btn" title="삭제">&times;</button>
-			            </div>
-			            <div class="report-msg">관할 파출소에 위치 정보 전달 완료.</div>
-			        </div>
-			        <!-- 이력 아이템 3 -->
-			        <div class="report">
-			            <div class="report-header">
-			                <span class="report-title">예시 화면</span>
-			                <span class="report-date">2026-08-27 10:15</span>
-			                <button class="close-btn" title="삭제">&times;</button>
-			            </div>
-			            <div class="report-msg">DB와 연동되지 않습니다. 아직</div>
-			        </div>
+                    <!-- 자동신고 카드 출력 공간 -->
                 </div>
             </div>
         </div>
@@ -264,6 +238,7 @@ window.initStreamPage = function() {
 	
 	resetMetadataUI(); // 메타데이터 잔상 제거
 	handleAutoSwitch(isAutoOn); // 저장된 설정값에 따라 자동전환
+	renderAutoReportList(); // 자동신고 목록 조회
 	getSituationList(); // 실시간 감지/조치 이력 목록 조회
 	initSSE(); // SSE 연결
 }
@@ -346,7 +321,7 @@ function handleAutoSwitch(isOn) {
 // 자동전환 함수
 function moveToNextDrone() {
 	$.ajax({
-		url: ctx + '/drone/api/list',
+		url: ctx + '/drone/api/activeList',
 		type: 'GET',
 		dataType: 'json',
 		success: function(drones) {
@@ -406,6 +381,36 @@ function moveToNextDrone() {
 			console.error('드론 목록 조회 실패 (자동전환 중):', error);
 		}
 	});
+}
+
+// 메모리상의 자동신고 카드 목록 조회 및 렌더링
+function renderAutoReportList() {
+    $.ajax({
+        url: ctx + '/api/auto-report/list',
+        type: 'GET',
+        dataType: 'json',
+        success: function(list) {
+            var $container = $('#report-list');
+            $container.empty();
+
+            if (!list || list.length === 0) {
+                $container.html('<div class="empty-report-msg">자동 신고 이력이 없습니다.</div>');
+                return;
+            }
+
+            list.forEach(function(item) {
+                var html = '<div class="report" data-id="' + item.id + '">'
+                         + '  <div class="report-header">'
+                         + '    <span class="report-title">' + item.title + '</span>'
+                         + '    <span class="report-date">' + item.date + '</span>'
+                         + '    <button class="close-btn btn-delete-report" title="삭제">&times;</button>'
+                         + '  </div>'
+                         + '  <div class="report-msg">' + item.msg + '</div>'
+                         + '</div>';
+                $container.append(html);
+            });
+        }
+    });
 }
 
 // 실시간 감지/조치 이력 목록 조회
@@ -616,6 +621,11 @@ function initSSE() {
 	        }
 	    }
 	});
+	
+	// 'AUTO_REPORT_CREATED(자동신고 이력 수신)' 이벤트를 수신하면 자동신고 영역 갱신
+	eventSource.addEventListener('AUTO_REPORT_CREATED', function(e) {
+        renderAutoReportList(); // 자동신고 카드 갱신
+    });
 
 	eventSource.onerror = function() {
 		if (eventSource) {
@@ -970,13 +980,29 @@ $(document).off('click', '.close-btn').on('click', '.close-btn', function() {
 	if (!$itemBox.length) {
 		return;
 	}
-	$itemBox.remove();
 
-	const $wrapper = $itemBox.parent();
-	// 남은 알림이 없으면 빈 상태 메시지 출력
-	if ($wrapper.find('.report').length === 0) {
-		$wrapper.html('<div class="empty-report-msg">자동 신고 이력이 없습니다.</div>');
-	}
+	const id = $itemBox.data('id');
+    const $wrapper = $itemBox.parent();
+    
+	// 서버 메모리 데이터 삭제 요청
+    $.ajax({
+        url: ctx + '/api/auto-report/delete',
+        type: 'POST',
+        data: { id: id },
+        success: function() {
+            // 서버 삭제 성공 시 화면에서 카드 제거
+            $itemBox.remove();
+
+            // 남은 알림이 없으면 빈 상태 메시지 출력
+            if ($wrapper.find('.report').length === 0) {
+                $wrapper.html('<div class="empty-report-msg">자동 신고 이력이 없습니다.</div>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("자동 신고 이력 삭제 실패:", error);
+            alert("신고 이력 삭제 중 오류가 발생했습니다.");
+        }
+    });
 });
 
 //수동 이벤트 등록 버튼 클릭 이벤트
