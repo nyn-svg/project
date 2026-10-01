@@ -21,10 +21,16 @@
     box-sizing: border-box;
 }
 
+.list-card {
+    min-height: 280px;
+    padding: 24px;
+    flex: 1;
+}
+
 /* 1. 상단 대시보드 */
 .dashboard-card {
     position: relative;
-    min-height: 220px;
+    min-height: 200px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -91,6 +97,93 @@
 .search-form-card {
     min-height: 120px;
     padding: 20px;
+}
+
+/* ==========================================
+   독립 분리형 검색폼 스타일 (초안 와이어프레임 적용)
+   ========================================== */
+
+/* 1. 검색 카드 박스 컨테이너 */
+.search-card-container {
+    background: #0f172a; /* 어두운 패널 배경 */
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px; /* 아래 목록 카드와의 여백 분리 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* 2. 검색 항목 그리드 레이아웃 (반응형 3컬럼 배치) */
+.search-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px 20px;
+    align-items: center;
+}
+
+/* 3. 검색 입력 개별 아이템 */
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-item label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #94a3b8;
+    white-space: nowrap;
+    min-width: 60px; /* 라벨 너비 고정 */
+}
+
+/* select 입력창 스타일 */
+.search-item .form-control {
+    width: 100%;
+    height: 36px;
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #f8fafc;
+    padding: 0 10px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+.search-item .form-control:focus {
+    border-color: #38bdf8;
+}
+.search-item .form-control::placeholder {
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* 4. 검색 버튼 스타일 */
+.search-btn-wrapper {
+    grid-column: 3;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.btn-search {
+    width: 100px;
+    height: 36px;
+    background-color: #0284c7;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color 0.2s ease;
+}
+.btn-search:hover {
+    background-color: #0369a1;
 }
 
 /* 4. 하단 목록 영역 */
@@ -186,6 +279,7 @@
 /* 테이블 기본 구조 */
 .custom-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: 13px;
     text-align: center;
@@ -197,42 +291,147 @@
     padding: 12px 8px;
     font-weight: 600;
     border-bottom: 1px solid #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .custom-table td {
     padding: 14px 8px;
     border-bottom: 1px solid #1e293b;
     color: #cbd5e1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
+
+/* 각 컬럼(열)별 너비 비율 지정 (총 8개 컬럼) */
+.custom-table th:nth-child(1) { width: 15%; } /* NO */
+.custom-table th:nth-child(2) { width: 13%; } /* 감지/업무 유형 */
+.custom-table th:nth-child(3) { width: 18%; } /* 일시 */
+.custom-table th:nth-child(4) { width: 9%; } /* 위험 등급 */
+.custom-table th:nth-child(5) { width: 15%; } /* 위험 유형 */
+.custom-table th:nth-child(6) { width: 13%; } /* 구역명 */
+.custom-table th:nth-child(7) { width: 9%; } /* 조치 상태 */
+.custom-table th:nth-child(8) { width: 8%; }  /* 상세 */
 
 .custom-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.02);
 }
 
-/* 위험 등급 뱃지 */
-.badge-risk {
-    display: inline-block;
-    padding: 3px 10px;
+.btn-detail {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 2px 6px;
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
+    transition: all 0.2s ease;
 }
-.badge-risk.심각 { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
-.badge-risk.경계 { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid #f59e0b; }
-.badge-risk.주의 { background: rgba(234, 179, 8, 0.2); color: #fef08a; border: 1px solid #eab308; }
-.badge-risk.관심 { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid #3b82f6; }
 
-/* 처리 상태 뱃지 */
-.badge-status {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 12px;
+.btn-detail:hover {
+    color: #38bdf8;
 }
-.badge-status.미확인 { background: rgba(2, 132, 199, 0.2); color: #38bdf8; border: 1px solid #0284c7; }
-.badge-status.조치중 { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #d97706; }
-.badge-status.완료   { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
-.badge-status.오탐   { background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid #64748b; }
+
+/* 테이블 스크롤 컨테이너 여백 */
+.table-responsive,
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 12px;
+}
+
+/* ==========================================
+   위험 등급 및 처리 상태 뱃지 스타일
+   ========================================== */
+/* 공통 뱃지 베이스 */
+.badge-risk,
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ------------------------------------------
+    위험 등급 뱃지 (.badge-risk)
+   ------------------------------------------ */
+/* 심각 (Red / Neon Glow) */
+.badge-risk.심각 {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
+}
+
+/* 경계 (Orange) */
+.badge-risk.경계 {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+    border: 1px solid rgba(245, 158, 11, 0.6);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+}
+
+/* 주의 (Yellow) */
+.badge-risk.주의 {
+    background: rgba(234, 179, 8, 0.15);
+    color: #fef08a;
+    border: 1px solid rgba(234, 179, 8, 0.6);
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.25);
+}
+
+/* 관심 (Blue) */
+.badge-risk.관심 {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.25);
+}
+
+/* ------------------------------------------
+    처리 상태 뱃지 (.badge-status)
+   ------------------------------------------ */
+/* 미확인 / 감지 (Cyan Blue) */
+.badge-status.미확인,
+.badge-status.감지 {
+    background: rgba(2, 132, 199, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(2, 132, 199, 0.6);
+    box-shadow: 0 0 8px rgba(2, 132, 199, 0.2);
+}
+
+/* 조치중 / 지시중 (Amber) */
+.badge-status.조치중,
+.badge-status.지시중 {
+    background: rgba(217, 119, 6, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(217, 119, 6, 0.6);
+    box-shadow: 0 0 8px rgba(217, 119, 6, 0.2);
+}
+
+/* 완료 / 종결 (Emerald Green) */
+.badge-status.완료,
+.badge-status.종결 {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.6);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+/* 오탐 / 취소 (Slate Grey) */
+.badge-status.오탐,
+.badge-status.취소 {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.6);
+}
 
 /* 하단 범례 영역 */
 .table-legend-wrap {
@@ -253,64 +452,61 @@
 }
 
 /* ==========================================
-   지시 현황 전용 스타일
-========================================== */
-
-/* 구역명 '관제실' (관리자 하달 지시) 강조 뱃지 */
-.badge-control-room {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    background: rgba(99, 102, 241, 0.2);
-    color: #a5b4fc;
-    border: 1px solid #6366f1;
+   페이징 버튼 (HUD 글래스모피즘 네온 스타일)
+   ========================================== */
+.table-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
 }
 
-/* 지시 현황 처리 상태 뱃지 (처리대기, 처리중) */
-.badge-status.처리대기 {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fcd34d;
-    border: 1px solid #f59e0b;
-}
-
-.badge-status.처리중 {
-    background: rgba(59, 130, 246, 0.2);
-    color: #93c5fd;
-    border: 1px solid #3b82f6;
-}
-
-
-
-/* 종료 이력 처리 상태 뱃지 (처리완료, 미해결, 취소) */
-.badge-status.처리완료 {
-    background: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border: 1px solid #10b981;
-}
-
-.badge-status.미해결 {
-    background: rgba(239, 68, 68, 0.2);
-    color: #fca5a5;
-    border: 1px solid #ef4444;
-}
-
-.badge-status.취소 {
-    background: rgba(100, 116, 139, 0.2);
+/* 페이징 공통 버튼 */
+.page-btn {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: #94a3b8;
-    border: 1px solid #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-/* 보고 현황 처리 상태 뱃지 (미확인, 확인) */
-.badge-status.미확인 {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-    border: 1px solid #f59e0b;
+/* 마우스 호버 시 */
+.page-btn:not(:disabled):not(.active):hover {
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #e2e8f0;
+    background: rgba(56, 189, 248, 0.1);
 }
 
-.badge-status.확인 {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
-    border: 1px solid #3b82f6;
+/* 현재 활성화된 페이지 번호 */
+.page-btn.active {
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    border: 1px solid #38bdf8;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+}
+
+/* 이전/다음 이동 버튼 */
+.page-btn.nav-btn {
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.page-btn.nav-btn:hover:not(:disabled) {
+    border-color: #38bdf8;
+    color: #ffffff;
+}
+
+/* 비활성화 상태 (첫/마지막 페이지일 때 이전/다음 버튼) */
+.page-btn:disabled {
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #475569;
+    cursor: default;
+    background: rgba(15, 23, 42, 0.6);
 }

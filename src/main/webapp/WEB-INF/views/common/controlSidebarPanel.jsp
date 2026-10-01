@@ -82,7 +82,7 @@
     <div id="panel-check" class="drawer-content">
     <!-- 패널 헤더 -->
     <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-        <span style="font-weight: 700; font-size: 15px; background: linear-gradient(135deg, #ffffff 0%, #38bdf8 60%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📋 관제 시스템 체크리스트</span>
+        <span style="font-weight: 700; font-size: 15px; background: linear-gradient(135deg, #ffffff 0%, #38bdf8 60%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">관제 시스템 체크리스트</span>
         <button type="button" id="btn-refresh-checklist" title="새로고침" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; padding: 4px 6px; transition: color 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'">
            <i class="fa-solid fa-arrows-rotate"></i>
         </button>

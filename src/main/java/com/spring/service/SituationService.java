@@ -6,6 +6,11 @@ import com.spring.annotation.AdminLog;
 import com.spring.dto.SituationDTO;
 
 public interface SituationService {
+	// 통합 목록 조회 (탭 구분, 검색, 페이징)
+	List<SituationDTO> getSituationListPaged(Map<String, Object> paramMap);
+	
+	// 페이징 계산용 총 개수 조회
+	int getSituationCountPaged(Map<String, Object> paramMap);
 
 	// 이력번호로 감지조치이력 조회
 	SituationDTO getSituationBySituNo(String situNo);

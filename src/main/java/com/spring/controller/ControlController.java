@@ -300,7 +300,7 @@ public class ControlController {
         return "control/controlMain"; 
     }
     
- // 관제사 체크리스트 목록 AJAX 조회 API
+	// 관제사 체크리스트 목록 AJAX 조회 API
     @GetMapping("/control/checklist/api/list")
     @ResponseBody
     public List<ChecklistItemDTO> getControlChecklist() {
@@ -308,7 +308,7 @@ public class ControlController {
         return checklistService.getItemsByTarget("CONTROL");
     }
     
- // 관제사 체크리스트 결과 저장 API
+	// 관제사 체크리스트 결과 저장 API
     @PostMapping("/control/checklist/api/submit")
     @ResponseBody
     public Map<String, Object> submitControlChecklist(@RequestBody SafetyCheckMasterDTO masterDTO, HttpSession session) {

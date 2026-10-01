@@ -6,6 +6,12 @@ import java.util.Map;
 import com.spring.dto.SituationDTO;
 
 public interface SituationMapper {
+	
+	// 통합 목록 조회 (탭 구분, 검색, 페이징)
+    List<SituationDTO> selectSituationList(Map<String, Object> paramMap);
+    
+    // 페이징 계산용 총 개수 조회
+    int selectSituationCount(Map<String, Object> paramMap);
     
     // 이력번호로 감지조치이력 조회
 	SituationDTO findBySituNo(String situNo);

@@ -36,6 +36,16 @@ public class SituationServiceImpl implements SituationService {
     
     @Autowired
     private AutoReportService autoReportService;
+    
+    @Override
+    public List<SituationDTO> getSituationListPaged(Map<String, Object> paramMap) {
+        return situationMapper.selectSituationList(paramMap);
+    }
+
+    @Override
+    public int getSituationCountPaged(Map<String, Object> paramMap) {
+        return situationMapper.selectSituationCount(paramMap);
+    }
 
     @Override
     public SituationDTO getSituationBySituNo(String situNo) {
