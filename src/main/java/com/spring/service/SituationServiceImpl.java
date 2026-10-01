@@ -204,11 +204,11 @@ public class SituationServiceImpl implements SituationService {
                     @Override
                     public void afterCommit() {
                         // 💡 DB 커밋이 완전히 끝난 후 브라우저로 SSE 발송!
-                    	sseService.sendEvent("situation-delete", "DEL_" + situNo);
+                    	sseService.sendEvent("situation-delete", "FALSE_DEL_" + situNo);
                     }
                 });
             } else {
-            	sseService.sendEvent("situation-delete", "DEL_" + situNo);
+            	sseService.sendEvent("situation-delete", "FALSE_DEL_" + situNo);
             }
         }
 

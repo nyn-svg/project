@@ -416,7 +416,7 @@ function renderAutoReportList() {
 }
 
 // 실시간 감지/조치 이력 목록 조회
-function getSituationList(blinkFlag) {
+function getSituationList(blinkType) {
 	$.ajax({
 		url: ctx + '/total/api/list',
 		type: 'GET',
@@ -429,14 +429,17 @@ function getSituationList(blinkFlag) {
 			// 총 건수 배지 업데이트
 			$('#totalCount').text('총 ' + (situations ? situations.length : 0) + '건');
          	
-			// 💡 등록 이벤트 발생 시 #totalCount 애니메이션 실행
-            if (blinkFlag) {
-            	$totalCount.removeClass('blink-effect'); // 기존 애니메이션 리셋
+			// 💡 등록/삭제 이벤트 발생 시 #totalCount 애니메이션 실행
+            if (typeof blinkType !== 'undefined' && blinkType) {
+            	$totalCount.removeClass('blink-effect blink-effect-delete'); // 기존 애니메이션 리셋
 				void $totalCount[0].offsetWidth; // 리플로우(Reflow) 강제 발생
-				$totalCount.addClass('blink-effect'); // 클래스 재적용
+				
+				// blinkType에 따른 클래스 부여
+				var targetClass = (blinkType === 'delete') ? 'blink-effect-delete' : 'blink-effect';
+				$totalCount.addClass(targetClass);
 				
 				$totalCount.one('animationend', function() {
-			        $(this).removeClass('blink-effect');
+					$(this).removeClass('blink-effect blink-effect-delete');
 			    });
             }
 			
@@ -572,17 +575,15 @@ function initSSE() {
 	});
 	// 'situation-delete(이력 삭제)' 이벤트를 수신하면 목록 자동 갱신
 	eventSource.addEventListener('situation-delete', function(e) {
-		console.log("이력 삭제!", e.data);
-
-		// 'situation-delete(이력 삭제)' 이벤트를 수신하면 목록 자동 갱신
-		eventSource.addEventListener('situation-delete', function(e) {
-		    console.log("이력 삭제!", e.data);
-		    
-		    // 💡 DB 트랜잭션 완료 시점과 SELECT 조회 시점 간의 비동기 타이밍 이슈 해결 (3000ms 지연)
-		    setTimeout(function() {
-		        getSituationList();
-		    }, 3000);
-		});
+	    console.log("이력 삭제!", e.data);
+	    
+	    // 수신 데이터가 'FALSE_DEL_'로 시작하면 오감지 삭제로 판단하여 3초(3000ms) 지연
+	    var isFalseAlarm = e.data && e.data.startsWith('FALSE_DEL_');
+	    var delay = isFalseAlarm ? 3000 : 0;
+	
+	    setTimeout(function() {
+	        getSituationList('delete'); // 빨간색 blink 효과와 함께 목록 조회
+	    }, delay);
 	});
 	
 	const animalNameMap = {

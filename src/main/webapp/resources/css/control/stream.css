@@ -694,6 +694,27 @@ input:checked + .slider:before {
     }
 }
 
+/* totalCount 요소 삭제 시 빨간색 blink 애니메이션 */
+.blink-effect-delete {
+    animation: pulse-glow-red 0.8s ease-in-out 1; /* 삭제 시 1회만 반짝임 */
+}
+
+@keyframes pulse-glow-red {
+    0% {
+        box-shadow: 0 0 0px rgba(239, 68, 68, 0);
+        background-color: rgba(239, 68, 68, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+        background-color: rgba(239, 68, 68, 0.5);
+        color: #ffffff;
+    }
+    100% {
+        box-shadow: 0 0 0px rgba(239, 68, 68, 0);
+        background-color: rgba(239, 68, 68, 0.15);
+    }
+}
+
 .regist-btn {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff;
