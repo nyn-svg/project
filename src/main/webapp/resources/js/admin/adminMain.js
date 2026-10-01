@@ -17,6 +17,7 @@ window.initAdminMainMap = function() {
 
     // 2. 안전한 줌 & 팬 이벤트 재등록 (기존 이벤트 완전 제거 후 등록)
     initSafeZoomAndPan();
+	autoFitMapToContainer();
 
     // 3. 지도 데이터 로드 및 렌더링
     loadAdminMainMapData();
@@ -332,7 +333,41 @@ function renderMainFacilities(facilities, renderScaleX, renderScaleY) {
     });
 }
 
+// ==================================================
+// 지도를 창문(map-body) 크기에 맞춰 자동으로 축소/중앙정렬하는 함수
+// ==================================================
+function autoFitMapToContainer() {
+    setTimeout(function() {
+        const mapBody = document.querySelector('.map-body');
+        const adminMap = document.getElementById('admin-map');
+        if (!mapBody || !adminMap) return;
 
+        const bodyW = mapBody.clientWidth;
+        const bodyH = mapBody.clientHeight;
+
+        // 크기를 정상적으로 못 읽어왔으면 재시도
+        if (bodyW === 0 || bodyH === 0) return;
+
+        const mapW = adminMap.offsetWidth || 1200;
+        const mapH = adminMap.offsetHeight || 800;
+
+        const scaleX = bodyW / mapW;
+        const scaleY = bodyH / mapH;
+        
+        // 화면에 완전히 들어가도록 스케일 계산 (0.95 비율)
+        const fitScale = Math.min(scaleX, scaleY) * 0.95;
+
+        // 전역 스케일 및 오프셋 업데이트
+        window.currentScale = fitScale;
+        window.panOffsetX = (bodyW - mapW * fitScale) / 2;
+        window.panOffsetY = (bodyH - mapH * fitScale) / 2;
+
+        // 화면 변환 적용
+        if (typeof window.applyMapTransform === "function") {
+            window.applyMapTransform();
+        }
+    }, 100);
+}
 
 // ==================================================
 // 4. SSE 실시간 지도 변경 수신 연결 함수
