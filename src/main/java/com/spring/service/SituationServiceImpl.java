@@ -71,6 +71,10 @@ public class SituationServiceImpl implements SituationService {
     public List<SituationDTO> getEndSituationList() {
         return situationMapper.findEndSituations();
     }
+    @Override
+    public Map<String, Object> getDangerDashboardSummary() {
+        return situationMapper.getDangerDashboardSummary();
+    }
 
     @Override
     @Transactional
@@ -259,6 +263,16 @@ public class SituationServiceImpl implements SituationService {
         return situationMapper.getTaskListCount(paramMap);
     }
     
+    @Override
+    public Map<String, Object> getInstructionDashboardSummary() {
+        return situationMapper.getInstructionDashboardSummary();
+    }
+    
+    @Override
+    public Map<String, Object> getReportDashboardSummary() {
+        return situationMapper.getReportDashboardSummary();
+    }
+    
     /**
      * 축제 종료 후 SITUATIONS 전체 감지/조치 이력 기반 AI 사후 종합 보고서 생성
      */
@@ -376,4 +390,5 @@ public class SituationServiceImpl implements SituationService {
             return "AI 사후 종합 보고서 생성 중 오류가 발생했습니다: " + e.getMessage();
         }
     }
+    
 }

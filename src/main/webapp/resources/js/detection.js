@@ -14,40 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
     loadData(currentTab, 1);
 });
 
-// 탭 클릭 이벤트 핸들러
-function initTabEvents() {
-    document.addEventListener('click', function (e) {
-        const button = e.target.closest('.tab-btn');
-        if (!button) return;
-
-        const targetTab = button.getAttribute('data-tab');
-        if (!targetTab) return;
-
-        currentTab = targetTab;
-        currentPage = 1;
-
-        // UI 탭 및 패널 활성화 전환
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        document.querySelectorAll('.dashboard-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === targetTab);
-        });
-        document.querySelectorAll('.search-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === targetTab);
-        });
-        document.querySelectorAll('.list-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === targetTab);
-        });
-
-        // [추가] 탭별 조치인 검색 필드 표시 여부 제어
-        toggleWorkerSearchField(targetTab);
-
-        // 탭 변경 시 데이터 로드
-        loadData(currentTab, 1);
-    });
-}
-
 // 전역 탭 전환 함수 (onclick에서 직접 호출)
 window.switchTab = function(targetTab, btnElement) {
     if (!targetTab) return;
@@ -64,8 +30,11 @@ window.switchTab = function(targetTab, btnElement) {
         if (activeBtn) activeBtn.classList.add('active');
     }
 
-    // 2. 대시보드 및 리스트 패널 전환
+    // 2. 대시보드, 검색폼, 리스트 패널 전환
     document.querySelectorAll('.dashboard-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === targetTab);
+    });
+    document.querySelectorAll('.search-panel').forEach(panel => {
         panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === targetTab);
     });
     document.querySelectorAll('.list-panel').forEach(panel => {
@@ -74,6 +43,15 @@ window.switchTab = function(targetTab, btnElement) {
 
     // 3. 조치인 검색 필드 동적 표시/숨김
     toggleWorkerSearchField(targetTab);
+
+    // ✨ 4개 탭 전체 대시보드 요약 로드 분기
+    if (targetTab === 'danger') {
+        loadDashboardSummary();
+    } else if (targetTab === 'instruction') {
+        loadInstructionDashboardSummary();
+    }  else if (targetTab === 'report') {
+        loadReportDashboardSummary();
+    }
 
     // 4. 데이터 로드
     loadData(currentTab, 1);
@@ -108,17 +86,64 @@ function initSearchForm() {
 // 3. 백엔드 API 연동 데이터 로딩
 // ==========================================
 
-// 상단 대시보드 요약 카운트 로드
+// 상단 감지 이력 대시보드 요약 카운트 로드
 function loadDashboardSummary() {
-    fetch('/detection/api/dashboard-summary')
+    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+    
+    fetch(basePath + '/detection/api/dashboard-summary')
         .then(res => res.json())
         .then(data => {
-            updateDashboardCount('danger', data.dangerCount);
-            updateDashboardCount('instruction', data.instructionCount);
-            updateDashboardCount('close', data.closeCount);
-            updateDashboardCount('report', data.reportCount);
+            const totalEl = document.getElementById('danger-total-count');
+            const autoEl = document.getElementById('danger-auto-count');
+            const manualEl = document.getElementById('danger-manual-count');
+            const emerEl = document.getElementById('danger-emer-count');
+
+            if (totalEl) totalEl.textContent = data.totalCount || 0;
+            if (autoEl) autoEl.textContent = data.autoCount || 0;
+            if (manualEl) manualEl.textContent = data.manualCount || 0;
+            if (emerEl) emerEl.textContent = data.emerCount || 0;
         })
         .catch(err => console.error("대시보드 요약 로드 실패:", err));
+}
+
+// 상단 조치 현황 대시보드 요약 로드
+function loadInstructionDashboardSummary() {
+    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+    
+    fetch(basePath + '/detection/api/instruction-dashboard-summary')
+        .then(res => res.json())
+        .then(data => {
+            const totalEl = document.getElementById('instruction-dash-total');
+            const progressEl = document.getElementById('instruction-dash-progress');
+            const completeEl = document.getElementById('instruction-dash-complete');
+            const unresolvedEl = document.getElementById('instruction-dash-unresolved');
+
+            if (totalEl) totalEl.textContent = data.totalCount || 0;
+            if (progressEl) progressEl.textContent = data.progressCount || 0;
+            if (completeEl) completeEl.textContent = data.completeCount || 0;
+            if (unresolvedEl) unresolvedEl.textContent = data.unresolvedCount || 0;
+        })
+        .catch(err => console.error("조치현황 대시보드 로드 실패:", err));
+}
+
+// 상단 긴급상황 대시보드 요약 로드
+function loadReportDashboardSummary() {
+    const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
+    
+    fetch(basePath + '/detection/api/report-dashboard-summary')
+        .then(res => res.json())
+        .then(data => {
+            const totalEl = document.getElementById('report-dash-total');
+            const pendingEl = document.getElementById('report-dash-pending');
+            const progressEl = document.getElementById('report-dash-progress');
+            const completeEl = document.getElementById('report-dash-complete');
+
+            if (totalEl) totalEl.textContent = data.totalCount || 0;
+            if (pendingEl) pendingEl.textContent = data.pendingCount || 0;
+            if (progressEl) progressEl.textContent = data.progressCount || 0;
+            if (completeEl) completeEl.textContent = data.completeCount || 0;
+        })
+        .catch(err => console.error("긴급상황 대시보드 로드 실패:", err));
 }
 
 function updateDashboardCount(tab, count) {
@@ -148,12 +173,12 @@ function loadData(tab, page) {
             renderTable(tab, data.list);
             renderPagination(tab, data.totalPages, page);
             
-            // 데이터 총 건수 표시 업데이트
-            const totalCountEl = document.getElementById(`${tab}-total-count`) 
-                               || document.getElementById('total-count') 
-                               || document.getElementById(`${tab == 'close' ? 'closed' : tab}-total-count`);
+            // ✨ 상단 카드 ID(danger-total-count)와 절대 충돌하지 않게 하단 목록 전용 ID만 지정
+            const totalCountEl = document.getElementById(`${tab}-list-total-count`) 
+                               || document.getElementById(`${tab === 'close' ? 'closed' : tab}-list-total-count`);
+
             if (totalCountEl) {
-                totalCountEl.textContent = `총 ${data.totalCount}건`;
+                totalCountEl.textContent = `총 ${data.totalCount || 0}건`;
             }
         })
         .catch(err => console.error(`${tab} 목록 로드 실패:`, err));
@@ -174,7 +199,7 @@ function renderTable(tab, list) {
     tbody.innerHTML = '';
 
     if (!list || list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">조회된 이력이 없습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px;">조회된 이력이 없습니다.</td></tr>';
         return;
     }
 
@@ -183,31 +208,58 @@ function renderTable(tab, list) {
         const situNo = item.situNo || '-';
         const situType = item.situType || '-';
         const situDate = formatDate(item.situDate);
-        const dngrLevel = item.dngrLevel || '관심'; // 위험 등급
+        const dngrLevel = item.dngrLevel || '관심';
         const dngrType = item.dngrType || '-';
         const zoneName = item.zoneName || '-';
-        const status = item.situStatus || '감지';
+        const finder = item.finder || item.situType || '-';
 
-        // 8개 컬럼에 맞춰 렌더링 (내용 situContent 제거)
-		// JS 렌더링 예시
-		html += `
-		    <tr>
-		        <td>${situNo}</td>
-		        <td>${situType}</td>
-		        <td>${situDate}</td>
-		        <!-- 위험 등급 뱃지 (예: <span class="badge-risk 심각">심각</span>) -->
-		        <td><span class="badge-risk ${dngrLevel}">${dngrLevel}</span></td>
-		        <td>${dngrType}</td>
-		        <td>${zoneName}</td>
-		        <!-- 처리 상태 뱃지 (예: <span class="badge-status 미확인">미확인</span>) -->
-		        <td><span class="badge-status ${status}">${status}</span></td>
-		        <td>
-		            <button type="button" class="btn-detail" onclick="openDetail('${situNo}')">
-		                <i class="fa-solid fa-magnifying-glass"></i>
-		            </button>
-		        </td>
-		    </tr>
-		`;
+        // ✨ 조치인 무조건 '김이슬' 하드코딩
+        const worker = '김이슬';
+
+        // 조치상태 ('조치' -> '조치중' 치환)
+        let status = (item.situStatus || '감지').trim();
+        if (status === '조치') {
+            status = '조치중';
+        }
+
+        // 조치 현황 탭
+        if (tab === 'instruction') {
+            html += `
+                <tr>
+                    <td>${situNo}</td>
+                    <td>${finder}</td>
+                    <td>${situDate}</td>
+                    <td><span class="badge-risk ${dngrLevel}">${dngrLevel}</span></td>
+                    <td>${dngrType}</td>
+                    <td>${zoneName}</td>
+                    <td>${worker}</td>
+                    <td><span class="badge-status ${status}">${status}</span></td>
+                    <td>
+                        <button type="button" class="btn-detail" onclick="openDetail('${situNo}')">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        } else {
+            // 기본 감지 이력 및 기타 탭
+            html += `
+                <tr>
+                    <td>${situNo}</td>
+                    <td>${situType}</td>
+                    <td>${situDate}</td>
+                    <td><span class="badge-risk ${dngrLevel}">${dngrLevel}</span></td>
+                    <td>${dngrType}</td>
+                    <td>${zoneName}</td>
+                    <td><span class="badge-status ${status}">${status}</span></td>
+                    <td>
+                        <button type="button" class="btn-detail" onclick="openDetail('${situNo}')">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
     });
 
     tbody.innerHTML = html;
@@ -333,6 +385,8 @@ window.initDetectionPage = function() {
     currentPage = 1;
     toggleWorkerSearchField(currentTab);
     loadDashboardSummary();
+	loadInstructionDashboardSummary();
+	loadReportDashboardSummary();
     loadData(currentTab, 1);
 };
 

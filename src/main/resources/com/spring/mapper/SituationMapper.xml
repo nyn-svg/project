@@ -385,6 +385,39 @@
         WHERE END_DATE IS NOT NULL
     </select>
     
+    <!-- 감지 이력 대시보드 요약 카운트 -->
+	<select id="getDangerDashboardSummary" resultType="map">
+	    SELECT 
+	        COUNT(*) AS "totalCount",
+	        COUNT(CASE WHEN TRIM(SITU_TYPE) LIKE '%자동%' THEN 1 END) AS "autoCount",
+	        COUNT(CASE WHEN TRIM(SITU_TYPE) LIKE '%수동%' THEN 1 END) AS "manualCount",
+	        COUNT(CASE WHEN TRIM(SITU_TYPE) LIKE '%긴급%' THEN 1 END) AS "emerCount"
+	    FROM SITUATIONS
+	    WHERE TRIM(SITU_STATUS) = '감지'
+	</select>
+	
+	<!-- 조치 현황 대시보드 요약 카운트 -->
+	<select id="getInstructionDashboardSummary" resultType="map">
+	    SELECT 
+	        COUNT(*) AS "totalCount",
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) = '조치' THEN 1 END) AS "progressCount",
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) IN ('조치완료', 'APPROVE') THEN 1 END) AS "completeCount",
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) = '미해결' THEN 1 END) AS "unresolvedCount"
+	    FROM SITUATIONS
+	    WHERE TRIM(SITU_STATUS) != '감지'
+	</select>
+	
+	<!-- 긴급상황 대시보드 요약 카운트 -->
+	<select id="getReportDashboardSummary" resultType="map">
+	    SELECT 
+	        COUNT(*) AS "totalCount",
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) = '감지' THEN 1 END) AS "pendingCount",
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) = '조치' THEN 1 END) AS "progressCount",
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) IN ('조치완료', 'APPROVE') THEN 1 END) AS "completeCount"
+	    FROM SITUATIONS
+	    WHERE TRIM(SITU_TYPE) = '긴급보고'
+	</select>
+	    
     <!-- 승인 / 반려 업데이트 (Oracle SYSDATE 및 기존 컬럼 매핑) -->
     <update id="processFieldAction" parameterType="map">
         UPDATE SITUATIONS

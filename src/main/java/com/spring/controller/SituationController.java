@@ -27,7 +27,6 @@ import com.spring.service.SituationService;
 import com.spring.service.SseService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class SituationController {

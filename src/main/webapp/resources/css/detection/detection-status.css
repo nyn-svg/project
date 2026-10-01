@@ -61,6 +61,56 @@
     color: #ffffff;
 }
 
+.summary-card-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 10px 0;
+}
+
+.summary-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.summary-card .card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+/* 유형별 포인트 색상 */
+.summary-card.total .card-icon { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.summary-card.auto .card-icon { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.summary-card.manual .card-icon { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.summary-card.emergency .card-icon { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+.summary-card .card-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-card .card-title {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.summary-card .card-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
 /* 2. 탭 메뉴 바 */
 .tab-menu-bar {
     display: flex;

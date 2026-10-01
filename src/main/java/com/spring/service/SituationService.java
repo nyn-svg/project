@@ -74,4 +74,10 @@ public interface SituationService {
 	int getTaskListCount(Map<String, Object> paramMap);
 	
 	String generatePostFestivalReport();
+	
+	Map<String, Object> getDangerDashboardSummary();
+	
+	Map<String, Object> getInstructionDashboardSummary();
+	
+	Map<String, Object> getReportDashboardSummary();
 }

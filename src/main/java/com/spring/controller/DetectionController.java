@@ -53,23 +53,21 @@ public class DetectionController {
 	@GetMapping("/api/dashboard-summary")
 	@ResponseBody
 	public Map<String, Object> getDashboardSummary() {
-	    Map<String, Object> result = new HashMap<>();
-	    
-	    // 각각의 탭 카운트 세팅
-	    Map<String, Object> paramMap = new HashMap<>();
-	    
-	    paramMap.put("tabType", "danger");
-	    result.put("dangerCount", situationService.getSituationCountPaged(paramMap));
-	    
-	    paramMap.put("tabType", "instruction");
-	    result.put("instructionCount", situationService.getSituationCountPaged(paramMap));
-	    
-	    paramMap.put("tabType", "close");
-	    result.put("closeCount", situationService.getSituationCountPaged(paramMap));
-	    
-	    paramMap.put("tabType", "report");
-	    result.put("reportCount", situationService.getSituationCountPaged(paramMap));
-
-	    return result;
+	    // 감지 유형별 요약(전체/자동/수동/긴급) 데이터 반환으로 변경
+	    return situationService.getDangerDashboardSummary();
 	}
+	
+	// 조치 현황 대시보드 요약 API
+	@GetMapping("/api/instruction-dashboard-summary")
+	@ResponseBody
+	public Map<String, Object> getInstructionDashboardSummary() {
+	    return situationService.getInstructionDashboardSummary();
+	}
+	
+	// 4. 긴급상황 조치 이력 대시보드 요약 API
+    @GetMapping("/api/report-dashboard-summary")
+    @ResponseBody
+    public Map<String, Object> getReportDashboardSummary() {
+        return situationService.getReportDashboardSummary();
+    }
 }
