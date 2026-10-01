@@ -1,27 +1,18 @@
-let offset = 0;       
-let limit = 6;  
-let isLoading = false; 
-let isEnd = false;    
-let currentStatus = "ALL";
+let currentPage = 1;      // 현재 페이지 번호
+const limit = 6;          // 한 페이지당 표시할 카드 수
+let currentStatus = "ALL"; // 현재 선택된 탭 상태
 
 document.addEventListener("DOMContentLoaded", function() {
     
-    // 1. 첫 데이터 조회
-    loadMoreTasks();
+    // 1. 첫 페이지 데이터 조회
+    loadTasks(1);
 
-    // 2. 스크롤 이벤트 타겟 감지 (.mobile-content 스크롤 유지)
-    const scrollContainer = document.querySelector(".mobile-content");
-    if (scrollContainer) {
-        scrollContainer.addEventListener("scroll", handleScroll);
-    }
-    
-    // 3. 카드 클릭 시 상세 조치보고서 작성/편집 페이지로 이동
+    // 2. 카드 클릭 시 상세 조치보고서 작성/편집 페이지로 이동 (기존 로직 유지)
     const historyList = document.getElementById("historyList");
     if (historyList) {
         historyList.addEventListener("click", function(e) {
             var card = e.target.closest(".history-card");
             if (card) {
-                // 💡 중요: AGENT_TASK의 id 대신 SITUATIONS의 PK인 situNo를 가로챕니다.
                 var situNo = card.getAttribute("data-id");
                 if (situNo) {
                     location.href = contextPath + "/agent/taskEdit?situNo=" + situNo;
@@ -30,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // 4. 서브 메뉴바 탭 클릭 이벤트
+    // 3. 서브 메뉴바 탭 클릭 이벤트 (기존 로직 유지)
     const tabButtons = document.querySelectorAll(".sub-menu-bar .tab-btn");
     tabButtons.forEach(button => {
         button.addEventListener("click", function() {
@@ -40,7 +31,8 @@ document.addEventListener("DOMContentLoaded", function() {
             this.classList.add("active");
 
             currentStatus = this.getAttribute("data-status");
-            resetAndReload();
+            currentPage = 1; // 탭 전환 시 1페이지로 리셋
+            loadTasks(1);
         });
     });
 
@@ -50,39 +42,16 @@ document.addEventListener("DOMContentLoaded", function() {
     $("#navReport").on("click", function() { location.href = "history"; });
 });
 
-// 스크롤 감지 로직
-function handleScroll() {
-    if (isLoading || isEnd) return;
-
-    const scrollContainer = document.querySelector(".mobile-content");
-    if (!scrollContainer) return;
-
-    const isBottom = scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 50;
-
-    if (isBottom) {
-        loadMoreTasks();
-    }
-}
-
-// 탭 변경 시 초기화
-function resetAndReload() {
-    isLoading = false;
-    isEnd = false;
-    offset = 0;
-    
-    const container = document.getElementById("historyList");
-    if (container) container.innerHTML = "";
-    
-    loadMoreTasks();
-}
-
-// 데이터 Fetch (SituationDTO 반환 구조 대응)
-function loadMoreTasks() {
-    if (isLoading || isEnd) return;
-    isLoading = true;
+// 🎯 페이지 단위 데이터 Fetch (백엔드 API 연동)
+function loadTasks(page) {
+    currentPage = page;
+    const offset = (currentPage - 1) * limit; // 백엔드 오프셋 계산
 
     const loadingEl = document.getElementById("loading");
     if (loadingEl) loadingEl.style.display = "block";
+
+    const container = document.getElementById("historyList");
+    if (container) container.innerHTML = ""; // 기존 카드 초기화
 
     const url = contextPath + "/agent/history/more"
               + "?offset=" + offset 
@@ -95,45 +64,87 @@ function loadMoreTasks() {
             return response.json();
         })
         .then(data => {
-            const container = document.getElementById("historyList");
             const countEl = document.getElementById("totalCount");
+            const totalCount = data.totalCount || 0;
         
-            if (countEl && data.totalCount !== undefined) {
-                countEl.textContent = data.totalCount;
+            if (countEl) {
+                countEl.textContent = totalCount;
             }
         
             const taskList = data.tasks; 
         
+            // 데이터가 없는 경우
             if (!taskList || taskList.length === 0) {
-                isEnd = true;
-                if (offset === 0 && container) {
+                if (container) {
                     container.innerHTML = '<div style="text-align: center; padding: 40px; color: #888;">조회된 조치 내역이 없습니다.</div>';
                 }
+                renderPagination(0);
                 return;
             }
         
+            // 카드 렌더링
             if (container) {
                 taskList.forEach(task => {
                     const cardHtml = createCardHtml(task);
                     container.insertAdjacentHTML('beforeend', cardHtml);
                 });
             }
-        
-            offset += taskList.length;
-            if (taskList.length < limit) {
-                isEnd = true;
-            }
+
+            // 하단 페이지 번호 버튼 렌더링
+            renderPagination(totalCount);
         })
         .catch(error => {
             console.error("데이터 로딩 중 에러 발생:", error);
+            if (container) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #e53e3e;">데이터를 불러오는 중 오류가 발생했습니다.</div>';
+            }
         })
         .finally(() => {
-            isLoading = false;
             if (loadingEl) loadingEl.style.display = "none";
         });
 }
 
-// 💳 SituationDTO 구조 기반 카드 HTML 동적 렌더링
+// 🎯 하단 페이징 버튼 생성
+function renderPagination(totalCount) {
+    const paginationContainer = document.getElementById("paginationContainer");
+    if (!paginationContainer) return;
+    paginationContainer.innerHTML = "";
+
+    const totalPages = Math.ceil(totalCount / limit) || 1;
+    if (totalPages <= 1) return; // 1페이지 이하면 버튼 표시 안함
+
+    let html = "";
+
+    // 이전 버튼
+    const isPrevDisabled = currentPage <= 1;
+    html += '<button type="button" class="page-btn"' + (isPrevDisabled ? ' disabled' : '') + ' onclick="changePage(' + (currentPage - 1) + ')"><i class="fa-solid fa-chevron-left"></i></button>';
+
+    // 페이지 번호 버튼
+    for (let i = 1; i <= totalPages; i++) {
+        const activeClass = (i === currentPage) ? ' active' : '';
+        html += '<button type="button" class="page-btn' + activeClass + '" onclick="changePage(' + i + ')">' + i + '</button>';
+    }
+
+    // 다음 버튼
+    const isNextDisabled = currentPage >= totalPages;
+    html += '<button type="button" class="page-btn"' + (isNextDisabled ? ' disabled' : '') + ' onclick="changePage(' + (currentPage + 1) + ')"><i class="fa-solid fa-chevron-right"></i></button>';
+
+    paginationContainer.innerHTML = html;
+}
+
+// 🎯 페이지 이동 및 스크롤 상단 이동
+function changePage(page) {
+    loadTasks(page);
+    
+    const scrollContainer = document.querySelector(".mobile-content");
+    if (scrollContainer) {
+        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+// 💳 SituationDTO 구조 기반 카드 HTML 동적 렌더링 (기존 로직 100% 유지)
 function createCardHtml(task) {
     // 1. 유형 배지 설정: 위험유형(task.dngrType) 기준 파스텔 배징 매핑
     var rawType = task.dngrType || task.DNGR_TYPE || '기타';
@@ -186,7 +197,6 @@ function createCardHtml(task) {
     // 고유 식별 PK 키 변환
     var situNo = task.situNo || task.SITU_NO || '';
 
-    // 💡 [버그 수정] 깨짐 방지를 위해 history-title의 인라인 고정 너비 속성을 완전히 제거했습니다.
     return '<div class="history-card" data-id="' + situNo + '">' +
                 '<div class="card-main">' +
                     '<div class="title-row">' +

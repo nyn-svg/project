@@ -34,7 +34,7 @@
 <!-- 2-2. 왼쪽으로 열리는 260px 서브 드로어 패널 -->
 <div id="sub-drawer" class="sub-drawer collapsed">
 	<!-- 드론 관제 패널 -->
-	<div id="panel-drones" class="drawer-content active">
+	<div id="panel-drones" class="drawer-content">
 		<!-- 헤더 전체 높이를 40px로 고정하고 flex 수직 중앙 정렬 -->
 		<div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; height: 40px; min-height: 40px;">
 		    <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">드론 관리</span>
@@ -240,8 +240,7 @@ function loadControlChecklist() {
                   + '      </label>'
                   + '    </div>'
                   
-                  // 비고 입력란
-                  + '    <input type="text" class="chk-remark-input" placeholder="비고를 입력해주세요">'
+                  
                   + '  </div>'
                   + '</div>';
          });
@@ -583,3 +582,17 @@ $(document).ready(function() {
 
 <script src="${pageContext.request.contextPath}/resources/js/control/activeDrone-sidebar.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/situation-sidebar.js"></script>
+
+<script>
+$(document).ready(function() {
+    setTimeout(function() {
+        var $droneBtn = $('.quick-nav-item[data-target="panel-drones"]');
+        var $dronePanel = $('#panel-drones');
+
+        // 🎯 버튼이나 패널이 'active' 상태가 없을 때만 (즉, 닫혀있을 때만) 클릭 실행!
+        if (!$droneBtn.hasClass('active') || !$dronePanel.hasClass('active')) {
+            $droneBtn.trigger('click');
+        }
+    }, 100);
+});
+    </script>

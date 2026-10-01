@@ -201,7 +201,7 @@
 		WHERE SITU_NO = #{situNo}
 	</delete>
 	
-	<!-- 오감지 처리: 최근 자동감지 이력 1건 조회 -->
+		<!-- 오감지 처리: 최근 자동감지 이력 1건 조회 -->
 	<select id="findLatestAutoDetectionNo" parameterType="string" resultType="string">
 	    SELECT SITU_NO
 	    FROM (
@@ -303,7 +303,7 @@
                 FROM SITUATIONS
                 <where>
                     <!-- 💡 중요: 토스트 알림창에서 수락하여 내 ID가 WORKER로 배정된 위험 이력만 노출 -->
-                    AND (WORKER = #{userId} OR SITU_STATUS = '조치')
+                    AND (WORKER = #{userId} OR SITU_STATUS IN ('조치', 'APPROVE', '조치완료'))
                     <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
                         <choose>
                             <!-- 1. 조치대기 탭: 현재 열심히 처리 중인 '조치' 상태 데이터 -->
@@ -312,7 +312,7 @@
                             </when>
                             <!-- 2. 조치완료 탭: 조치서 작성이 완전히 끝난 '조치완료' 상태 데이터 -->
                             <when test="actionStatus == 'COMPLETED'">
-                                AND SITU_STATUS = '조치완료'
+                                AND (SITU_STATUS = '조치완료' OR SITU_STATUS = 'APPROVE')
                             </when>
                         </choose>
                     </if>
@@ -328,14 +328,14 @@
         SELECT COUNT(*)
         FROM SITUATIONS
         <where>
-            AND (WORKER = #{userId} OR SITU_STATUS = '조치')
+            AND (WORKER = #{userId} OR SITU_STATUS IN ('조치', 'APPROVE', '조치완료'))
             <if test="actionStatus != null and actionStatus != '' and actionStatus != 'ALL'">
                 <choose>
                     <when test="actionStatus == 'PENDING'">
                         AND SITU_STATUS = '조치'
                     </when>
                     <when test="actionStatus == 'COMPLETED'">
-                        AND SITU_STATUS = '조치완료'
+                        AND (SITU_STATUS = '조치완료' OR SITU_STATUS = 'APPROVE')
                     </when>
                 </choose>
             </if>

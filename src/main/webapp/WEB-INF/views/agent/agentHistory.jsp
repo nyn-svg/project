@@ -14,6 +14,7 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet"
 	href="${pageContext.request.contextPath}/resources/css/agent/agentHistory.css">
+	
 </head>
 <body>
 
@@ -26,27 +27,27 @@
 
 		<!-- MAIN CONTENT -->
 		<main class="mobile-content">
-			<!-- 1. 기존 .filter-card 삭제 후 아래 탭 메뉴바 추가 -->
+			<!-- 1. 탭 메뉴바 -->
 			<div class="sub-menu-bar">
 				<button type="button" class="tab-btn active" data-status="ALL">전체</button>
-				<button type="button" class="tab-btn" data-status="PENDING">조치대기</button>
+				<button type="button" class="tab-btn" data-status="PENDING">조치중</button>
 				<button type="button" class="tab-btn" data-status="COMPLETED">조치완료</button>
 			</div>
 
 			<!-- 2. 건수 헤더 -->
 			<div class="list-count-header">
-				<span class="count-text">총 <span class="count"
-					id="totalCount">0</span>건
-				</span>
+				<span class="count-text">총 <span class="count" id="totalCount">0</span>건</span>
 			</div>
 
 			<!-- 3. 카드 리스트 영역 -->
 			<div class="history-list" id="historyList"></div>
 
-			<div id="loading"
-				style="display: none; text-align: center; padding: 15px; color: #888;">
+			<div id="loading" style="display: none; text-align: center; padding: 15px; color: #888;">
 				<i class="fa-solid fa-spinner fa-spin"></i> 로딩 중...
 			</div>
+
+			<!-- 🎯 [신규 추가] 4. 모바일 하단 페이징 영역 -->
+			<div class="pagination-container" id="paginationContainer"></div>
 		</main>
 
 		<!-- 하단 메뉴바 -->
@@ -57,8 +58,7 @@
 			<button type="button" class="nav-item nav-home" id="navHome">
 				<i class="fa-solid fa-house"></i> <span>홈</span>
 			</button>
-			<button type="button" class="nav-item active nav-report"
-				id="navReport">
+			<button type="button" class="nav-item active nav-report" id="navReport">
 				<i class="fa-solid fa-file-pen"></i> <span>조치보고</span>
 			</button>
 		</nav>
@@ -69,8 +69,7 @@
 	<script>
 		const contextPath = "${pageContext.request.contextPath}";
 	</script>
-	<script
-		src="${pageContext.request.contextPath}/resources/js/agent/agentHistory.js"></script>
+	<script src="${pageContext.request.contextPath}/resources/js/agent/agentHistory.js"></script>
 
 	<!-- 감지 알림(토스트 알림) -->
 	<jsp:include page="/WEB-INF/views/common/agentAlarm.jsp" />
