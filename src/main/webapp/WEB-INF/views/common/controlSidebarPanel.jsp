@@ -80,30 +80,30 @@
 	</div>
 
     <div id="panel-check" class="drawer-content">
-	    <!-- 패널 헤더 -->
-	    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-	        <span style="font-weight: 700; font-size: 15px; color: #f8fafc;">📋 관제 시스템 체크리스트</span>
-	        <button type="button" id="btn-refresh-checklist" title="새로고침" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;">
-	            🔄
-	        </button>
-	    </div>
-	    
-	    <!-- 체크리스트 아이템 목록이 비동기(AJAX)로 들어올 영역 -->
-	    <div class="drawer-body" style="padding: 16px; overflow-y: auto; height: calc(100vh - 140px);">
-	        <div id="control-checklist-container" style="display: flex; flex-direction: column; gap: 12px;">
-	            <div style="text-align: center; color: #94a3b8; padding: 30px 0; font-size: 13px;">
-	                체크리스트 항목을 불러오는 중...
-	            </div>
-	        </div>
-	    </div>
-	
-	    <!-- 하단 저장 버튼 -->
-	    <div class="drawer-footer" style="padding: 12px 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: #1e222d; position: absolute; bottom: 0; width: 100%; box-sizing: border-box;">
-	        <button type="button" id="btn-save-control-checklist" style="width: 100%; padding: 10px; background: #3b82f6; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
-	            체크리스트 저장
-	        </button>
-	    </div>
+    <!-- 패널 헤더 -->
+    <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <span style="font-weight: 700; font-size: 15px; background: linear-gradient(135deg, #ffffff 0%, #38bdf8 60%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📋 관제 시스템 체크리스트</span>
+        <button type="button" id="btn-refresh-checklist" title="새로고침" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; padding: 4px 6px; transition: color 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'">
+           <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+    </div>
+    
+    <!-- 체크리스트 아이템 목록이 비동기(AJAX)로 들어올 영역 -->
+    <div class="drawer-body" style="padding-bottom: 60px; overflow-y: auto; height: calc(100vh - 160px);">
+        <div id="control-checklist-container" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="text-align: center; color: #94a3b8; padding: 30px 0; font-size: 13px;">
+                체크리스트 항목을 불러오는 중...
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 하단 저장 버튼 (위치 살짝 위로 올림) -->
+	<div class="drawer-footer" style="padding: 12px 20px 24px 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: #070709; position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 10;">
+	    <button type="button" id="btn-save-control-checklist" class="chk-save-btn" style="width: 100%; padding: 11px 0; background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);" onmouseover="this.style.background='rgba(56, 189, 248, 0.25)'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'; this.style.color='#38bdf8';">
+	        체크리스트 저장
+	    </button>
 	</div>
+</div>
 </div>
 
 <!-- sidebar.jsp 최하단 위치, 새 드론 등록 모달창 -->
@@ -395,34 +395,89 @@ $(document).ready(function() {
 }
 
 /* ==========================================
-   .sub-drawer (260px) 내부 체크리스트 전용 완벽 맞춤 CSS
+   .sub-drawer 내 체크리스트 패널 전용 CSS (다른 탭 침범 차단)
    ========================================== */
 
-/* 1. 체크리스트 패널 & 컨테이너 (위치/여백 중복 지정 완전 제거) */
-#panel-check,
-#control-checklist-container {
+/* 1. 비활성 패널 숨김 유지 및 active 시에만 flex 전환 */
+#panel-check {
     width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;          /* .sub-drawer 패딩(20px)을 활용하므로 0으로 초기화 */
+    height: calc(100vh - 48px) !important;
+    flex-direction: column !important;
+    padding: 0 !important;
     margin: 0 !important;
-    position: static !important;     /* right, position 고정값 제거 */
     box-sizing: border-box !important;
 }
 
-/* 2. 패널 상단 제목 (줄바꿈 방지 & 그라데이션) */
+/* 🎯 active 클래스가 붙은 경우에만 패널 표시 */
+#panel-check.active {
+    display: flex !important;
+}
+
+/* 2. 상단 헤더 (상단 고정 및 새로고침 버튼 뭉개짐 방지) */
 #panel-check .drawer-header {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     font-size: 16px !important;
     font-weight: 700 !important;
-    white-space: nowrap !important;  /* "관제 시스템 체크리스트" 줄바꿈 차단 */
-    margin-bottom: 16px !important;
+    margin-bottom: 12px !important;
     padding-bottom: 12px !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: transparent !important;
+    -webkit-text-fill-color: initial !important;
+}
+
+#panel-check .drawer-header > span:first-child,
+#panel-check .drawer-title {
     background: linear-gradient(135deg, #ffffff 0%, #38bdf8 60%, #818cf8 100%) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    white-space: nowrap !important;
 }
 
-/* 3. 체크리스트 카드 (드론 카드 .drone-btn과 동일하게 100% 채움) */
+#btn-refresh-checklist,
+.btn-refresh-chk {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    padding: 4px 6px !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+}
+
+#btn-refresh-checklist:hover,
+.btn-refresh-chk:hover {
+    color: #38bdf8 !important;
+    -webkit-text-fill-color: #38bdf8 !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 3. 중간 카드 리스트 영역 (체크리스트 전용 독립 스크롤) */
+#control-checklist-container {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding-right: 4px !important;
+    padding-bottom: 10px !important;
+    box-sizing: border-box !important;
+}
+
+#control-checklist-container::-webkit-scrollbar {
+    width: 4px;
+}
+#control-checklist-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+}
+
+/* 4. 카드 및 내부 구성 요소 */
 .control-chk-card {
     width: 100% !important;
     margin: 0 0 10px 0 !important;
@@ -439,7 +494,6 @@ $(document).ready(function() {
     border-color: rgba(56, 189, 248, 0.3) !important;
 }
 
-/* 4. 카드 헤더 */
 .chk-card-header {
     display: flex !important;
     align-items: center !important;
@@ -462,7 +516,6 @@ $(document).ready(function() {
     min-width: 0 !important;
 }
 
-/* 상태 배지 */
 .chk-status-badge {
     font-size: 10px !important;
     font-weight: 700 !important;
@@ -484,7 +537,6 @@ $(document).ready(function() {
     box-shadow: 0 0 8px rgba(74, 222, 128, 0.2) !important;
 }
 
-/* 5. 상세 점검 내용 바디 */
 .chk-card-body {
     display: none;
     padding: 12px 14px !important;
@@ -502,7 +554,6 @@ $(document).ready(function() {
     word-break: keep-all !important;
 }
 
-/* 상태 선택 버튼 그룹 (2열 배치) */
 .chk-status-group {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
@@ -539,7 +590,6 @@ $(document).ready(function() {
     box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important;
 }
 
-/* 비고 입력창 */
 .chk-remark-input {
     width: 100% !important;
     padding: 8px 12px !important;
@@ -561,21 +611,40 @@ $(document).ready(function() {
     box-shadow: 0 0 8px rgba(56, 189, 248, 0.25) !important;
 }
 
-/* 하단 저장 버튼 */
+/* 5. 하단 저장 버튼 (어두운 테마 맞춤 다크 글래스 스타일) */
 .chk-save-btn,
 #btn-save-checklist {
+    flex-shrink: 0 !important;
     width: 100% !important;
-    padding: 12px !important;
-    margin-top: 12px !important;
-    background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%) !important;
-    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    padding: 11px 0 !important;
+    margin-top: 10px !important;
+    background: rgba(56, 189, 248, 0.1) !important;      /* 반투명 스카이블루 배경 */
+    border: 1px solid rgba(56, 189, 248, 0.3) !important; /* 헤더 톤과 어울리는 은은한 네온 테두리 */
     border-radius: 10px !important;
-    color: #ffffff !important;
+    color: #38bdf8 !important;                           /* 세련된 스카이블루 텍스트 */
     font-size: 13px !important;
     font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
     cursor: pointer !important;
-    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
     box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+}
+
+/* 마우스 올렸을 때 (Soft Neon Glow) */
+.chk-save-btn:hover,
+#btn-save-checklist:hover {
+    background: rgba(56, 189, 248, 0.22) !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;                            /* 호버 시 흰색 글자 강조 */
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.35) !important;
+}
+
+/* 버튼 클릭 시 반응 */
+.chk-save-btn:active,
+#btn-save-checklist:active {
+    transform: scale(0.98) !important;
+    background: rgba(56, 189, 248, 0.3) !important;
 }
 
 </style>
