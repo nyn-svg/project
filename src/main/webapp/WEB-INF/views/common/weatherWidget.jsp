@@ -20,8 +20,8 @@
 <script>
 	// OpenWeatherMap 무료 API
 	const API_KEY = '단톡방 공지 댓글 참고'.trim();
-	const LAT = 37.5665; // 현장 위도
-	const LON = 126.9780; // 현장 경도
+	const LAT = 36.36072; // 유림공원 위도
+	const LON = 127.35789; // 유림공원 경도
 	const weatherUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + LAT + '&lon=' + LON + '&appid=' + API_KEY + '&units=metric&lang=kr';
 	
 	function fetchWeather() {
