@@ -19,7 +19,7 @@
 			<span>감지 상세 이력</span>
 		</div>
 
-		<!-- 조치 상태 배지 -->
+		<!-- 조치 상태 배지 (승인 / 반려 추가) -->
 		<c:choose>
 			<c:when test="${situation.situStatus eq '감지'}">
 				<span class="badge status-pending">감지</span>
@@ -36,13 +36,19 @@
 			<c:when test="${situation.situStatus eq '취소'}">
 				<span class="badge status-canceled">취소</span>
 			</c:when>
+			<c:when test="${situation.situStatus eq '승인' or situation.situStatus eq 'APPROVE'}">
+				<span class="badge status-approve">승인</span>
+			</c:when>
+			<c:when test="${situation.situStatus eq '반려' or situation.situStatus eq 'REJECT'}">
+				<span class="badge status-reject">반려</span>
+			</c:when>
 			<c:otherwise>
 				<span class="badge status-pending">${situation.situStatus}</span>
 			</c:otherwise>
 		</c:choose>
 	</div>
 	
-	<!-- 타임라인 상태값 변수화 (최적화 및 감지 조건 보완) -->
+	<!-- 타임라인 상태값 변수화 (승인 / 반려 조건 추가) -->
 	<c:choose>
 	    <c:when test="${situation.situStatus eq '조치'}">
 	        <c:set var="step2Class" value="active" />
@@ -56,11 +62,23 @@
 	        <c:set var="step3Icon" value="fa-check" />
 	        <c:set var="step3Label" value="완료" />
 	    </c:when>
+	    <c:when test="${situation.situStatus eq '승인' or situation.situStatus eq 'APPROVE'}">
+	        <c:set var="step2Class" value="completed" />
+	        <c:set var="step3Class" value="completed" />
+	        <c:set var="step3Icon" value="fa-circle-check" />
+	        <c:set var="step3Label" value="승인" />
+	    </c:when>
 	    <c:when test="${situation.situStatus eq '미해결'}">
 	        <c:set var="step2Class" value="completed" />
 	        <c:set var="step3Class" value="failed" />
 	        <c:set var="step3Icon" value="fa-xmark" />
 	        <c:set var="step3Label" value="미해결" />
+	    </c:when>
+	    <c:when test="${situation.situStatus eq '반려' or situation.situStatus eq 'REJECT'}">
+	        <c:set var="step2Class" value="completed" />
+	        <c:set var="step3Class" value="failed" />
+	        <c:set var="step3Icon" value="fa-xmark" />
+	        <c:set var="step3Label" value="반려" />
 	    </c:when>
 	    <c:when test="${situation.situStatus eq '취소'}">
 	        <c:set var="step2Class" value="canceled" />
@@ -77,49 +95,44 @@
 	</c:choose>
 
 	<!-- 2. 최상단 배치: 조치 진행 타임라인 -->
-	<div class="timeline-section">
-	    <div class="timeline-title">
-	        <i class="fa-solid fa-clock-rotate-left"></i>
-	        <span>조치 진행 타임라인</span>
+	<!-- timeline-wrapper에 '반려' 상태일 때만 전용 클래스 추가 -->
+	<div class="timeline-wrapper ${situation.situStatus eq '반려' or situation.situStatus eq 'REJECT' ? 'is-reject-all' : ''}">
+	    <div class="timeline-line"></div>
+	
+	    <!-- 1단계: 감지 -->
+	    <div class="timeline-step completed">
+	        <div class="step-icon"><i class="fa-solid fa-bell"></i></div>
+	        <div class="step-label">감지</div>
+	        <div class="step-time">
+	            <fmt:formatDate value="${situation.situDate}" pattern="HH:mm:ss" />
+	        </div>
 	    </div>
-	    <div class="timeline-wrapper">
-	        <div class="timeline-line"></div>
 	
-	        <!-- 1단계: 감지 (고정) -->
-	        <div class="timeline-step completed">
-	            <div class="step-icon"><i class="fa-solid fa-bell"></i></div>
-	            <div class="step-label">감지</div>
-	            <div class="step-time">
-	                <fmt:formatDate value="${situation.situDate}" pattern="HH:mm:ss" />
-	            </div>
+	    <!-- 2단계: 조치 -->
+	    <div class="timeline-step ${step2Class}">
+	        <div class="step-icon"><i class="fa-solid fa-wrench"></i></div>
+	        <div class="step-label">조치</div>
+	        <div class="step-time">
+	            <c:choose>
+	                <c:when test="${not empty situation.startDate}">
+	                    <fmt:formatDate value="${situation.startDate}" pattern="HH:mm:ss" />
+	                </c:when>
+	                <c:otherwise>-</c:otherwise>
+	            </c:choose>
 	        </div>
+	    </div>
 	
-	        <!-- 2단계: 조치 -->
-	        <div class="timeline-step ${step2Class}">
-	            <div class="step-icon"><i class="fa-solid fa-wrench"></i></div>
-	            <div class="step-label">조치</div>
-	            <div class="step-time">
-	                <c:choose>
-	                    <c:when test="${not empty situation.startDate}">
-	                        <fmt:formatDate value="${situation.startDate}" pattern="HH:mm:ss" />
-	                    </c:when>
-	                    <c:otherwise>-</c:otherwise>
-	                </c:choose>
-	            </div>
-	        </div>
-	
-	        <!-- 3단계: 최종 상태 -->
-	        <div class="timeline-step ${step3Class}">
-	            <div class="step-icon"><i class="fa-solid ${step3Icon}"></i></div>
-	            <div class="step-label">${step3Label}</div>
-	            <div class="step-time">
-	                <c:choose>
-	                    <c:when test="${not empty situation.endDate}">
-	                        <fmt:formatDate value="${situation.endDate}" pattern="HH:mm:ss" />
-	                    </c:when>
-	                    <c:otherwise>-</c:otherwise>
-	                </c:choose>
-	            </div>
+	    <!-- 3단계: 최종 상태 -->
+	    <div class="timeline-step ${step3Class}">
+	        <div class="step-icon"><i class="fa-solid ${step3Icon}"></i></div>
+	        <div class="step-label">${step3Label}</div>
+	        <div class="step-time">
+	            <c:choose>
+	                <c:when test="${not empty situation.endDate}">
+	                    <fmt:formatDate value="${situation.endDate}" pattern="HH:mm:ss" />
+	                </c:when>
+	                <c:otherwise>-</c:otherwise>
+	            </c:choose>
 	        </div>
 	    </div>
 	</div>
@@ -410,14 +423,12 @@
 		    const width = 630;
 		    const height = 340;
 		    
-		    // 모니터 해상도 기준 정중앙 좌표 계산
 		    const left = (window.screen.width / 2) - (width / 2);
     		const top = (window.screen.height / 2) - (height / 2);
     		const windowOption = 'width=' + width + ', height=' + height + ', top=' + top + ', left=' + left + ', scrollbars=no, resizable=no';
 		    
 		    window.open(url, 'removePopup', windowOption);
 		    
-		    // 현재 상세페이지 닫기
 		    window.close();
 		}
 	</script>

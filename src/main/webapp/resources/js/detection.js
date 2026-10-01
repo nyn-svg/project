@@ -7,7 +7,7 @@ let currentPage = 1;
 // ==========================================
 // 2. 이벤트 리스너 및 초기화
 // ==========================================
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     initTabEvents();
     initSearchForm();
     loadDashboardSummary();
@@ -20,6 +20,9 @@ window.switchTab = function(targetTab, btnElement) {
 
     currentTab = targetTab;
     currentPage = 1;
+
+    // 탭 이동 시 기존 검색 조건 전체 초기화
+    resetSearchForm(false);
 
     // 1. 탭 버튼 활성화 상태 변경
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -41,7 +44,7 @@ window.switchTab = function(targetTab, btnElement) {
         panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === targetTab);
     });
 
-    // 3. 조치인 검색 필드 동적 표시/숨김
+    // 3. 조치인/조치상태 검색 필드 동적 표시/숨김
     toggleWorkerSearchField(targetTab);
 
     // ✨ 4개 탭 전체 대시보드 요약 로드 분기
@@ -49,7 +52,7 @@ window.switchTab = function(targetTab, btnElement) {
         loadDashboardSummary();
     } else if (targetTab === 'instruction') {
         loadInstructionDashboardSummary();
-    }  else if (targetTab === 'report') {
+    } else if (targetTab === 'report') {
         loadReportDashboardSummary();
     }
 
@@ -57,28 +60,87 @@ window.switchTab = function(targetTab, btnElement) {
     loadData(currentTab, 1);
 };
 
-// 조치인 필드 제어 함수
+// 탭별 검색 필드(조치인, 조치상태) 제어 함수
 function toggleWorkerSearchField(tab) {
+    const finderItem = document.getElementById('search-finder-item');
     const workerItem = document.getElementById('search-worker-item');
-    if (!workerItem) return;
+    const statusItem = document.getElementById('search-status-item');
 
-    if (tab === 'instruction' || tab === 'close' || tab === 'report') {
-        workerItem.style.display = 'flex';
-    } else {
-        workerItem.style.display = 'none';
-        const workerInput = document.getElementById('search-worker');
-        if (workerInput) workerInput.value = '';
+    function toggleItemWithEmpty(item, show, emptyId) {
+        if (!item) return;
+        let emptyItem = document.getElementById(emptyId);
+
+        if (show) {
+            item.style.display = 'flex';
+            if (emptyItem) emptyItem.style.display = 'none';
+        } else {
+            item.style.display = 'none';
+            // 입력값 초기화
+            const input = item.querySelector('input, select');
+            if (input) input.value = '';
+
+            // 빈 박스 없으면 생성, 있으면 표시
+            if (!emptyItem) {
+                emptyItem = document.createElement('div');
+                emptyItem.id = emptyId;
+                emptyItem.className = 'search-item empty-item';
+                item.parentNode.insertBefore(emptyItem, item);
+            } else {
+                emptyItem.style.display = 'block';
+            }
+        }
     }
+
+    // 1. 드론/발견인 제어 (종료 이력(close) 탭일 때 숨김)
+    toggleItemWithEmpty(finderItem, tab !== 'close', 'search-finder-empty-item');
+
+    // 2. 조치인 제어 (조치 현황(instruction) 탭에서만 보이기)
+    //    종료 이력(close) 및 긴급상황(report) 탭일 때 숨김
+    toggleItemWithEmpty(workerItem, tab === 'instruction', 'search-worker-empty-item');
+
+    // 3. 조치상태 제어 (감지 이력(danger) 탭일 때 숨김)
+    toggleItemWithEmpty(statusItem, tab !== 'danger', 'search-status-empty-item');
 }
 
-// 검색 폼 전송 이벤트 핸들러
+// 검색 폼 이벤트 및 버튼 클릭 처리 함수
 function initSearchForm() {
-    const searchForm = document.getElementById('searchForm');
-    if (searchForm) {
-        searchForm.addEventListener('submit', function (e) {
+    const searchForm = document.getElementById('search-form');
+
+    // 1. 검색 버튼(#btn-search) 클릭 이벤트 연결
+    const btnSearch = document.getElementById('btn-search');
+    if (btnSearch) {
+
+        btnSearch.addEventListener('click', function(e) {
             e.preventDefault();
             loadData(currentTab, 1);
         });
+    } else {
+        console.error("btn-search ID를 가진 버튼을 찾을 수 없습니다.");
+    }
+
+    // 2. Input 입력창에서 엔터(Enter)키 눌렀을 때 검색 실행
+    if (searchForm) {
+        searchForm.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    loadData(currentTab, 1);
+                }
+            });
+        });
+    }
+}
+
+// 검색 조건 초기화 함수
+function resetSearchForm(shouldReload = true) {
+    const searchForm = document.getElementById('search-form') || document.getElementById('searchForm');
+    if (searchForm) {
+        searchForm.reset(); // 입력 값 초기화
+    }
+
+    // 초기화 후 바로 데이터 재조회가 필요한 경우 (초기화 버튼 클릭 시)
+    if (shouldReload) {
+        loadData(currentTab, 1);
     }
 }
 
@@ -89,7 +151,7 @@ function initSearchForm() {
 // 상단 감지 이력 대시보드 요약 카운트 로드
 function loadDashboardSummary() {
     const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
-    
+
     fetch(basePath + '/detection/api/dashboard-summary')
         .then(res => res.json())
         .then(data => {
@@ -109,7 +171,7 @@ function loadDashboardSummary() {
 // 상단 조치 현황 대시보드 요약 로드
 function loadInstructionDashboardSummary() {
     const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
-    
+
     fetch(basePath + '/detection/api/instruction-dashboard-summary')
         .then(res => res.json())
         .then(data => {
@@ -129,7 +191,7 @@ function loadInstructionDashboardSummary() {
 // 상단 긴급상황 대시보드 요약 로드
 function loadReportDashboardSummary() {
     const basePath = (typeof window.contextPath !== 'undefined') ? window.contextPath : '';
-    
+
     fetch(basePath + '/detection/api/report-dashboard-summary')
         .then(res => res.json())
         .then(data => {
@@ -147,36 +209,43 @@ function loadReportDashboardSummary() {
 }
 
 function updateDashboardCount(tab, count) {
-    const el = document.querySelector(`.dashboard-panel[data-tab-panel="${tab}"] .count-val`) 
-            || document.querySelector(`[data-tab-panel="${tab}"] .total-count-badge`);
+    const el = document.querySelector(`.dashboard-panel[data-tab-panel="${tab}"] .count-val`)
+        || document.querySelector(`[data-tab-panel="${tab}"] .total-count-badge`);
     if (el) el.textContent = count || 0;
 }
 
-// 탭별 목록 및 페이징 로드
 function loadData(tab, page) {
     currentPage = page;
 
-    const searchType = document.getElementById('search-type') ? document.getElementById('search-type').value : '';
-    const keyword = document.getElementById('search-keyword') ? document.getElementById('search-keyword').value : '';
+    // 1. 폼 파라미터 생성 (id="searchForm" 및 id="search-form" 모두 대응)
+    const searchForm = document.getElementById('searchForm') || document.getElementById('search-form');
+    
+    // searchForm이 존재하는 경우에만 FormData를 생성하여 안전하게 파라미터 추출
+    const queryParams = (searchForm && searchForm.tagName === 'FORM') 
+        ? new URLSearchParams(new FormData(searchForm)) 
+        : new URLSearchParams();
 
-    const queryParams = new URLSearchParams({
-        tabType: tab,
-        page: page,
-        limit: 5,
-        searchType: searchType,
-        keyword: keyword
-    });
+    // 2. 필수 기본 파라미터 설정
+    queryParams.set('tabType', tab);
+    queryParams.set('page', page);
+    queryParams.set('limit', 5);
 
     fetch(`/detection/api/list?${queryParams.toString()}`)
         .then(res => res.json())
         .then(data => {
             renderTable(tab, data.list);
             renderPagination(tab, data.totalPages, page);
-            
-            // ✨ 상단 카드 ID(danger-total-count)와 절대 충돌하지 않게 하단 목록 전용 ID만 지정
-            const totalCountEl = document.getElementById(`${tab}-list-total-count`) 
-                               || document.getElementById(`${tab === 'close' ? 'closed' : tab}-list-total-count`);
 
+            // 3. JSP 상의 ID와 1:1로 정확하게 매핑
+            let targetId = `${tab}-total-count`;
+            if (tab === 'danger') {
+                targetId = 'danger-list-total-count'; // JSP의 danger-list-total-count 매핑
+            } else if (tab === 'close') {
+                targetId = 'closed-total-count';      // JSP의 closed-total-count 매핑
+            }
+
+            // 하단 목록 헤더의 총 건수 뱃지 업데이트
+            const totalCountEl = document.getElementById(targetId);
             if (totalCountEl) {
                 totalCountEl.textContent = `총 ${data.totalCount || 0}건`;
             }
@@ -187,82 +256,161 @@ function loadData(tab, page) {
 // ==========================================
 // 4. 동적 테이블 렌더링
 // ==========================================
-function renderTable(tab, list) {
-    let tbodyId = 'detection-list-tbody';
-    if (tab === 'instruction') tbodyId = 'instruction-list-tbody';
-    if (tab === 'close') tbodyId = document.getElementById('closed-list-tbody') ? 'closed-list-tbody' : 'closed-instruction-list-tbody';
-    if (tab === 'report') tbodyId = 'report-list-tbody';
 
-    const tbody = document.getElementById(tbodyId);
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
+/**
+ * 1. 감지 이력 (총 8개 컬럼)
+ */
+function renderDangerList(list) {
+    const tbody = document.getElementById('detection-list-tbody');
     if (!list || list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px;">조회된 이력이 없습니다.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="8">조회된 이력이 없습니다.</td></tr>`;
         return;
     }
 
     let html = '';
     list.forEach(item => {
-        const situNo = item.situNo || '-';
-        const situType = item.situType || '-';
-        const situDate = formatDate(item.situDate);
-        const dngrLevel = item.dngrLevel || '관심';
-        const dngrType = item.dngrType || '-';
-        const zoneName = item.zoneName || '-';
-        const finder = item.finder || item.situType || '-';
-
-        // ✨ 조치인 무조건 '김이슬' 하드코딩
-        const worker = '김이슬';
-
-        // 조치상태 ('조치' -> '조치중' 치환)
-        let status = (item.situStatus || '감지').trim();
-        if (status === '조치') {
-            status = '조치중';
-        }
-
-        // 조치 현황 탭
-        if (tab === 'instruction') {
-            html += `
-                <tr>
-                    <td>${situNo}</td>
-                    <td>${finder}</td>
-                    <td>${situDate}</td>
-                    <td><span class="badge-risk ${dngrLevel}">${dngrLevel}</span></td>
-                    <td>${dngrType}</td>
-                    <td>${zoneName}</td>
-                    <td>${worker}</td>
-                    <td><span class="badge-status ${status}">${status}</span></td>
-                    <td>
-                        <button type="button" class="btn-detail" onclick="openDetail('${situNo}')">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        } else {
-            // 기본 감지 이력 및 기타 탭
-            html += `
-                <tr>
-                    <td>${situNo}</td>
-                    <td>${situType}</td>
-                    <td>${situDate}</td>
-                    <td><span class="badge-risk ${dngrLevel}">${dngrLevel}</span></td>
-                    <td>${dngrType}</td>
-                    <td>${zoneName}</td>
-                    <td><span class="badge-status ${status}">${status}</span></td>
-                    <td>
-                        <button type="button" class="btn-detail" onclick="openDetail('${situNo}')">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }
+        // 백엔드 API에서 넘어오는 키(Key) 값에 맞춰 변경해 주세요.
+        html += `
+            <tr>
+                <td>${item.situNo || '-'}</td>
+                <td>${item.situType || '-'}</td>
+                <td>${formatDate(item.situDate) || '-'}</td>
+                <td><span class="badge-risk ${item.dngrLevel}">${item.dngrLevel || '-'}</span></td>
+                <td>${item.dngrType || '-'}</td>
+                <td>${item.zoneName || '-'}</td>
+                <td>${item.finder || item.droneId}</td>
+                <td>${formatStatusBadge(item.situStatus)}</td>
+                <td>
+                    <button type="button" class="btn-detail" onclick="openDetail('${item.situNo}')">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
     });
-
     tbody.innerHTML = html;
+}
+
+/**
+ * 2. 조치 현황 (총 11개 컬럼)
+ * 컬럼: NO | 발견인 | 발생 일시 | 위험 단계 | 위험 유형 | 구역명 | 조치인 | 조치 상태 | 조치 시작 일시 | 조치 종료 일시 | 상세
+ */
+function renderInstructionList(list) {
+    const tbody = document.getElementById('instruction-list-tbody');
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11">조회된 이력이 없습니다.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    list.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.situNo || '-'}</td>
+                <td>${item.finder || item.droneId}</td>
+                <td>${formatDate(item.situDate) || '-'}</td>
+                <td><span class="badge-risk ${item.dngrLevel}">${item.dngrLevel || '-'}</span></td>
+                <td>${item.dngrType || '-'}</td>
+                <td>${item.zoneName || '-'}</td>
+                <td>${item.worker || '-'}</td>
+                <td>${formatStatusBadge(item.situStatus)}</td>
+                <td>${formatDate(item.startDate) || '-'}</td>
+                <td>${formatDate(item.endDate) || '-'}</td>
+                <td>
+                    <button type="button" class="btn-detail" onclick="openDetail('${item.situNo}')">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+/**
+ * 3. 종료 이력 (총 11개 컬럼)
+ * 컬럼: NO | 감지 유형 | 감지 일시 | 종료 일시 | 위험 단계 | 위험 유형 | 구역명 | 발견인 | 조치인 | 조치 상태 | 상세
+ */
+function renderClosedList(list) {
+    const tbody = document.getElementById('closed-list-tbody');
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11">조회된 이력이 없습니다.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    list.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.situNo || '-'}</td>
+                <td>${item.situType || '-'}</td>
+                <td><span class="badge-risk ${item.dngrLevel}">${item.dngrLevel || '-'}</span></td>
+                <td>${item.dngrType || '-'}</td>
+                <td>${item.zoneName || '-'}</td>
+                <td>${formatDate(item.situDate) || '-'}</td>
+				<td>${formatDate(item.startDate) || '-'}</td>
+				<td>${formatDate(item.endDate) || '-'}</td>
+                <td>${formatStatusBadge(item.situStatus)}</td>
+                <td>
+                    <button type="button" class="btn-detail" onclick="openDetail('${item.situNo}')">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+/**
+ * 4. 긴급상황 조치 이력 (총 8개 컬럼)
+ * 컬럼: NO | 감지 유형 | 감지 일시 | 위험 단계 | 위험 유형 | 구역명 | 조치 상태 | 상세
+ */
+function renderReportList(list) {
+    const tbody = document.getElementById('report-list-tbody');
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8">조회된 이력이 없습니다.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    list.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.situNo || '-'}</td>
+                <td>${item.situType || '-'}</td>
+                <td>${formatDate(item.situDate) || '-'}</td>
+                <td><span class="badge-risk ${item.dngrLevel}">${item.dngrLevel || '-'}</span></td>
+                <td>${item.dngrType || '-'}</td>
+                <td>${item.zoneName || '-'}</td>
+				<td>${item.finder || item.droneId}</td>
+                <td>${formatStatusBadge(item.situStatus)}</td>
+                <td>
+                    <button type="button" class="btn-detail" onclick="openDetail('${item.situNo}')">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+function renderTable(tab, list) {
+    switch (tab) {
+        case 'danger':
+            renderDangerList(list);
+            break;
+        case 'instruction':
+            renderInstructionList(list);
+            break;
+        case 'close':
+            renderClosedList(list);
+            break;
+        case 'report':
+            renderReportList(list);
+            break;
+    }
 }
 
 // 위험 등급 클래스 매핑 함수 추가
@@ -282,24 +430,25 @@ function formatDate(dateStr) {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    
+
     const pad = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-function getStatusClass(status) {
-    switch (status) {
-        case 'APPROVE':
-        case '조치완료':
-            return 'status-success';
-        case 'REJECT':
-        case '취소':
-            return 'status-danger';
-        case '조치':
-            return 'status-warning';
-        default:
-            return 'status-info';
+function formatStatusBadge(status) {
+    if (!status) return '-';
+
+    let displayStatus = status;
+
+    // APPROVE / REJECT 인 경우 텍스트 변환
+    if (status === 'APPROVE') {
+        displayStatus = '승인';
+    } else if (status === 'REJECT') {
+        displayStatus = '반려';
     }
+
+    // CSS 클래스로는 원본 status(APPROVE/REJECT)를 포함하여 스타일이 정확히 매칭되도록 처리
+    return `<span class="badge-status ${status}">${displayStatus}</span>`;
 }
 
 function openDetail(situNo) {
@@ -310,12 +459,12 @@ function openDetail(situNo) {
 
     // 1. 메인 컨테이너 영역 위치 및 크기 구하기
     const mainArea = document.getElementById('main-container') || document.querySelector('.app-left-area');
-    
+
     let left, top;
 
     if (mainArea) {
         const rect = mainArea.getBoundingClientRect();
-        
+
         // 브라우저 화면(screen) 기준 메인 영역 중앙 좌표 계산
         left = window.screenX + rect.left + (rect.width - width) / 2;
         top = window.screenY + rect.top + (rect.height - height) / 2;
@@ -359,7 +508,7 @@ function renderPagination(tab, totalPages, currentPage) {
     }
 
     // 2. 페이지 번호 버튼 (1, 2, 3...)
-    for (let p = 1; p <= totalPages; p++) {
+    for (let p = 1;p <= totalPages;p++) {
         const activeClass = (p === currentPage) ? 'active' : '';
         html += `<button type="button" class="page-btn ${activeClass}" onclick="loadData('${tab}', ${p})">${p}</button>`;
     }
@@ -385,13 +534,13 @@ window.initDetectionPage = function() {
     currentPage = 1;
     toggleWorkerSearchField(currentTab);
     loadDashboardSummary();
-	loadInstructionDashboardSummary();
-	loadReportDashboardSummary();
+    loadInstructionDashboardSummary();
+    loadReportDashboardSummary();
     loadData(currentTab, 1);
 };
 
 // 기존 DOMContentLoaded 유지 (F5 새로고침용)
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     initTabEvents();
     initSearchForm();
     if (typeof window.initDetectionPage === 'function') {

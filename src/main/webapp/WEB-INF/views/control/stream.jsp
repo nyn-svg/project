@@ -182,15 +182,17 @@
 	    </div>
 
 	    <div class="history-footer">
-	        <span class="legend-title"><i class="fa-solid fa-circle-info"></i> 조치 상태 범례:</span>
-	        <div class="legend-items">
-	            <span class="legend-item"><span class="badge status-pending">감지</span> 신규 감지 이벤트</span>
-	            <span class="legend-item"><span class="badge status-in-progress">조치</span> 조치 중</span>
-	            <span class="legend-item"><span class="badge status-completed">조치완료</span> 조치 완료</span>
-	            <span class="legend-item"><span class="badge status-failed">미해결</span> 조치 실패</span>
-	            <span class="legend-item"><span class="badge status-canceled">취소</span> 오감지 이벤트 또는 조치 완료 전 조치 종료시킨 이벤트</span>
-	        </div>
-	    </div>
+		    <span class="legend-title"><i class="fa-solid fa-circle-info"></i> 조치 상태 범례:</span>
+		    <div class="legend-items">
+		        <span class="legend-item"><span class="badge status-pending">감지</span> 신규 감지 이벤트</span>
+		        <span class="legend-item"><span class="badge status-in-progress">조치</span> 조치 중</span>
+		        <span class="legend-item"><span class="badge status-completed">조치완료</span> 조치 완료</span>
+		        <span class="legend-item"><span class="badge status-failed">미해결</span> 조치 실패</span>
+		        <span class="legend-item"><span class="badge status-canceled">취소</span> 조치 종료시킨 이벤트</span>
+		        <span class="legend-item"><span class="badge status-approve">승인</span> 관리자 승인 완료</span>
+		        <span class="legend-item"><span class="badge status-reject">반려</span> 관리자 반려 처리</span>
+		    </div>
+		</div>
 	</div>
 
 </div>
@@ -451,17 +453,25 @@ function getSituationList(blinkFlag) {
 				'판단불가': 'danger-unknown'
 			};
 			var statusClassMap = {
-				'감지': 'status-pending',
-				'조치': 'status-in-progress',
-				'조치완료': 'status-completed',
-				'미해결': 'status-failed',
-				'취소': 'status-canceled'
+				    '감지': 'status-pending',
+				    '조치': 'status-in-progress',
+				    '조치완료': 'status-completed',
+				    '미해결': 'status-failed',
+				    '취소': 'status-canceled',
+				    '승인': 'status-approve',
+				    'APPROVE': 'status-approve',
+				    '반려': 'status-reject',
+				    'REJECT': 'status-reject'
 			};
              
 			var html = '';
 			situations.forEach(function(situation) {
-				var currentLevelClass = levelClassMap[situation.dngrLevel] || 'danger-unknown';
+				var displayStatus = situation.situStatus;
+				if (situation.situStatus === 'APPROVE') displayStatus = '승인';
+				if (situation.situStatus === 'REJECT') displayStatus = '반려';
+				
 				var currentStatusClass = statusClassMap[situation.situStatus] || 'status-canceled';
+				var currentLevelClass = levelClassMap[situation.dngrLevel] || 'danger-unknown';
 				
 				html += '<tr>'
 					 + '<td>' + situation.situNo + '</td>'
@@ -470,7 +480,7 @@ function getSituationList(blinkFlag) {
 					 + '<td><span class="badge ' + currentLevelClass + '">' + situation.dngrLevel + '</span></td>'
 					 + '<td>' + situation.dngrType + '</td>'
 					 + '<td>' + situation.zoneName + '</td>'
-					 + '<td><span class="badge ' + currentStatusClass + '">' + situation.situStatus + '</span></td>'
+					 + '<td><span class="badge ' + currentStatusClass + '">' + displayStatus + '</span></td>'
 					 + '<td><button type="button" class="detail-btn" data-situ-no="' + situation.situNo + '"><i class="fa-solid fa-magnifying-glass"></i></button></td>'
 					 + '</tr>';
 			});

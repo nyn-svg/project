@@ -80,30 +80,62 @@ body {
 }
 
 /* 조치 상태 배지 */
-.status-pending {
-	background: rgba(56, 189, 248, 0.2);
-	color: #38bdf8;
-	border: 1px solid rgba(56, 189, 248, 0.4);
+/* 감지 (Cyan Blue) */
+.status-pending,
+.badge-status.감지 {
+    background: rgba(2, 132, 199, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(2, 132, 199, 0.6);
 }
-.status-in-progress {
-	background: rgba(249, 115, 22, 0.2);
-	color: #fb923c;
-	border: 1px solid rgba(249, 115, 22, 0.4);
+
+/* 조치 (Amber Yellow) */
+.status-in-progress,
+.badge-status.조치 {
+    background: rgba(234, 179, 8, 0.15);
+    color: #fef08a;
+    border: 1px solid rgba(234, 179, 8, 0.6);
 }
-.status-completed {
-	background: rgba(16, 185, 129, 0.2);
-	color: #34d399;
-	border: 1px solid rgba(16, 185, 129, 0.4);
+
+/* 조치완료 (Teal Cyan) */
+.status-completed,
+.badge-status.조치완료 {
+    background: rgba(20, 184, 166, 0.15);
+    color: #2dd4bf;
+    border: 1px solid rgba(20, 184, 166, 0.6);
 }
-.status-failed {
-	background: rgba(239, 68, 68, 0.2);
-	color: #f87171;
-	border: 1px solid rgba(239, 68, 68, 0.4);
+
+/* 미해결 (Warm Orange) */
+.status-failed,
+.badge-status.미해결 {
+    background: rgba(249, 115, 22, 0.2);
+    color: #ff7849;
+    border: 1px solid rgba(249, 115, 22, 0.8);
 }
-.status-canceled {
-	background: rgba(156, 163, 175, 0.2);
-	color: #9ca3af;
-	border: 1px solid rgba(156, 163, 175, 0.4);
+
+/* 취소 (Slate Grey) */
+.status-canceled,
+.badge-status.취소 {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.6);
+}
+
+/* 승인 / APPROVE */
+.status-approve,
+.badge-status.승인,
+.badge-status.APPROVE {
+    background: rgba(132, 204, 22, 0.15);
+    color: #a3e635;
+    border: 1px solid rgba(132, 204, 22, 0.7);
+}
+
+/* 반려 / REJECT (Crimson Red) */
+.status-reject,
+.badge-status.반려,
+.badge-status.REJECT {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.6);
 }
 
 /* 최상단 타임라인 */
@@ -131,6 +163,17 @@ body {
 	align-items: flex-start;
 	position: relative;
 	padding: 0 10px;
+}
+/* --- 반려(REJECT) 상태 시 타임라인 전체 빨간색 --- */
+.timeline-wrapper.is-reject-all .timeline-step .step-icon {
+	background: #be123c !important;
+	border-color: #f87171 !important;
+	color: #ffffff !important;
+	box-shadow: 0 0 8px rgba(248, 113, 113, 0.4) !important;
+}
+.timeline-wrapper.is-reject-all .timeline-step .step-label {
+	color: #f87171 !important;
+	font-weight: 600 !important;
 }
 
 .timeline-line {

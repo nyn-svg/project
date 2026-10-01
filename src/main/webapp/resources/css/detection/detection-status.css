@@ -4,6 +4,7 @@
     height: 100%;
     padding: 20px;
     padding-right: 80px; /* 우측 사이드바 여백 미리 확보 */
+    padding-bottom: 0px; /* 기존 20px에서 하단 여백 제거하고 margin으로 변경 */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -19,12 +20,6 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     box-sizing: border-box;
-}
-
-.list-card {
-    min-height: 280px;
-    padding: 24px;
-    flex: 1;
 }
 
 /* 1. 상단 대시보드 */
@@ -208,14 +203,19 @@
 }
 
 /* 4. 검색 버튼 스타일 */
+/* 검색 버튼 영역 위치 고정 (3열 3행 우측 하단) */
 .search-btn-wrapper {
     grid-column: 3;
+    grid-row: 3;
+    
     display: flex;
+    gap: 8px;
+    align-items: flex-end;
     justify-content: flex-end;
-    align-items: center;
     width: 100%;
 }
 
+/* 검색 버튼 기본 (파란색) */
 .btn-search {
     width: 100px;
     height: 36px;
@@ -230,15 +230,32 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 .btn-search:hover {
-    background-color: #0369a1;
+    background-color: #38bdf8;
+}
+
+/* 초기화 버튼 기본 (회색) */
+.btn-reset {
+    background-color: #334155;
+    color: #ffffff;
+    border: 1px solid #475569;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-reset:hover {
+    background-color: #475569;
 }
 
 /* 4. 하단 목록 영역 */
 .list-card {
-    min-height: 280px;
+    min-height: 300px;
     padding: 20px;
     flex: 1;
 }
@@ -293,12 +310,14 @@
     align-items: center;
     gap: 10px;
 }
-
 .panel-title-group h3 {
     font-size: 18px;
     font-weight: 600;
     color: #ffffff;
     margin: 0;
+}
+.panel-title-group svg {
+    color: #38bdf8;
 }
 
 .total-count-badge {
@@ -329,7 +348,7 @@
 /* 테이블 기본 구조 */
 .custom-table {
     width: 100%;
-    table-layout: fixed;
+    table-layout: auto;
     border-collapse: collapse;
     font-size: 13px;
     text-align: center;
@@ -342,8 +361,6 @@
     font-weight: 600;
     border-bottom: 1px solid #334155;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .custom-table td {
@@ -351,21 +368,10 @@
     border-bottom: 1px solid #1e293b;
     color: #cbd5e1;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     vertical-align: middle;
 }
 
-/* 각 컬럼(열)별 너비 비율 지정 (총 8개 컬럼) */
-.custom-table th:nth-child(1) { width: 15%; } /* NO */
-.custom-table th:nth-child(2) { width: 13%; } /* 감지/업무 유형 */
-.custom-table th:nth-child(3) { width: 18%; } /* 일시 */
-.custom-table th:nth-child(4) { width: 9%; } /* 위험 등급 */
-.custom-table th:nth-child(5) { width: 15%; } /* 위험 유형 */
-.custom-table th:nth-child(6) { width: 13%; } /* 구역명 */
-.custom-table th:nth-child(7) { width: 9%; } /* 조치 상태 */
-.custom-table th:nth-child(8) { width: 8%; }  /* 상세 */
-
+/* 마우스 호버 효과 */
 .custom-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.02);
 }
@@ -445,11 +451,18 @@
     box-shadow: 0 0 8px rgba(59, 130, 246, 0.25);
 }
 
+/* 판단불가 (Slate Grey) */
+.badge-risk.판단불가 {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.6);
+    box-shadow: 0 0 8px rgba(100, 116, 139, 0.2);
+}
+
 /* ------------------------------------------
     처리 상태 뱃지 (.badge-status)
    ------------------------------------------ */
-/* 미확인 / 감지 (Cyan Blue) */
-.badge-status.미확인,
+/* 감지 (Cyan Blue) */
 .badge-status.감지 {
     background: rgba(2, 132, 199, 0.15);
     color: #38bdf8;
@@ -457,30 +470,52 @@
     box-shadow: 0 0 8px rgba(2, 132, 199, 0.2);
 }
 
-/* 조치중 / 지시중 (Amber) */
-.badge-status.조치중,
-.badge-status.지시중 {
-    background: rgba(217, 119, 6, 0.15);
-    color: #fbbf24;
-    border: 1px solid rgba(217, 119, 6, 0.6);
-    box-shadow: 0 0 8px rgba(217, 119, 6, 0.2);
+/* 조치 (Amber Yellow) */
+.badge-status.조치 {
+    background: rgba(234, 179, 8, 0.15);
+    color: #fef08a;
+    border: 1px solid rgba(234, 179, 8, 0.6);
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.25);
 }
 
-/* 완료 / 종결 (Emerald Green) */
-.badge-status.완료,
-.badge-status.종결 {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.6);
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+/* 조치완료 (Teal Cyan) */
+.badge-status.조치완료 {
+    background: rgba(20, 184, 166, 0.15);
+    color: #2dd4bf;
+    border: 1px solid rgba(20, 184, 166, 0.6);
+    box-shadow: 0 0 8px rgba(20, 184, 166, 0.2);
 }
 
-/* 오탐 / 취소 (Slate Grey) */
-.badge-status.오탐,
+/* 미해결 (Warm Orange) */
+.badge-status.미해결 {
+    background: rgba(249, 115, 22, 0.2);
+    color: #ff7849;
+    border: 1px solid rgba(249, 115, 22, 0.8);
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.35);
+}
+
+/* 취소 (Slate Grey) */
 .badge-status.취소 {
     background: rgba(100, 116, 139, 0.15);
     color: #94a3b8;
     border: 1px solid rgba(100, 116, 139, 0.6);
+}
+
+.badge-status.승인,
+.badge-status.APPROVE {
+    background: rgba(132, 204, 22, 0.15);
+    color: #a3e635;
+    border: 1px solid rgba(132, 204, 22, 0.7);
+    box-shadow: 0 0 8px rgba(132, 204, 22, 0.3);
+}
+
+/* 반려 / REJECT (Crimson Red - Red Glow) */
+.badge-status.반려,
+.badge-status.REJECT {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
 }
 
 /* 하단 범례 영역 */

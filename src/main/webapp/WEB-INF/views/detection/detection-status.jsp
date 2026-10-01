@@ -1,13 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<!-- ✨ 1. JS contextPath 전달용 스크립트 추가 -->
-<script type="text/javascript">
-    window.contextPath = '${pageContext.request.contextPath}';
-</script>
-
 <div class="detection-container">
-    
     <!-- 1. 상단 대시보드 영역 -->
     <div class="dashboard-card">
         <!-- 감지 이력 대시보드 영역 -->
@@ -145,7 +139,7 @@
     <!-- 3. 공통 검색폼 영역 -->
     <div class="search-card-container">
 	    <!-- ✨ 2. searchForm ID 수정 -->
-	    <form id="searchForm">
+	    <form id="searchForm" onsubmit="return false;">
 	        <div class="search-grid">
 	        	
 	        	<!-- 1행: 이력번호 / 구역명 -->
@@ -162,6 +156,18 @@
 	            <div class="search-item empty-item"></div>
 	            
 	            <!-- 2행: 위험유형 / 위험단계 / 조치상태 -->
+	             <div class="search-item">
+	                <label for="search-danger-level">위험단계</label>
+	                <select id="search-danger-level" name="dngrLevel" class="form-control">
+	                    <option value="">선택하세요</option>
+	                    <option value="관심">관심</option>
+	                    <option value="주의">주의</option>
+	                    <option value="경계">경계</option>
+	                    <option value="심각">심각</option>
+	                    <option value="판단불가">판단불가</option>
+	                </select>
+	            </div>
+	            
 	            <div class="search-item">
 	                <label for="search-danger-type">위험유형</label>
 	                <select id="search-danger-type" name="dngrType" class="form-control">
@@ -176,19 +182,7 @@
 	                </select>
 	            </div>
 	            
-	            <div class="search-item">
-	                <label for="search-danger-level">위험단계</label>
-	                <select id="search-danger-level" name="dngrLevel" class="form-control">
-	                    <option value="">선택하세요</option>
-	                    <option value="관심">관심</option>
-	                    <option value="주의">주의</option>
-	                    <option value="경계">경계</option>
-	                    <option value="심각">심각</option>
-	                    <option value="판단불가">판단불가</option>
-	                </select>
-	            </div>
-	            
-	            <div class="search-item">
+	            <div class="search-item" id="search-status-item">
 	                <label for="search-status">조치상태</label>
 	                <select id="search-status" name="situStatus" class="form-control">
 	                    <option value="">선택하세요</option>
@@ -203,8 +197,8 @@
 	            </div>
 				
 				<!-- 3행: 발견인 / 조치인 / 검색버튼 -->
-	            <div class="search-item">
-	                <label for="search-finder">발견인</label>
+	            <div class="search-item" id="search-finder-item">
+	                <label for="search-finder">드론/발견인</label>
 	                <input type="text" id="search-finder" name="finder" class="form-control" placeholder="입력하세요"/>
 	            </div>
 	
@@ -215,7 +209,8 @@
 	
 	            <!-- ✨ 3. type="submit"으로 변경 -->
 	            <div class="search-item search-btn-wrapper">
-	                <button type="submit" id="btn-search" class="btn-search">검색</button>
+	                <button type="button" id="btn-reset" class="btn-reset" onclick="resetSearchForm()">초기화</button>
+					<button type="button" id="btn-search" class="btn-search" onclick="loadData(currentTab, 1)">검색</button>
 	            </div>
 	        </div>
 	    </form>
@@ -244,11 +239,13 @@
 					        <th>위험 단계</th>
 					        <th>위험 유형</th>
 					        <th>구역명</th>
+					        <th>드론/발견인</th>
 					        <th>조치 상태</th>
 					        <th>상세</th>
 					    </tr>
 					</thead>
 		            <tbody id="detection-list-tbody">
+		                <!-- JS에서 동적 렌더링 -->
 		            </tbody>
 		        </table>
 		    </div>
@@ -270,7 +267,7 @@
 		            <thead>
 		                <tr>
 		                    <th>NO</th>
-					        <th>발견인</th>
+					        <th>드론/발견인</th>
 					        <th>발생 일시</th>
 					        <th>위험 단계</th>
 					        <th>위험 유형</th>
@@ -292,35 +289,37 @@
 
         <!-- 종료 이력 패널 영역 -->
 		<div class="list-panel" data-tab-panel="close">
-		    <div class="panel-header-wrap">
-		        <div class="panel-title-group">
-		            <h3><i class="fa-solid fa-list-check"></i> 종료 이력</h3>
-		            <span id="closed-total-count" class="total-count-badge">총 0건</span>
-		        </div>
-		    </div>
-		
-		    <div class="table-container">
-		        <table class="custom-table">
-		            <thead>
-		                <tr>
-		                    <th>NO</th>
-					        <th>감지 유형</th>
-					        <th>감지 일시</th>
-					        <th>종료 일시</th>
-					        <th>위험 단계</th>
-					        <th>위험 유형</th>
-					        <th>구역명</th>
-					        <th>발견인</th>
-					        <th>조치인</th>
-					        <th>조치 상태</th>
-					        <th>상세</th>
-		                </tr>
-		            </thead>
-		            <tbody id="closed-list-tbody">
-		            </tbody>
-		        </table>
-		    </div>
-		    
+			<!-- 상단 헤더 영역 -->
+			<div class="panel-header-wrap">
+				<div class="panel-title-group">
+					<h3><i class="fa-solid fa-list-check"></i> 종료 이력</h3>
+					<span id="closed-total-count" class="total-count-badge">총 0건</span>
+				</div>
+			</div>
+			
+			<!-- 테이블 영역 -->
+			<div class="table-container">
+				<table class="custom-table">
+					<thead>
+						<tr>
+							<th>NO</th>
+							<th>감지 유형</th>
+							<th>위험 단계</th>
+							<th>위험 유형</th>
+							<th>구역명</th>
+							<th>감지 일시</th>
+							<th>조치 시작 일시</th>
+							<th>조치 종료 일시</th>
+							<th>조치 상태</th>
+							<th>상세</th>
+						</tr>
+					</thead>
+					<tbody id="closed-list-tbody">
+						<!-- detection.js를 통해 동적 생성 -->
+					</tbody>
+				</table>
+			</div>
+			<!-- 페이징 영역 컨테이너 -->
 			<div id="close-pagination"></div>
 		</div>
 
@@ -343,6 +342,7 @@
 					        <th>위험 단계</th>
 					        <th>위험 유형</th>
 					        <th>구역명</th>
+							<th>드론/발견인</th>
 					        <th>조치 상태</th>
 					        <th>상세</th>
 		                </tr>
@@ -351,11 +351,13 @@
 		            </tbody>
 		        </table>
 		    </div>
-		    
+		      
+			<!-- 페이징 영역 컨테이너 -->
 			<div id="report-pagination"></div>
+				
 		</div>
 
-	</div>
+	</div> <!-- list-card 종료 -->
 </div>
 
 <script src="${pageContext.request.contextPath}/resources/js/detection.js"></script>

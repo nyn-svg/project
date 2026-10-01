@@ -25,17 +25,29 @@ public class DetectionController {
 	@GetMapping("/api/list")
 	@ResponseBody
 	public Map<String, Object> getDetectionApiList(@RequestParam(value = "tabType", defaultValue = "danger") String tabType,
-												   @RequestParam(value = "page", defaultValue = "1") int page,
-												   @RequestParam(value = "limit", defaultValue = "10") int limit,
-												   @RequestParam(value = "searchType", required = false) String searchType,
-												   @RequestParam(value = "keyword", required = false) String keyword) {
+	        									   @RequestParam(value = "page", defaultValue = "1") int page,
+	        									   @RequestParam(value = "limit", defaultValue = "10") int limit,
+	        									   @RequestParam(value = "situNo", required = false) String situNo,
+	        									   @RequestParam(value = "zoneName", required = false) String zoneName,
+	        									   @RequestParam(value = "dngrType", required = false) String dngrType,
+	        									   @RequestParam(value = "dngrLevel", required = false) String dngrLevel,
+	        									   @RequestParam(value = "situStatus", required = false) String situStatus,
+	        									   @RequestParam(value = "finder", required = false) String finder,
+	        									   @RequestParam(value = "worker", required = false) String worker) {
 
 	    Map<String, Object> paramMap = new HashMap<>();
 	    paramMap.put("tabType", tabType);
 	    paramMap.put("offset", (page - 1) * limit);
 	    paramMap.put("limit", limit);
-	    paramMap.put("searchType", searchType);
-	    paramMap.put("keyword", keyword);
+	    
+	    // 상세 검색 파라미터 바인딩
+	    paramMap.put("situNo", situNo);
+	    paramMap.put("zoneName", zoneName);
+	    paramMap.put("dngrType", dngrType);
+	    paramMap.put("dngrLevel", dngrLevel);
+	    paramMap.put("situStatus", situStatus);
+	    paramMap.put("finder", finder);
+	    paramMap.put("worker", worker);
 
 	    List<SituationDTO> list = situationService.getSituationListPaged(paramMap);
 	    int totalCount = situationService.getSituationCountPaged(paramMap);
