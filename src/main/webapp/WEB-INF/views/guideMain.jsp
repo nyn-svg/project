@@ -349,10 +349,12 @@
             <section class="guide-section">
                 <div class="section-header-wrap">
                     <!-- 2. 위험사건 발생 시 대처요령 -->
-					<h2 class="section-title title-orange" style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); margin-bottom: 20px;">
-					    <i class="fa-solid fa-triangle-exclamation"></i> 2. 위험사건 발생 시 대처요령
-					    <span class="section-subtext">※ 주요 위험 유형: 압사(인파 밀집) 위험, 화재, 지역 특성 위험</span>
-					</h2>
+				<h2 class="section-title title-orange" style="width: 100% !important; display: flex !important; align-items: center !important; justify-content: space-between !important; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); margin-bottom: 20px; box-sizing: border-box !important;">
+				    <span>
+				        <i class="fa-solid fa-triangle-exclamation"></i> 2. 위험사건 발생 시 대처요령
+				    </span>
+				    <span class="section-subtext">※ 주요 위험 유형: 압사(인파 밀집) 위험, 화재, 지역 특성 위험</span>
+				</h2>
                     
                 </div>
                 <div class="card-grid grid-3">
