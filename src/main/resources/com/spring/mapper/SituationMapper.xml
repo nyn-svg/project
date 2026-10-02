@@ -375,9 +375,10 @@
 	<!-- 조치 현황 대시보드 요약 카운트 -->
 	<select id="getInstructionDashboardSummary" resultType="map">
 	    SELECT 
-	        COUNT(*) AS "totalCount",
+	        /* 💡 '조치', '조치완료', '미해결' 3가지 상태의 건수만 합산하여 totalCount로 설정 */
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) IN ('조치', '조치완료', '미해결') THEN 1 END) AS "totalCount",
 	        COUNT(CASE WHEN TRIM(SITU_STATUS) = '조치' THEN 1 END) AS "progressCount",
-	        COUNT(CASE WHEN TRIM(SITU_STATUS) IN ('조치완료', 'APPROVE') THEN 1 END) AS "completeCount",
+	        COUNT(CASE WHEN TRIM(SITU_STATUS) IN ('조치완료') THEN 1 END) AS "completeCount",
 	        COUNT(CASE WHEN TRIM(SITU_STATUS) = '미해결' THEN 1 END) AS "unresolvedCount"
 	    FROM SITUATIONS
 	    WHERE TRIM(SITU_STATUS) != '감지'

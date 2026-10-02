@@ -85,8 +85,26 @@
 		    </div>
 		</div>
         <div class="dashboard-panel" data-tab-panel="close">
-            <div class="panel-placeholder">종료 이력 대시보드</div>
+    <div class="summary-card-grid">
+        <!-- 승인건 -->
+        <div class="summary-card manual">
+            <div class="card-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="card-info">
+                <span class="card-title">승인</span>
+                <span class="card-value" id="close-dash-approved">0</span>
+            </div>
         </div>
+
+        <!-- 반려건 -->
+        <div class="summary-card emergency">
+            <div class="card-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+            <div class="card-info">
+                <span class="card-title">반려</span>
+                <span class="card-value" id="close-dash-rejected">0</span>
+            </div>
+        </div>
+    </div>
+</div>
         <div class="dashboard-panel" data-tab-panel="report">
     <div class="summary-card-grid">
         <!-- 총 긴급건 -->
