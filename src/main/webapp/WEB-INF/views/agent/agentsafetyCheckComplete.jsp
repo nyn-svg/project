@@ -77,7 +77,7 @@
 		<footer class="bottom-action-area">
 			<button type="button" class="btn-secondary" onclick="history.back()">수정하기</button>
 			<button type="button" class="btn-primary" onclick="location.href='${pageContext.request.contextPath}/agent/patrol'">
-				점검 완료
+				닫기
 			</button>
 		</footer>
 

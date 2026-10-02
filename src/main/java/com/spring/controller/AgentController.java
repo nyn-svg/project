@@ -28,7 +28,7 @@ import com.spring.service.ChecklistService;
 import com.spring.service.EmergencyContactService;
 import com.spring.service.SituationService;
 import com.spring.service.SseService;
-
+import java.security.Principal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -86,14 +86,21 @@ public class AgentController {
 
    /* ==========[메인 페이지]============= */
    @GetMapping("/main")
-   public String agentMainPage(HttpSession session, Model model) {
-      String loginUserId = (String) session.getAttribute("userId");
-      if (loginUserId == null)
-         loginUserId = "agent01";
+   public String agentMainPage(Principal principal, Model model) {
+       String loginUserId;
 
-      AgentDTO user = agentService.getAgentInfo(loginUserId);
-      model.addAttribute("user", user);
-      return "agent/agentMain";
+       // 로그인된 상태면 로그인한 ID(agent02 등) 사용, 비로그인 상태면 "agent01" 기본 적용
+       if (principal != null) {
+           loginUserId = principal.getName();
+       } else {
+           loginUserId = "agent01";
+       }
+
+       // 해당 ID로 DB 정보 조회 후 화면 전달
+       AgentDTO user = agentService.getAgentInfo(loginUserId);
+       model.addAttribute("user", user);
+
+       return "agent/agentMain";
    }
 
    // 근무 상태 변경 페이지

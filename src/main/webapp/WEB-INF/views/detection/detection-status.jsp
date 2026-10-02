@@ -159,7 +159,7 @@
 	             <div class="search-item">
 	                <label for="search-danger-level">위험단계</label>
 	                <select id="search-danger-level" name="dngrLevel" class="form-control">
-	                    <option value="">선택하세요</option>
+	                    <option value="">전체</option>
 	                    <option value="관심">관심</option>
 	                    <option value="주의">주의</option>
 	                    <option value="경계">경계</option>
@@ -171,7 +171,7 @@
 	            <div class="search-item">
 	                <label for="search-danger-type">위험유형</label>
 	                <select id="search-danger-type" name="dngrType" class="form-control">
-	                    <option value="">선택하세요</option>
+	                    <option value="">전체</option>
 	                    <option value="인파위험">인파위험</option>
 	                    <option value="야생동물">야생동물</option>
 	                    <option value="인명사고">인명사고</option>
@@ -185,7 +185,7 @@
 	            <div class="search-item" id="search-status-item">
 	                <label for="search-status">조치상태</label>
 	                <select id="search-status" name="situStatus" class="form-control">
-	                    <option value="">선택하세요</option>
+	                    <option value="">전체</option>
 	                    <option value="감지">감지</option>
 	                    <option value="조치">조치</option>
 	                    <option value="조치완료">조치완료</option>
