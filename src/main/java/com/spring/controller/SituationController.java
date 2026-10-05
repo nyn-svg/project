@@ -79,6 +79,12 @@ public class SituationController {
         
         // DB에서 SITU_NO 값으로 단건 조회
         SituationDTO situation = situationService.getSituationBySituNo(situNo);
+        if (situation == null) {
+        	model.addAttribute("errorMessage", "삭제된 이력입니다.");
+            model.addAttribute("closeWindow", true);
+            
+            return "status/popup-alert";
+        }
         
         // JSP로 객체 전달
         model.addAttribute("situation", situation);
