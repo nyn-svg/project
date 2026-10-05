@@ -2,7 +2,7 @@
     height: 64px;
     z-index: 900;
     flex-shrink: 0;
-    gap: 20px;
+    gap: 16px;
     background-color: rgba(30, 41, 69, 0.55);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -127,12 +127,82 @@
 }
 
 /* ==========================================
+   자동 등록 on/off 토글 스타일
+   ========================================== */
+/* 자동등록 영역 레이아웃 (우측 날씨 위젯 쪽으로 밀어내기) */
+.header-auto-regist {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 20px;
+    margin-left: auto; /* 우측 날씨 위젯 바로 앞으로 이동 */
+    margin-bottom: 0;  /* 하단 여백 제거 */
+}
+
+/* 헤더 전용 텍스트 스타일 */
+.header-auto-regist .toggle-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+    white-space: nowrap;
+}
+
+/* 헤더 전용 스위치 크기 및 스타일 */
+.header-auto-regist .header-switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 20px;
+}
+
+.header-auto-regist .header-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* 스위치 슬라이더 기본 상태 (OFF) */
+.header-auto-regist .header-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #334155;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px;
+}
+
+.header-auto-regist .header-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ON 상태 (다크 테마에 부합하는 Cyan Blue Glow) */
+.header-auto-regist input:checked + .header-slider {
+    background-color: #0ea5e9;
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+}
+
+.header-auto-regist input:checked + .header-slider:before {
+    transform: translateX(18px);
+}
+
+/* ==========================================
    날씨 위젯 스타일
    ========================================== */
 .header-weather-area {
     display: flex;
     align-items: center;
-    margin-left: auto;
 }
    
 .weather-header-widget {

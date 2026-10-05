@@ -60,6 +60,9 @@ public class ControlController {
 	
 	@Value("${savedPath.upload.files}")
     private String uploadPath;
+	
+	// 전역 자동등록 on/off 플래그 (기본값: false)
+    private static volatile boolean isAutoRegist = false;
 
     // 1. (구)메인 진입
     @GetMapping("/control/main")
@@ -100,6 +103,24 @@ public class ControlController {
         return "control/controlMain";
     }
     
+    // 💡 프론트엔드 토글 변경 시 호출할 API
+    @PostMapping("/api/settings/auto-register")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> toggleAutoRegister(@RequestBody Map<String, Boolean> param) {
+        Boolean enabled = param.get("enabled");
+        if (enabled != null) {
+            isAutoRegist = enabled;
+        }
+        return ResponseEntity.ok(Map.of("success", true, "autoRegist", isAutoRegist));
+    }
+
+    // 💡 현재 상태 조회 API (페이지 로딩 시 토글 UI 동기화용)
+    @GetMapping("/api/settings/auto-register")
+    @ResponseBody
+    public ResponseEntity<Boolean> getAutoRegisterStatus() {
+        return ResponseEntity.ok(isAutoRegist);
+    }
+    
     @PostMapping("/api/sse/stream")
     @ResponseBody // 화면(JSP) 이동이 아닌 데이터 응답
     public ResponseEntity<String> receiveStreamData(@RequestBody DetectRequestDTO requestData) {
@@ -109,82 +130,84 @@ public class ControlController {
         // 1. 화면(stream.jsp)으로 실시간 데이터 브로드캐스팅
         sseService.sendEvent("stream-data", requestData);
         
-        // 2. 밀집도 위험 단계와 5초 지속 판별 및 자동 등록
-        String densityDngrLevel = densityStateService.checkDensityAutoRegist(droneId, density);
-        if (densityDngrLevel != null) {
-            SituationDTO situation = new SituationDTO();
-            situation.setDroneId(droneId);
-            
-            // 드론 정보에서 zoneName 조회 후 세팅
-            DroneDTO drone = droneService.getDroneById(droneId);
-            if (drone != null) {
-            	situation.setZoneName(drone.getZoneName());
-            } else {
-            	situation.setZoneName("인식불가");
-            }
-
-            situation.setSituType("자동감지");
-            situation.setDngrType("인파위험");
-            situation.setDngrLevel(densityDngrLevel);
-            situation.setSituStatus("감지");
-            
-            String content = String.format(
-            		"해당 구역에서 밀집도 약 %.1f%% [%s]가 지속 감지되었습니다.%n" +
-            	    "현장을 확인하시고 사전 가이드라인에 준수하여 조치해 주시기 바랍니다.%n" +
-            	    "(본 이력은 자동 생성되어 사실과 다를 수 있습니다.)", 
-            	    density, densityDngrLevel);
-            situation.setSituContent(content);
-            
-            // 💡 스냅샷 이미지 파일로 저장 후 DTO 세팅
-            String savedImageName = requestSnapshot(droneId);
-            situation.setSituImage(savedImageName);
-
-            // DB 등록 및 SSE 자동 발송
-            if (situationService.registerSituation(situation)) {
-                SituationController.clearSituationCache();
-            }
+        // 💡 서버 전역 플래그가 true일 때만 아래 자동등록 수행
+        if (isAutoRegist) {
+	        // 2. 밀집도 위험 단계와 5초 지속 판별 및 자동 등록
+	        String densityDngrLevel = densityStateService.checkDensityAutoRegist(droneId, density);
+	        if (densityDngrLevel != null) {
+	            SituationDTO situation = new SituationDTO();
+	            situation.setDroneId(droneId);
+	            
+	            // 드론 정보에서 zoneName 조회 후 세팅
+	            DroneDTO drone = droneService.getDroneById(droneId);
+	            if (drone != null) {
+	            	situation.setZoneName(drone.getZoneName());
+	            } else {
+	            	situation.setZoneName("인식불가");
+	            }
+	
+	            situation.setSituType("자동감지");
+	            situation.setDngrType("인파위험");
+	            situation.setDngrLevel(densityDngrLevel);
+	            situation.setSituStatus("감지");
+	            
+	            String content = String.format(
+	            		"해당 구역에서 밀집도 약 %.1f%% [%s]가 지속 감지되었습니다.%n" +
+	            	    "현장을 확인하시고 사전 가이드라인에 준수하여 조치해 주시기 바랍니다.%n" +
+	            	    "(본 이력은 자동 생성되어 사실과 다를 수 있습니다.)", 
+	            	    density, densityDngrLevel);
+	            situation.setSituContent(content);
+	            
+	            // 💡 스냅샷 이미지 파일로 저장 후 DTO 세팅
+	            String savedImageName = requestSnapshot(droneId);
+	            situation.setSituImage(savedImageName);
+	
+	            // DB 등록 및 SSE 자동 발송
+	            if (situationService.registerSituation(situation)) {
+	                SituationController.clearSituationCache();
+	            }
+	        }
+	        
+	        // 3. 야생동물 위험 단계 판별 및 자동 등록
+	        boolean hasValidAnimal = requestData.isAnimal() // requestData.isAnimal()의 유효성 검증
+	        					  && requestData.getAnimals() != null 
+	        					  && !requestData.getAnimals().isEmpty(); // requestData.getAnimals()의 유효성 검증
+	        
+	        if (animalStateService.checkAnimalAutoRegist(droneId, hasValidAnimal)) {
+	            String animalDngrLevel = animalStateService.checkAnimalDngrLevel(droneId, true);
+	            String animalName = animalStateService.getAnimalName(requestData.getAnimals());
+	            
+	            SituationDTO situation = new SituationDTO();
+	            situation.setDroneId(droneId);
+	            
+	            DroneDTO drone = droneService.getDroneById(droneId);
+	            if (drone != null) {
+	            	situation.setZoneName(drone.getZoneName());
+	            } else {
+	            	situation.setZoneName("인식불가");
+	            }
+	
+	            situation.setSituType("자동감지");
+	            situation.setDngrType("야생동물");
+	            situation.setDngrLevel(animalDngrLevel);
+	            situation.setSituStatus("감지");
+	            
+	            // 💡 스냅샷 이미지 파일로 저장 후 DTO 세팅
+	            String savedImageName = requestSnapshot(droneId);
+	            situation.setSituImage(savedImageName);
+	            
+	            String content = String.format(
+	            		"해당 구역에서 야생동물 [%s]가 감지되었습니다.%n" +
+	            	    "현장을 확인하시고 사전 가이드라인에 준수하여 조치해 주시기 바랍니다.%n" +
+	            	    "(본 이력은 자동 생성되어 사실과 다를 수 있습니다.)", 
+	            	    animalName);
+	            situation.setSituContent(content);
+	
+	            if (situationService.registerSituation(situation)) {
+	                SituationController.clearSituationCache();
+	            }
+	        }
         }
-        
-        // 3. 야생동물 위험 단계 판별 및 자동 등록
-        boolean hasValidAnimal = requestData.isAnimal() // requestData.isAnimal()의 유효성 검증
-        					  && requestData.getAnimals() != null 
-        					  && !requestData.getAnimals().isEmpty(); // requestData.getAnimals()의 유효성 검증
-        
-        if (animalStateService.checkAnimalAutoRegist(droneId, hasValidAnimal)) {
-            String animalDngrLevel = animalStateService.checkAnimalDngrLevel(droneId, true);
-            String animalName = animalStateService.getAnimalName(requestData.getAnimals());
-            
-            SituationDTO situation = new SituationDTO();
-            situation.setDroneId(droneId);
-            
-            DroneDTO drone = droneService.getDroneById(droneId);
-            if (drone != null) {
-            	situation.setZoneName(drone.getZoneName());
-            } else {
-            	situation.setZoneName("인식불가");
-            }
-
-            situation.setSituType("자동감지");
-            situation.setDngrType("야생동물");
-            situation.setDngrLevel(animalDngrLevel);
-            situation.setSituStatus("감지");
-            
-            // 💡 스냅샷 이미지 파일로 저장 후 DTO 세팅
-            String savedImageName = requestSnapshot(droneId);
-            situation.setSituImage(savedImageName);
-            
-            String content = String.format(
-            		"해당 구역에서 야생동물 [%s]가 감지되었습니다.%n" +
-            	    "현장을 확인하시고 사전 가이드라인에 준수하여 조치해 주시기 바랍니다.%n" +
-            	    "(본 이력은 자동 생성되어 사실과 다를 수 있습니다.)", 
-            	    animalName);
-            situation.setSituContent(content);
-
-            if (situationService.registerSituation(situation)) {
-                SituationController.clearSituationCache();
-            }
-        }
-        
         return ResponseEntity.ok("Data received successfully from " + droneId);
     }
     
