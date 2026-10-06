@@ -79,37 +79,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	$(document).ready(function() {
 
-	    // ==================================================
-	    // 1. 사진 선택 시 미리보기 처리 (FileReader)
-	    // ==================================================
-	    $('#photoInput').on('change', function(e) {
-	        const file = e.target.files[0];
-	        
-	        if (file) {
-	            // 용량 제한 (예: 10MB)
-	            if (file.size > 10 * 1024 * 1024) {
-	                alert('사진 용량은 최대 10MB까지 가능합니다.');
-	                $(this).val('');
-	                return;
-	            }
+		// ==================================================
+		// 1. 사진 선택/촬영 시 미리보기 공통 처리
+		// ==================================================
+		$('#photoInput, #cameraInput').on('change', function(e) {
+		    const file = e.target.files[0];
+		    const currentInputId = this.id;
+		    
+		    if (file) {
+		        // 용량 제한 (10MB)
+		        if (file.size > 10 * 1024 * 1024) {
+		            alert('사진 용량은 최대 10MB까지 가능합니다.');
+		            $(this).val('');
+		            return;
+		        }
 
-	            const reader = new FileReader();
-	            reader.onload = function(evt) {
-	                $('#previewImg').attr('src', evt.target.result);
-	                $('#photoPreview').show();
-	            };
-	            reader.readAsDataURL(file);
-	        }
-	    });
+		        // 촬영과 앨범 중 하나만 선택되도록 반대쪽 input 초기화
+		        if (currentInputId === 'cameraInput') {
+		            $('#photoInput').val('');
+		        } else {
+		            $('#cameraInput').val('');
+		        }
 
-	    // ==================================================
-	    // 2. 첨부 사진 삭제 버튼 처리
-	    // ==================================================
-	    $('#btnRemovePhoto').on('click', function() {
-	        $('#photoInput').val('');          // input file 초기화
-	        $('#previewImg').attr('src', ''); // 이미지 경로 제거
-	        $('#photoPreview').hide();         // 미리보기 숨김
-	    });
+		        const reader = new FileReader();
+		        reader.onload = function(evt) {
+		            $('#previewImg').attr('src', evt.target.result);
+		            $('#photoPreview').show();
+		        };
+		        reader.readAsDataURL(file);
+		    }
+		});
+
+		// ==================================================
+		// 2. 첨부 사진 삭제 버튼 처리
+		// ==================================================
+		$('#btnRemovePhoto').on('click', function() {
+		    $('#photoInput').val('');          // 앨범 input 초기화
+		    $('#cameraInput').val('');         // 카메라 input 초기화
+		    $('#previewImg').attr('src', ''); // 이미지 경로 제거
+		    $('#photoPreview').hide();         // 미리보기 숨김
+		});
 
 	    // ==================================================
 	    // 3. 긴급상황 폼 전송 (AJAX + FormData)
